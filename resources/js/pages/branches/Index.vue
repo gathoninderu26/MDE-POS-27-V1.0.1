@@ -1,0 +1,988 @@
+<script setup lang="ts">
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import type { Branch, BranchStaffMember, BranchStatus, BranchType, ColabLink } from '@/composables/useBranch';
+import { useBranch } from '@/composables/useBranch';
+import { formatCurrency } from '@/composables/useCurrency';
+import { useTenant } from '@/composables/useTenant';
+import { useToast } from '@/composables/useToast';
+import AppLayout from '@/layouts/AppLayout.vue';
+import type { BreadcrumbItem } from '@/types';
+import { Head, router } from '@inertiajs/vue3';
+import {
+    Activity,
+    AlertCircle,
+    AlertTriangle,
+    ArrowRight,
+    Building2,
+    Check,
+    CheckCircle2,
+    Clock,
+    DollarSign,
+    GitBranch,
+    Handshake,
+    HardDrive,
+    Layers,
+    Lock,
+    MapPin,
+    Monitor,
+    Network,
+    PauseCircle,
+    Phone,
+    PlayCircle,
+    Plus,
+    Radio,
+    Receipt,
+    Share2,
+    ShieldAlert,
+    ShieldCheck,
+    Store,
+    TrendingUp,
+    User,
+    UserCheck,
+    UserPlus,
+    Users,
+    Wifi,
+} from 'lucide-vue-next';
+import { computed, ref, watchEffect } from 'vue';
+
+const props = defineProps<{
+    branches?: any[];
+}>();
+
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Management', href: '/branches' },
+    { title: 'Branches & Sub-Outlets', href: '/branches' },
+];
+
+const { currentTenant, allTenants } = useTenant();
+const {
+    currentBranch,
+    setBranch,
+    setBranches,
+    tenantAllBranches,
+    tenantActiveBranches,
+    colabPartnerBranches,
+    allAccessibleBranches,
+    toggleBranchStatus,
+    addColabLink,
+} = useBranch();
+const { success, warning, error, info } = useToast();
+
+const activeFilter = ref<'all' | 'own' | 'colab' | 'suspended'>('all');
+
+const branchesList = computed<Branch[]>(() => {
+    if (props.branches && Array.isArray(props.branches)) {
+        return props.branches.map(b => ({
+            id: (b.id || '').toString(),
+            tenantId: (b.tenantId || '').toString(),
+            name: b.name,
+            code: b.code || `BR-${b.id}`,
+            branchType: (b.branchType || b.type || 'Sub-Branch') as BranchType,
+            location: b.location || 'Not specified',
+            phone: b.phone || 'N/A',
+            manager: b.manager || 'Unassigned',
+            currentStockValue: b.currentStockValue ?? 0,
+            todaySales: b.todaySales ?? 0,
+            monthlySales: b.monthlySales ?? 0,
+            transactionsToday: b.transactionsToday ?? 0,
+            terminalsCount: b.terminalsCount ?? 1,
+            storageUsedMB: b.storageUsedMB ?? 10,
+            storageLimitMB: b.storageLimitMB ?? 512,
+            operatingHours: b.operatingHours || '08:00 AM - 08:00 PM',
+            wifiSSID: b.wifiSSID || '',
+            status: b.status || 'Active',
+            isMain: Boolean(b.isMain),
+            staffMembers: b.staffMembers || [],
+        }));
+    }
+    return [];
+});
+
+watchEffect(() => {
+    if (branchesList.value.length > 0) {
+        setBranches(branchesList.value);
+    }
+});
+
+const effectiveBranches = computed(() => {
+    if (tenantAllBranches.value && tenantAllBranches.value.length > 0) {
+        return tenantAllBranches.value;
+    }
+    return branchesList.value;
+});
+
+const displayedBranches = computed(() => {
+    if (activeFilter.value === 'suspended') {
+        return effectiveBranches.value.filter((b) => b.status === 'Suspended');
+    }
+    if (activeFilter.value === 'colab') {
+        return colabPartnerBranches.value || [];
+    }
+    if (activeFilter.value === 'own') {
+        return effectiveBranches.value;
+    }
+    return (allAccessibleBranches.value && allAccessibleBranches.value.length > 0)
+        ? allAccessibleBranches.value
+        : effectiveBranches.value;
+});
+
+// Aggregate stats across tenant branches
+const totalTenantStaff = computed(() => {
+    return effectiveBranches.value.reduce((acc, b) => acc + (b.staffMembers?.length || 0), 0);
+});
+
+const totalTenantStock = computed(() => {
+    return effectiveBranches.value.reduce((acc, b) => acc + (b.currentStockValue || 0), 0);
+});
+
+const totalTenantMonthlySales = computed(() => {
+    return effectiveBranches.value.reduce((acc, b) => acc + (b.monthlySales || 0), 0);
+});
+
+// New Branch / Sub-Branch Modal State
+const newBranchModal = ref(false);
+const newBranch = ref<{
+    name: string;
+    code: string;
+    branchType: BranchType;
+    parentBranchId: string;
+    location: string;
+    phone: string;
+    manager: string;
+    operatingHours: string;
+    wifiSSID: string;
+}>({
+    name: '',
+    code: '',
+    branchType: 'Sub-Branch',
+    parentBranchId: '',
+    location: '',
+    phone: '',
+    manager: '',
+    operatingHours: '08:00 AM - 08:00 PM',
+    wifiSSID: '',
+});
+
+// Colab Partner Linking Modal
+const colabModal = ref(false);
+const selectedBranchToShare = ref('');
+const targetPartnerTenantId = ref('');
+const colabType = ref<ColabLink['colabType']>('Cross-Store Concession');
+const colabPermission = ref<ColabLink['permission']>('Stock Visibility & Transfer');
+
+// Branch Staff & Telemetry Detail Modal
+const selectedBranchDetail = ref<Branch | null>(null);
+const detailModalOpen = ref(false);
+
+// New Staff Member Form
+const newStaffFormOpen = ref(false);
+const newStaff = ref<{
+    name: string;
+    role: BranchStaffMember['role'];
+    phone: string;
+    shift: BranchStaffMember['shift'];
+}>({
+    name: '',
+    role: 'Sales Attendant',
+    phone: '',
+    shift: 'Morning',
+});
+
+const openBranchDetail = (branch: Branch) => {
+    selectedBranchDetail.value = branch;
+    detailModalOpen.value = true;
+    newStaffFormOpen.value = false;
+};
+
+const isCreatingBranch = ref(false);
+const isCreatingColabLink = ref(false);
+
+const handleCreateBranch = () => {
+    if (!newBranch.value.name || isCreatingBranch.value) return;
+
+    isCreatingBranch.value = true;
+    router.post('/branches', {
+        name: newBranch.value.name,
+        code: newBranch.value.code,
+        type: newBranch.value.branchType,
+        location: newBranch.value.location,
+        phone: newBranch.value.phone,
+        manager: newBranch.value.manager,
+        operating_hours: newBranch.value.operatingHours,
+        wifi_ssid: newBranch.value.wifiSSID,
+        is_main: newBranch.value.branchType === 'Main HQ',
+    }, {
+        onSuccess: () => {
+            newBranchModal.value = false;
+            success('Branch Registered', `${newBranch.value.name} registered successfully.`);
+            newBranch.value = {
+                name: '',
+                code: '',
+                branchType: 'Sub-Branch',
+                parentBranchId: '',
+                location: '',
+                phone: '',
+                manager: '',
+                operatingHours: '08:00 AM - 08:00 PM',
+                wifiSSID: '',
+            };
+        },
+        onError: (errs) => error('Registration Failed', Object.values(errs)[0] as string),
+        onFinish: () => (isCreatingBranch.value = false),
+    });
+};
+
+const handleSwitchBranch = (branchId: string, branchName: string) => {
+    const ok = setBranch(branchId);
+    if (ok) {
+        success('Active POS Station Selected', `Terminal switched to ${branchName}`);
+    } else {
+        warning('Access Denied', 'Cannot switch to this branch. It may be suspended or unauthorized.');
+    }
+};
+
+const handleToggleStatus = (b: Branch, e?: Event) => {
+    if (e) e.stopPropagation();
+    const newStatus = toggleBranchStatus(b.id);
+    if (newStatus === 'Suspended') {
+        warning('Branch Suspended', `${b.name} checkout operations have been paused.`);
+    } else if (newStatus === 'Active') {
+        success('Branch Activated', `${b.name} operations resumed.`);
+    }
+};
+
+const handleCreateColabLink = async () => {
+    if (!selectedBranchToShare.value || !targetPartnerTenantId.value || isCreatingColabLink.value) return;
+
+    const targetTenant = allTenants.value.find((t) => t.id === targetPartnerTenantId.value);
+    if (!targetTenant) return;
+
+    isCreatingColabLink.value = true;
+    await new Promise((r) => setTimeout(r, 350));
+    const link: ColabLink = {
+        linkedTenantId: targetTenant.id,
+        linkedTenantName: targetTenant.name,
+        colabType: colabType.value,
+        permission: colabPermission.value,
+        authorizedAt: new Date().toISOString().split('T')[0],
+    };
+
+    addColabLink(selectedBranchToShare.value, link);
+    colabModal.value = false;
+    success('Colab Link Created', `Branch linked with partner organization: ${targetTenant.name}`);
+    isCreatingColabLink.value = false;
+};
+
+const handleAddStaffMember = () => {
+    if (!selectedBranchDetail.value || !newStaff.value.name) return;
+
+    const member: BranchStaffMember = {
+        id: `s-${Date.now()}`,
+        name: newStaff.value.name,
+        role: newStaff.value.role,
+        phone: newStaff.value.phone || '+254 700 000 000',
+        shift: newStaff.value.shift,
+        status: 'On Shift',
+    };
+
+    if (!selectedBranchDetail.value.staffMembers) {
+        selectedBranchDetail.value.staffMembers = [];
+    }
+    selectedBranchDetail.value.staffMembers.push(member);
+    newStaffFormOpen.value = false;
+    newStaff.value = { name: '', role: 'Sales Attendant', phone: '', shift: 'Morning' };
+    success('Staff Assigned', `${member.name} assigned as ${member.role}`);
+};
+</script>
+
+<template>
+    <Head title="Branch Outlets & Sub-Locations" />
+
+    <AppLayout :breadcrumbs="breadcrumbs">
+        <div class="p-4 md:p-8 space-y-6 max-w-[1500px] mx-auto">
+            <!-- Header & Multi-Branch Subscription Quota -->
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h2 class="text-2xl font-bold tracking-tight text-foreground">Branch Outlets & Locations</h2>
+                        <Badge variant="outline" class="font-bold text-xs uppercase bg-primary/10 text-primary border-primary/20">
+                            {{ currentTenant.name }}
+                        </Badge>
+                        <Badge variant="default" class="text-xs bg-emerald-600 text-white font-bold">
+                            {{ currentTenant.plan }} Subscription
+                        </Badge>
+                    </div>
+                    <p class="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
+                        <ShieldCheck class="size-3.5 text-emerald-600 inline" />
+                        <span>Tenant Multi-Location Isolation: Managing {{ branchesList.length }} outlets with {{ branchesList.reduce((acc, b) => acc + (b.staffMembers?.length ?? 0), 0) }} assigned staff members.</span>
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-2 flex-wrap">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        class="h-9 text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+                        @click="() => {
+                            selectedBranchToShare = tenantActiveBranches[0]?.id || '';
+                            colabModal = true;
+                        }"
+                    >
+                        <Handshake class="size-4" />
+                        Link Colab Partner
+                    </Button>
+
+                    <Button
+                        size="sm"
+                        class="h-9 text-xs gap-1.5 bg-primary text-primary-foreground font-bold shadow-sm"
+                        @click="() => {
+                            newBranch.parentBranchId = tenantActiveBranches[0]?.id || '';
+                            newBranchModal = true;
+                        }"
+                    >
+                        <Plus class="size-4" />
+                        Create Branch / Sub-Branch
+                    </Button>
+                </div>
+            </div>
+
+            <!-- Organization Branch Subscription Quota & Overview Bar -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <Card class="border border-border/80 bg-card p-3.5 space-y-1">
+                    <div class="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>Branch Quota</span>
+                        <Building2 class="size-4 text-primary" />
+                    </div>
+                    <div class="flex items-baseline gap-1.5">
+                        <span class="text-xl font-black text-foreground font-mono">{{ effectiveBranches.length }}</span>
+                        <span class="text-xs text-muted-foreground">/ 10 Allowed</span>
+                    </div>
+                    <div class="w-full bg-muted rounded-full h-1.5 mt-2">
+                        <div class="bg-primary h-1.5 rounded-full" :style="{ width: `${Math.min(100, (effectiveBranches.length / 10) * 100)}%` }"></div>
+                    </div>
+                </Card>
+
+                <Card class="border border-border/80 bg-card p-3.5 space-y-1">
+                    <div class="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>Total Assigned Staff</span>
+                        <Users class="size-4 text-emerald-600" />
+                    </div>
+                    <div class="text-xl font-black text-foreground font-mono">
+                        {{ totalTenantStaff }} Staff Members
+                    </div>
+                    <span class="text-[10px] text-muted-foreground block">Across {{ effectiveBranches.length }} operating outlets</span>
+                </Card>
+
+                <Card class="border border-border/80 bg-card p-3.5 space-y-1">
+                    <div class="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>Total Stock Valuation</span>
+                        <TrendingUp class="size-4 text-sky-500" />
+                    </div>
+                    <div class="text-xl font-black text-foreground font-mono text-primary">
+                        {{ formatCurrency(totalTenantStock) }}
+                    </div>
+                    <span class="text-[10px] text-muted-foreground block">Network-wide active inventory</span>
+                </Card>
+
+                <Card class="border border-border/80 bg-card p-3.5 space-y-1">
+                    <div class="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>Monthly Sales Run-Rate</span>
+                        <DollarSign class="size-4 text-amber-500" />
+                    </div>
+                    <div class="text-xl font-black text-foreground font-mono text-emerald-600 dark:text-emerald-400">
+                        {{ formatCurrency(totalTenantMonthlySales) }}
+                    </div>
+                    <span class="text-[10px] text-muted-foreground block">MTD revenue across outlets</span>
+                </Card>
+            </div>
+
+            <!-- Spotlight: Active Operating POS Station -->
+            <Card class="border-2 border-primary/40 bg-gradient-to-br from-card via-card to-primary/5 shadow-md">
+                <CardHeader class="pb-3 border-b border-border/60">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2.5">
+                                <div class="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm shadow">
+                                    <Store class="size-5" />
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <CardTitle class="text-lg font-black text-foreground">{{ currentBranch.name }}</CardTitle>
+                                        <Badge variant="success" class="text-[10px] px-2 py-0.5 font-bold">CURRENT ACTIVE POS STATION</Badge>
+                                        <Badge v-if="currentBranch.isColabBranch" variant="outline" class="text-[10px] font-bold bg-amber-500/10 text-amber-700 border-amber-500/30">
+                                            Partner Colab Outlet
+                                        </Badge>
+                                        <Badge v-else-if="currentBranch.branchType" variant="outline" class="text-[10px] font-bold">
+                                            {{ currentBranch.branchType }}
+                                        </Badge>
+                                    </div>
+                                    <CardDescription class="text-xs flex items-center gap-1.5 mt-0.5">
+                                        <MapPin class="size-3 text-muted-foreground" />
+                                        {{ currentBranch.location }}
+                                        <span v-if="currentBranch.parentBranchName" class="text-primary font-medium">
+                                            (Linked to {{ currentBranch.parentBranchName }})
+                                        </span>
+                                    </CardDescription>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 text-xs">
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                class="h-8 text-xs gap-1.5 font-semibold"
+                                @click="openBranchDetail(currentBranch)"
+                            >
+                                <Users class="size-3.5" />
+                                Staff Roster & Details
+                            </Button>
+
+                            <Badge variant="outline" class="font-bold font-mono">{{ currentBranch.code }}</Badge>
+                        </div>
+                    </div>
+                </CardHeader>
+
+                <CardContent class="pt-4 space-y-4">
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
+                        <div class="p-3 rounded-xl border border-border/80 bg-card/80 space-y-1">
+                            <div class="flex items-center justify-between text-muted-foreground">
+                                <span class="text-[11px] font-medium">Today's Sales</span>
+                                <DollarSign class="size-3.5 text-emerald-600" />
+                            </div>
+                            <div class="text-base font-black font-mono text-emerald-600 dark:text-emerald-400">
+                                {{ formatCurrency(currentBranch.todaySales) }}
+                            </div>
+                            <span class="text-[10px] text-muted-foreground">{{ currentBranch.transactionsToday }} transactions</span>
+                        </div>
+
+                        <div class="p-3 rounded-xl border border-border/80 bg-card/80 space-y-1">
+                            <div class="flex items-center justify-between text-muted-foreground">
+                                <span class="text-[11px] font-medium">Inventory Value</span>
+                                <TrendingUp class="size-3.5 text-primary" />
+                            </div>
+                            <div class="text-base font-black font-mono text-primary">
+                                {{ formatCurrency(currentBranch.currentStockValue) }}
+                            </div>
+                            <span class="text-[10px] text-muted-foreground">Active in-store stock</span>
+                        </div>
+
+                        <div class="p-3 rounded-xl border border-border/80 bg-card/80 space-y-1">
+                            <div class="flex items-center justify-between text-muted-foreground">
+                                <span class="text-[11px] font-medium">Branch Manager</span>
+                                <User class="size-3.5 text-muted-foreground" />
+                            </div>
+                            <div class="text-xs font-bold text-foreground truncate">
+                                {{ currentBranch.manager }}
+                            </div>
+                            <span class="text-[10px] text-muted-foreground font-mono truncate block">{{ currentBranch.phone }}</span>
+                        </div>
+
+                        <div class="p-3 rounded-xl border border-border/80 bg-card/80 space-y-1">
+                            <div class="flex items-center justify-between text-muted-foreground">
+                                <span class="text-[11px] font-medium">Assigned Staff</span>
+                                <Users class="size-3.5 text-muted-foreground" />
+                            </div>
+                            <div class="text-xs font-bold text-foreground">
+                                {{ currentBranch.staffMembers?.length || 1 }} Staff Members
+                            </div>
+                            <span class="text-[10px] text-emerald-600 font-medium flex items-center gap-1">
+                                <span class="size-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                                {{ currentBranch.staffMembers?.filter(s => s.status === 'On Shift').length || 1 }} on shift now
+                            </span>
+                        </div>
+
+                        <div class="p-3 rounded-xl border border-border/80 bg-card/80 space-y-1">
+                            <div class="flex items-center justify-between text-muted-foreground">
+                                <span class="text-[11px] font-medium">Operating Hours</span>
+                                <Clock class="size-3.5 text-muted-foreground" />
+                            </div>
+                            <div class="text-xs font-medium text-foreground truncate">
+                                {{ currentBranch.operatingHours }}
+                            </div>
+                            <span v-if="currentBranch.wifiSSID" class="text-[10px] text-muted-foreground font-mono flex items-center gap-1 truncate">
+                                <Wifi class="size-3 text-primary shrink-0" /> {{ currentBranch.wifiSSID }}
+                            </span>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <!-- Filter Tabs (All vs Direct vs Colab Partner vs Suspended) -->
+            <div class="flex items-center justify-between flex-wrap gap-3">
+                <div class="flex rounded-xl border border-border/80 p-1 bg-card text-xs font-semibold">
+                    <button
+                        type="button"
+                        :class="[
+                            'px-3.5 py-1.5 rounded-lg transition-all',
+                            activeFilter === 'all' ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground',
+                        ]"
+                        @click="activeFilter = 'all'"
+                    >
+                        All Accessible ({{ (allAccessibleBranches && allAccessibleBranches.length > 0) ? allAccessibleBranches.length : effectiveBranches.length }})
+                    </button>
+                    <button
+                        type="button"
+                        :class="[
+                            'px-3.5 py-1.5 rounded-lg transition-all',
+                            activeFilter === 'own' ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground',
+                        ]"
+                        @click="activeFilter = 'own'"
+                    >
+                        Direct & Sub-Branches ({{ effectiveBranches.length }})
+                    </button>
+                    <button
+                        type="button"
+                        :class="[
+                            'px-3.5 py-1.5 rounded-lg transition-all',
+                            activeFilter === 'colab' ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground',
+                        ]"
+                        @click="activeFilter = 'colab'"
+                    >
+                        Colab Partner Outlets ({{ colabPartnerBranches?.length || 0 }})
+                    </button>
+                    <button
+                        type="button"
+                        :class="[
+                            'px-3.5 py-1.5 rounded-lg transition-all',
+                            activeFilter === 'suspended' ? 'bg-rose-600 text-white shadow' : 'text-rose-600 dark:text-rose-400 hover:text-rose-700',
+                        ]"
+                        @click="activeFilter = 'suspended'"
+                    >
+                        Suspended ({{ effectiveBranches.filter(b => b.status === 'Suspended').length }})
+                    </button>
+                </div>
+            </div>
+
+            <!-- Outlets List Cards -->
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <Card
+                    v-for="b in displayedBranches"
+                    :key="b.id"
+                    :class="[
+                        'border transition-all duration-200 hover:shadow-md relative flex flex-col justify-between',
+                        b.id === currentBranch.id && b.status === 'Active'
+                            ? 'border-primary ring-2 ring-primary/20 bg-primary/5 shadow'
+                            : b.status === 'Suspended'
+                            ? 'border-rose-300 dark:border-rose-900/60 bg-rose-50/20 dark:bg-rose-950/10 opacity-80'
+                            : 'border-border/80 bg-card hover:border-primary/50',
+                    ]"
+                >
+                    <CardHeader class="pb-2">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <CardTitle class="text-base font-bold text-foreground">
+                                        {{ b.name }}
+                                    </CardTitle>
+                                    
+                                    <Badge v-if="b.isColabBranch" variant="outline" class="text-[9px] font-bold bg-amber-500/10 text-amber-700 border-amber-500/30">
+                                        Colab Partner
+                                    </Badge>
+                                    <Badge v-else-if="b.branchType" variant="outline" class="text-[9px] font-bold">
+                                        {{ b.branchType }}
+                                    </Badge>
+                                </div>
+
+                                <CardDescription class="text-xs flex items-center gap-1 mt-0.5">
+                                    <MapPin class="size-3 text-muted-foreground shrink-0" />
+                                    <span class="truncate">{{ b.location }}</span>
+                                </CardDescription>
+
+                                <!-- Sub-branch Parent Link -->
+                                <div v-if="b.parentBranchName" class="flex items-center gap-1 text-[11px] text-primary font-medium mt-1">
+                                    <GitBranch class="size-3 text-primary" />
+                                    <span>Parent: {{ b.parentBranchName }}</span>
+                                </div>
+
+                                <!-- Colab Host Org Link -->
+                                <div v-if="b.isColabBranch && b.tenantName" class="flex items-center gap-1 text-[11px] text-amber-700 dark:text-amber-300 font-medium mt-1">
+                                    <Building2 class="size-3 text-amber-600" />
+                                    <span>Host: {{ b.tenantName }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Status Badge -->
+                            <Badge
+                                :variant="b.status === 'Active' ? 'success' : 'destructive'"
+                                class="text-[10px] font-bold uppercase"
+                            >
+                                {{ b.status }}
+                            </Badge>
+                        </div>
+                    </CardHeader>
+
+                    <CardContent class="space-y-3 pt-2 text-xs flex-1">
+                        <!-- Sales & Stock metrics -->
+                        <div class="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-muted/40 font-mono">
+                            <div>
+                                <span class="text-[10px] text-muted-foreground font-sans block">Today's Sales</span>
+                                <span class="font-bold text-foreground">{{ formatCurrency(b.todaySales) }}</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-muted-foreground font-sans block">Stock Value</span>
+                                <span class="font-bold text-primary">{{ formatCurrency(b.currentStockValue) }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Staff Members Mini Roster -->
+                        <div class="space-y-1 pt-1 border-t border-border/60">
+                            <div class="flex items-center justify-between text-[11px] text-muted-foreground">
+                                <span class="flex items-center gap-1 font-medium">
+                                    <Users class="size-3 text-primary" />
+                                    Staff Roster ({{ b.staffMembers?.length || 1 }})
+                                </span>
+                                <span class="font-medium text-foreground">Mgr: {{ b.manager }}</span>
+                            </div>
+
+                            <!-- Staff member avatar tags -->
+                            <div class="flex items-center gap-1.5 flex-wrap pt-0.5">
+                                <span
+                                    v-for="s in (b.staffMembers || []).slice(0, 3)"
+                                    :key="s.id"
+                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-[10px] font-medium"
+                                >
+                                    <span :class="['size-1.5 rounded-full', s.status === 'On Shift' ? 'bg-emerald-500' : 'bg-slate-400']"></span>
+                                    {{ s.name.split(' ')[0] }} ({{ s.role.split(' ')[0] }})
+                                </span>
+                                <span v-if="(b.staffMembers?.length || 0) > 3" class="text-[10px] text-muted-foreground">
+                                    +{{ (b.staffMembers?.length || 0) - 3 }} more
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Storage & Terminal usage -->
+                        <div class="space-y-1 pt-1 border-t border-border/60 text-[11px]">
+                            <div class="flex items-center justify-between text-muted-foreground">
+                                <span class="flex items-center gap-1"><HardDrive class="size-3" /> Storage Usage</span>
+                                <span class="font-mono">{{ b.storageUsedMB }}MB / {{ b.storageLimitMB }}MB</span>
+                            </div>
+                            <div class="w-full bg-muted rounded-full h-1">
+                                <div class="bg-primary h-1 rounded-full" :style="{ width: `${(b.storageUsedMB / b.storageLimitMB) * 100}%` }"></div>
+                            </div>
+                        </div>
+
+                        <!-- Colab Links list if this branch is shared -->
+                        <div v-if="b.colabLinks && b.colabLinks.length > 0" class="p-2 rounded-lg bg-primary/5 border border-primary/20 text-[10px] space-y-1">
+                            <div class="flex items-center gap-1 font-bold text-primary">
+                                <Handshake class="size-3" />
+                                <span>Collaborating Partners ({{ b.colabLinks.length }})</span>
+                            </div>
+                            <div v-for="c in b.colabLinks" :key="c.linkedTenantId" class="flex justify-between text-muted-foreground">
+                                <span class="truncate">{{ c.linkedTenantName }}</span>
+                                <Badge variant="outline" class="text-[9px] px-1 py-0">{{ c.permission }}</Badge>
+                            </div>
+                        </div>
+                    </CardContent>
+
+                    <!-- Card Actions Toolbar -->
+                    <div class="p-3 pt-0 border-t border-border/50 flex items-center justify-between gap-2 mt-auto">
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            class="h-8 text-xs gap-1 text-muted-foreground hover:text-foreground"
+                            @click="openBranchDetail(b)"
+                        >
+                            <Users class="size-3.5" />
+                            Manage Staff
+                        </Button>
+
+                        <div class="flex items-center gap-1.5">
+                            <!-- Suspend / Reactivate Action (Only for own branches) -->
+                            <Button
+                                v-if="!b.isColabBranch"
+                                size="sm"
+                                variant="outline"
+                                :class="[
+                                    'h-8 text-xs gap-1',
+                                    b.status === 'Active' ? 'text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20' : 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20',
+                                ]"
+                                @click="handleToggleStatus(b, $event)"
+                            >
+                                <PauseCircle v-if="b.status === 'Active'" class="size-3.5" />
+                                <PlayCircle v-else class="size-3.5" />
+                                {{ b.status === 'Active' ? 'Suspend' : 'Resume' }}
+                            </Button>
+
+                            <!-- Select Active Branch for POS -->
+                            <Button
+                                v-if="b.status === 'Active'"
+                                size="sm"
+                                :variant="b.id === currentBranch.id ? 'default' : 'secondary'"
+                                class="h-8 text-xs font-bold"
+                                @click="handleSwitchBranch(b.id, b.name)"
+                            >
+                                {{ b.id === currentBranch.id ? 'Selected' : 'Use in POS' }}
+                            </Button>
+                        </div>
+                    </div>
+                </Card>
+            </div>
+        </div>
+
+        <!-- Staff Roster & Detailed Branch Telemetry Drawer / Modal -->
+        <Dialog :open="detailModalOpen" @update:open="(v) => (detailModalOpen = v)">
+            <DialogContent class="sm:max-w-xl max-h-[85vh] overflow-y-auto">
+                <DialogHeader v-if="selectedBranchDetail">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <DialogTitle class="text-lg font-bold">{{ selectedBranchDetail.name }}</DialogTitle>
+                            <Badge :variant="selectedBranchDetail.status === 'Active' ? 'success' : 'destructive'" class="text-[10px]">
+                                {{ selectedBranchDetail.status }}
+                            </Badge>
+                        </div>
+                        <Badge variant="outline" class="font-mono">{{ selectedBranchDetail.code }}</Badge>
+                    </div>
+                    <p class="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <MapPin class="size-3 text-muted-foreground" />
+                        {{ selectedBranchDetail.location }}
+                    </p>
+                </DialogHeader>
+
+                <div v-if="selectedBranchDetail" class="space-y-4 py-2 text-xs">
+                    <!-- Branch Specs Grid -->
+                    <div class="grid grid-cols-3 gap-2 p-3 rounded-xl bg-muted/30 border border-border/80">
+                        <div>
+                            <span class="text-[10px] text-muted-foreground block">Operating Hours</span>
+                            <span class="font-semibold">{{ selectedBranchDetail.operatingHours }}</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-muted-foreground block">Store WiFi SSID</span>
+                            <span class="font-mono font-semibold">{{ selectedBranchDetail.wifiSSID || 'Not Configured' }}</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-muted-foreground block">Terminals Count</span>
+                            <span class="font-semibold">{{ selectedBranchDetail.terminalsCount }} POS Registers</span>
+                        </div>
+                    </div>
+
+                    <!-- Staff Members Roster Header & Add Button -->
+                    <div class="flex items-center justify-between pt-2 border-t border-border/60">
+                        <div>
+                            <h4 class="text-sm font-bold text-foreground">Assigned Staff Members ({{ selectedBranchDetail.staffMembers?.length || 0 }})</h4>
+                            <p class="text-[11px] text-muted-foreground">Manage cashiers, floor managers, and shift attendants for this outlet.</p>
+                        </div>
+                        <Button
+                            size="sm"
+                            class="h-8 text-xs gap-1 bg-primary text-primary-foreground"
+                            @click="newStaffFormOpen = !newStaffFormOpen"
+                        >
+                            <UserPlus class="size-3.5" />
+                            Assign Staff
+                        </Button>
+                    </div>
+
+                    <!-- New Staff Input Form inline -->
+                    <div v-if="newStaffFormOpen" class="p-3 rounded-xl border border-primary/30 bg-primary/5 space-y-3">
+                        <div class="font-bold text-xs text-primary">Assign New Staff Member</div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <Label class="text-[11px]">Staff Name</Label>
+                                <Input v-model="newStaff.name" placeholder="e.g. John Kinyanjui" class="mt-1 text-xs h-8" />
+                            </div>
+                            <div>
+                                <Label class="text-[11px]">Role / Position</Label>
+                                <select v-model="newStaff.role" class="mt-1 h-8 w-full rounded-md border border-input bg-background px-2 text-xs font-semibold">
+                                    <option value="Branch Manager">Branch Manager</option>
+                                    <option value="Head Cashier">Head Cashier</option>
+                                    <option value="Pharmacist">Pharmacist</option>
+                                    <option value="Sales Attendant">Sales Attendant</option>
+                                    <option value="Inventory Officer">Inventory Officer</option>
+                                    <option value="Security">Security Officer</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <Label class="text-[11px]">Telephone</Label>
+                                <Input v-model="newStaff.phone" placeholder="+254 7XX XXX XXX" class="mt-1 text-xs h-8 font-mono" />
+                            </div>
+                            <div>
+                                <Label class="text-[11px]">Shift Schedule</Label>
+                                <select v-model="newStaff.shift" class="mt-1 h-8 w-full rounded-md border border-input bg-background px-2 text-xs">
+                                    <option value="Morning">Morning Shift (07:00 - 15:00)</option>
+                                    <option value="Evening">Evening Shift (15:00 - 23:00)</option>
+                                    <option value="Full Day">Full Day Coverage</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end gap-2 pt-1">
+                            <Button size="sm" variant="ghost" class="h-7 text-xs" @click="newStaffFormOpen = false">Cancel</Button>
+                            <Button size="sm" class="h-7 text-xs bg-primary" @click="handleAddStaffMember">Save Staff</Button>
+                        </div>
+                    </div>
+
+                    <!-- Staff List Table -->
+                    <div class="rounded-xl border border-border/80 overflow-hidden">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-muted/50 border-b border-border/60 text-muted-foreground font-semibold">
+                                <tr>
+                                    <th class="p-2.5">Staff Name</th>
+                                    <th class="p-2.5">Role</th>
+                                    <th class="p-2.5">Shift</th>
+                                    <th class="p-2.5">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border/60">
+                                <tr v-for="s in selectedBranchDetail.staffMembers" :key="s.id" class="hover:bg-muted/20">
+                                    <td class="p-2.5 font-medium text-foreground">
+                                        <div class="flex items-center gap-1.5">
+                                            <UserCheck class="size-3 text-primary" />
+                                            {{ s.name }}
+                                        </div>
+                                        <span class="text-[10px] text-muted-foreground font-mono pl-4.5 block">{{ s.phone }}</span>
+                                    </td>
+                                    <td class="p-2.5">
+                                        <Badge variant="outline" class="text-[10px]">{{ s.role }}</Badge>
+                                    </td>
+                                    <td class="p-2.5 text-muted-foreground">{{ s.shift }}</td>
+                                    <td class="p-2.5">
+                                        <Badge :variant="s.status === 'On Shift' ? 'success' : 'outline'" class="text-[9px]">
+                                            {{ s.status }}
+                                        </Badge>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <DialogFooter class="gap-2 pt-2 border-t border-border/60">
+                    <Button variant="ghost" size="sm" @click="detailModalOpen = false">Close</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Create Branch / Sub-Branch Modal -->
+        <Dialog :open="newBranchModal" @update:open="(v) => (newBranchModal = v)">
+            <DialogContent class="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle class="text-base font-bold">Create Branch or Sub-Branch</DialogTitle>
+                </DialogHeader>
+                <div class="space-y-3 py-2 text-xs">
+                    <div>
+                        <Label class="text-xs">Outlet Classification</Label>
+                        <select v-model="newBranch.branchType" class="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs">
+                            <option value="Main HQ">Main Headquarters / Flagship</option>
+                            <option value="Sub-Branch">Sub-Branch / Satellite Store</option>
+                            <option value="Kiosk Outlet">Express Kiosk / Booth</option>
+                            <option value="Distribution Yard">Distribution Yard / Warehouse</option>
+                        </select>
+                    </div>
+
+                    <!-- If Sub-Branch, Choose Parent Branch -->
+                    <div v-if="newBranch.branchType !== 'Main HQ'">
+                        <Label class="text-xs">Parent Main Branch</Label>
+                        <select v-model="newBranch.parentBranchId" class="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs font-semibold">
+                            <option v-for="b in tenantActiveBranches" :key="b.id" :value="b.id">
+                                {{ b.name }} ({{ b.code }})
+                            </option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <Label class="text-xs">Branch / Outlet Name</Label>
+                        <Input v-model="newBranch.name" placeholder="e.g. Westlands City Mall Sub-Branch" class="mt-1 text-xs" />
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <Label class="text-xs">Outlet Code</Label>
+                            <Input v-model="newBranch.code" placeholder="WST-02" class="mt-1 text-xs font-mono" />
+                        </div>
+                        <div>
+                            <Label class="text-xs">Telephone Contact</Label>
+                            <Input v-model="newBranch.phone" placeholder="+254 7XX XXX XXX" class="mt-1 text-xs font-mono" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <Label class="text-xs">Physical Location / Address</Label>
+                        <Input v-model="newBranch.location" placeholder="e.g. 2nd Floor City Mall, Nairobi" class="mt-1 text-xs" />
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <Label class="text-xs">Branch Manager</Label>
+                            <Input v-model="newBranch.manager" placeholder="e.g. Joyce Ndinda" class="mt-1 text-xs" />
+                        </div>
+                        <div>
+                            <Label class="text-xs">Store WiFi SSID</Label>
+                            <Input v-model="newBranch.wifiSSID" placeholder="e.g. CityMall_Store_POS" class="mt-1 text-xs font-mono" />
+                        </div>
+                    </div>
+                </div>
+                <DialogFooter class="gap-2">
+                    <Button variant="ghost" size="sm" @click="newBranchModal = false">Cancel</Button>
+                    <Button size="sm" class="bg-primary" :loading="isCreatingBranch" @click="handleCreateBranch">Register Outlet</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Link Collaborative Partner Branch Modal -->
+        <Dialog :open="colabModal" @update:open="(v) => (colabModal = v)">
+            <DialogContent class="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle class="text-base font-bold flex items-center gap-2">
+                        <Handshake class="size-4 text-primary" />
+                        Link Collaborative Partner Branch
+                    </DialogTitle>
+                </DialogHeader>
+                <div class="space-y-3 py-2 text-xs">
+                    <p class="text-[11px] text-muted-foreground">
+                        Authorize a partner organization to access an in-store concession, shared warehouse, or joint fulfillment station.
+                    </p>
+
+                    <div>
+                        <Label class="text-xs">Select Your Branch to Share</Label>
+                        <select v-model="selectedBranchToShare" class="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs font-semibold">
+                            <option v-for="b in tenantActiveBranches" :key="b.id" :value="b.id">
+                                {{ b.name }} ({{ b.code }})
+                            </option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <Label class="text-xs">Partner Tenant Organization</Label>
+                        <select v-model="targetPartnerTenantId" class="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs font-semibold">
+                            <option v-for="t in allTenants.filter(x => x.id !== currentTenant.id)" :key="t.id" :value="t.id">
+                                {{ t.name }} ({{ t.businessType }})
+                            </option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <Label class="text-xs">Collaboration Purpose</Label>
+                        <select v-model="colabType" class="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs">
+                            <option value="Cross-Store Concession">Cross-Store Concession (In-store counter)</option>
+                            <option value="Warehouse Fulfillment">Warehouse Fulfillment & Cross-docking</option>
+                            <option value="B2B Distribution Hub">B2B Distribution & Dispatch Hub</option>
+                            <option value="Joint Operating Facility">Joint Operating Facility</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <Label class="text-xs">Granted Access Level</Label>
+                        <select v-model="colabPermission" class="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs font-bold text-primary">
+                            <option value="Stock Visibility & Transfer">Stock Visibility & Inventory Transfer Only</option>
+                            <option value="Full POS & Inventory">Full POS Register & Inventory Control</option>
+                            <option value="View Only">View Telemetry Only</option>
+                        </select>
+                    </div>
+                </div>
+                <DialogFooter class="gap-2">
+                    <Button variant="ghost" size="sm" @click="colabModal = false">Cancel</Button>
+                    <Button size="sm" class="bg-primary" :loading="isCreatingColabLink" @click="handleCreateColabLink">Authorize Colab Link</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    </AppLayout>
+</template>
