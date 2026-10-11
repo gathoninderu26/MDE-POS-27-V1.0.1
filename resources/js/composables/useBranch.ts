@@ -1,5 +1,5 @@
-import { computed, reactive } from 'vue';
 import { useTenant } from '@/composables/useTenant';
+import { computed, reactive } from 'vue';
 
 export type BranchType = 'Main HQ' | 'Sub-Branch' | 'Kiosk Outlet' | 'Distribution Yard' | 'Satellite Store';
 export type BranchStatus = 'Active' | 'Suspended' | 'Under Maintenance';
@@ -45,7 +45,7 @@ export interface Branch {
     status: BranchStatus;
     isMain: boolean;
     staffMembers: BranchStaffMember[];
-    
+
     // Collaborative partner sharing
     isColabBranch?: boolean;
     colabLinks?: ColabLink[];
@@ -94,27 +94,31 @@ export function useBranch() {
     const currentBranch = computed<Branch>(() => {
         const accessible = allAccessibleBranches.value.filter((b) => b.status === 'Active');
         const found = accessible.find((b) => b.id === state.currentBranchId);
-        return found || tenantActiveBranches.value[0] || state.branches[0] || {
-            id: 'main',
-            tenantId: currentTenant.value?.id || '',
-            name: 'Main HQ',
-            code: 'HQ-01',
-            branchType: 'Main HQ',
-            location: 'Main Store',
-            phone: '',
-            manager: 'Store Manager',
-            currentStockValue: 0,
-            todaySales: 0,
-            monthlySales: 0,
-            transactionsToday: 0,
-            terminalsCount: 1,
-            storageUsedMB: 0,
-            storageLimitMB: 1024,
-            operatingHours: '08:00 AM - 08:00 PM',
-            status: 'Active',
-            isMain: true,
-            staffMembers: [],
-        };
+        return (
+            found ||
+            tenantActiveBranches.value[0] ||
+            state.branches[0] || {
+                id: 'main',
+                tenantId: currentTenant.value?.id || '',
+                name: 'Main HQ',
+                code: 'HQ-01',
+                branchType: 'Main HQ',
+                location: 'Main Store',
+                phone: '',
+                manager: 'Store Manager',
+                currentStockValue: 0,
+                todaySales: 0,
+                monthlySales: 0,
+                transactionsToday: 0,
+                terminalsCount: 1,
+                storageUsedMB: 0,
+                storageLimitMB: 1024,
+                operatingHours: '08:00 AM - 08:00 PM',
+                status: 'Active',
+                isMain: true,
+                staffMembers: [],
+            }
+        );
     });
 
     // Switch active operating branch with strict isolation check

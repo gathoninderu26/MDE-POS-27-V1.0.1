@@ -8,6 +8,7 @@ use Illuminate\Console\Command;
 class DemoCleanup extends Command
 {
     protected $signature = 'demo:cleanup {--hours=48 : Delete demo files older than this many hours}';
+
     protected $description = 'Prune temporary demo SQLite files to prevent disk exhaustion';
 
     public function handle(): int

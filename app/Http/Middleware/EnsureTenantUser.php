@@ -33,11 +33,12 @@ class EnsureTenantUser
             if ($defaultTenant) {
                 $user->update([
                     'tenant_id' => $defaultTenant->id,
-                    'role'      => $user->role ?: 'Owner',
+                    'role' => $user->role ?: 'Owner',
                 ]);
                 $user->load('tenant');
             } else {
                 Auth::guard('web')->logout();
+
                 return redirect()->route('login')->withErrors([
                     'email' => 'No active tenant account found. Please contact support.',
                 ]);

@@ -17,26 +17,20 @@ import {
     Building2,
     Check,
     CreditCard,
-    DollarSign,
     Package,
     Pencil,
     Pill,
     Plus,
-    Printer,
     Save,
-    Settings,
-    Shield,
     Smartphone,
     Store,
-    ToggleLeft,
-    ToggleRight,
     Trash2,
     Truck,
     Utensils,
     Wallet,
     Wrench,
 } from 'lucide-vue-next';
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 
 const props = defineProps<{
     tenant?: any;
@@ -56,7 +50,11 @@ const activeTab = ref<'business' | 'payments' | 'pos' | 'inventory'>('business')
 const availableBusinessTypes: { type: BusinessType; label: string; desc: string }[] = [
     { type: 'Supermarket', label: 'Supermarket & Grocery', desc: 'Fast barcode scanning, multi-tier pricing, KRA eTIMS, wholesale/retail switcher' },
     { type: 'Pharmacy', label: 'Pharmacy & Chemist', desc: 'Drug generic/brand, batch & expiry alerts, Rx prescription numbers, patient dosage' },
-    { type: 'Hardware', label: 'Hardware & Building Supplies', desc: 'Material specs, gauge/dimensions, contractor accounts, delivery site dispatches' },
+    {
+        type: 'Hardware',
+        label: 'Hardware & Building Supplies',
+        desc: 'Material specs, gauge/dimensions, contractor accounts, delivery site dispatches',
+    },
     { type: 'Restaurant', label: 'Restaurant, Cafe & Lounge', desc: 'Table management, KOT kitchen tickets, dish modifiers, split billing' },
     { type: 'Electronics', label: 'Electronics & Mobiles', desc: 'IMEI/Serial number tracking, manufacturer warranty periods, repair job tracking' },
     { type: 'Wholesale', label: 'Wholesale & Distribution', desc: 'B2B bulk cartons & bales, credit accounts, parked purchase orders' },
@@ -79,7 +77,7 @@ const defaultPaymentMethods = [
 const paymentMethods = ref<any[]>(
     props.tenant?.settings?.payment_methods && props.tenant.settings.payment_methods.length > 0
         ? props.tenant.settings.payment_methods
-        : defaultPaymentMethods
+        : defaultPaymentMethods,
 );
 
 const newMethodModal = ref(false);
@@ -113,7 +111,7 @@ const openEditMethod = (pm: any) => {
 
 const handleSaveEditedMethod = () => {
     if (!editingMethod.value) return;
-    const index = paymentMethods.value.findIndex(p => p.id === editingMethod.value.id);
+    const index = paymentMethods.value.findIndex((p) => p.id === editingMethod.value.id);
     if (index !== -1) {
         paymentMethods.value[index] = { ...editingMethod.value };
     }
@@ -127,7 +125,7 @@ const handleDeleteMethod = (pmId: string) => {
         error('Cannot Remove', 'You must maintain at least one payment method.');
         return;
     }
-    paymentMethods.value = paymentMethods.value.filter(p => p.id !== pmId);
+    paymentMethods.value = paymentMethods.value.filter((p) => p.id !== pmId);
     success('Removed', 'Payment method removed. Click "Save Changes" to persist.');
 };
 
@@ -159,26 +157,30 @@ const isSaving = ref(false);
 
 const handleSaveSettings = () => {
     isSaving.value = true;
-    router.patch('/settings', {
-        name: currentTenant.value.name,
-        kra_pin: currentTenant.value.kraPin || null,
-        email: currentTenant.value.email,
-        phone: currentTenant.value.phone || null,
-        address: currentTenant.value.address || null,
-        business_type: currentTenant.value.businessType,
-        settings: {
-            payment_methods: paymentMethods.value,
+    router.patch(
+        '/settings',
+        {
+            name: currentTenant.value.name,
+            kra_pin: currentTenant.value.kraPin || null,
+            email: currentTenant.value.email,
+            phone: currentTenant.value.phone || null,
+            address: currentTenant.value.address || null,
+            business_type: currentTenant.value.businessType,
+            settings: {
+                payment_methods: paymentMethods.value,
+            },
         },
-    }, {
-        onSuccess: () => {
-            isSaving.value = false;
-            success('Settings Saved', 'Store configuration and payment preferences persisted to database.');
+        {
+            onSuccess: () => {
+                isSaving.value = false;
+                success('Settings Saved', 'Store configuration and payment preferences persisted to database.');
+            },
+            onError: (errs) => {
+                isSaving.value = false;
+                error('Save Failed', Object.values(errs)[0] as string);
+            },
         },
-        onError: (errs) => {
-            isSaving.value = false;
-            error('Save Failed', Object.values(errs)[0] as string);
-        },
-    });
+    );
 };
 </script>
 
@@ -186,33 +188,33 @@ const handleSaveSettings = () => {
     <Head title="System Settings" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
+        <div class="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
             <!-- Header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <div class="flex items-center gap-2">
                         <h2 class="text-2xl font-bold text-foreground">Store Profile & Vertical Settings</h2>
-                        <Badge variant="outline" class="font-bold text-xs uppercase bg-primary/10 text-primary border-primary/20">
+                        <Badge variant="outline" class="border-primary/20 bg-primary/10 text-xs font-bold uppercase text-primary">
                             {{ terms.badgeLabel }}
                         </Badge>
                     </div>
-                    <p class="text-xs text-muted-foreground mt-0.5">
+                    <p class="mt-0.5 text-xs text-muted-foreground">
                         Configure business vertical, tax compliance, payment channels, receipt notes, and POS terminal rules.
                     </p>
                 </div>
 
-                <Button size="sm" class="h-9 text-xs gap-1.5 bg-primary" @click="handleSaveSettings">
+                <Button size="sm" class="h-9 gap-1.5 bg-primary text-xs" @click="handleSaveSettings">
                     <Save class="size-3.5" />
                     Save Changes
                 </Button>
             </div>
 
             <!-- Tab Buttons -->
-            <div class="flex rounded-xl border border-border/80 p-1 bg-card w-fit text-xs font-semibold overflow-x-auto max-w-full">
+            <div class="flex w-fit max-w-full overflow-x-auto rounded-xl border border-border/80 bg-card p-1 text-xs font-semibold">
                 <button
                     type="button"
                     :class="[
-                        'px-4 py-2 rounded-lg transition-all whitespace-nowrap',
+                        'whitespace-nowrap rounded-lg px-4 py-2 transition-all',
                         activeTab === 'business' ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground',
                     ]"
                     @click="activeTab = 'business'"
@@ -222,7 +224,7 @@ const handleSaveSettings = () => {
                 <button
                     type="button"
                     :class="[
-                        'px-4 py-2 rounded-lg transition-all whitespace-nowrap',
+                        'whitespace-nowrap rounded-lg px-4 py-2 transition-all',
                         activeTab === 'payments' ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground',
                     ]"
                     @click="activeTab = 'payments'"
@@ -232,7 +234,7 @@ const handleSaveSettings = () => {
                 <button
                     type="button"
                     :class="[
-                        'px-4 py-2 rounded-lg transition-all whitespace-nowrap',
+                        'whitespace-nowrap rounded-lg px-4 py-2 transition-all',
                         activeTab === 'pos' ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground',
                     ]"
                     @click="activeTab = 'pos'"
@@ -242,7 +244,7 @@ const handleSaveSettings = () => {
                 <button
                     type="button"
                     :class="[
-                        'px-4 py-2 rounded-lg transition-all whitespace-nowrap',
+                        'whitespace-nowrap rounded-lg px-4 py-2 transition-all',
                         activeTab === 'inventory' ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground',
                     ]"
                     @click="activeTab = 'inventory'"
@@ -256,24 +258,25 @@ const handleSaveSettings = () => {
                 <!-- Business Vertical Selector Card -->
                 <Card class="border-primary/30 bg-primary/5">
                     <CardHeader class="pb-3">
-                        <CardTitle class="text-base font-bold flex items-center gap-2 text-foreground">
+                        <CardTitle class="flex items-center gap-2 text-base font-bold text-foreground">
                             <Store class="size-4 text-primary" />
                             Business Vertical & Industry Preset
                         </CardTitle>
                         <CardDescription class="text-xs">
-                            Selecting an industry preset dynamically morphs the POS language (e.g. Products vs Medications vs Materials vs Menu Items), cart fields, and receipt layout.
+                            Selecting an industry preset dynamically morphs the POS language (e.g. Products vs Medications vs Materials vs Menu
+                            Items), cart fields, and receipt layout.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                             <div
                                 v-for="b in availableBusinessTypes"
                                 :key="b.type"
                                 :class="[
-                                    'p-3.5 rounded-xl border transition-all cursor-pointer select-none space-y-1.5',
+                                    'cursor-pointer select-none space-y-1.5 rounded-xl border p-3.5 transition-all',
                                     currentTenant.businessType === b.type
-                                        ? 'bg-card border-primary ring-2 ring-primary/20 shadow-sm'
-                                        : 'bg-card/70 border-border/70 hover:border-primary/40 hover:bg-card',
+                                        ? 'border-primary bg-card shadow-sm ring-2 ring-primary/20'
+                                        : 'border-border/70 bg-card/70 hover:border-primary/40 hover:bg-card',
                                 ]"
                                 @click="handleSelectBusinessType(b.type)"
                             >
@@ -285,11 +288,11 @@ const handleSaveSettings = () => {
                                         <Smartphone v-else-if="b.type === 'Electronics'" class="size-4 text-violet-600" />
                                         <Truck v-else-if="b.type === 'Wholesale'" class="size-4 text-blue-600" />
                                         <Package v-else class="size-4 text-emerald-600" />
-                                        <span class="font-bold text-xs text-foreground">{{ b.label }}</span>
+                                        <span class="text-xs font-bold text-foreground">{{ b.label }}</span>
                                     </div>
-                                    <Check v-if="currentTenant.businessType === b.type" class="size-4 text-primary font-bold" />
+                                    <Check v-if="currentTenant.businessType === b.type" class="size-4 font-bold text-primary" />
                                 </div>
-                                <p class="text-[11px] text-muted-foreground leading-relaxed">{{ b.desc }}</p>
+                                <p class="text-[11px] leading-relaxed text-muted-foreground">{{ b.desc }}</p>
                             </div>
                         </div>
                     </CardContent>
@@ -302,18 +305,18 @@ const handleSaveSettings = () => {
                         <CardDescription class="text-xs">Official credentials for receipts, invoices, and KRA eTIMS tax compliance.</CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-4 text-xs">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
                                 <Label class="text-xs">Business Legal Name</Label>
                                 <Input v-model="currentTenant.name" class="mt-1 text-xs font-semibold" />
                             </div>
                             <div>
                                 <Label class="text-xs">KRA Tax PIN</Label>
-                                <Input v-model="currentTenant.kraPin" class="mt-1 text-xs font-mono" />
+                                <Input v-model="currentTenant.kraPin" class="mt-1 font-mono text-xs" />
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
                                 <Label class="text-xs">Primary Telephone</Label>
                                 <Input v-model="currentTenant.phone" class="mt-1 text-xs" />
@@ -329,14 +332,14 @@ const handleSaveSettings = () => {
                             <Input v-model="currentTenant.address" class="mt-1 text-xs" />
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
                                 <Label class="text-xs">Operating Currency</Label>
-                                <Input v-model="currentTenant.currency" disabled class="mt-1 text-xs font-mono font-bold bg-muted" />
+                                <Input v-model="currentTenant.currency" disabled class="mt-1 bg-muted font-mono text-xs font-bold" />
                             </div>
                             <div>
                                 <Label class="text-xs">Standard VAT Tax Rate (%)</Label>
-                                <Input value="16" type="number" class="mt-1 text-xs font-mono" />
+                                <Input value="16" type="number" class="mt-1 font-mono text-xs" />
                             </div>
                         </div>
                     </CardContent>
@@ -350,7 +353,7 @@ const handleSaveSettings = () => {
                         <h3 class="text-base font-bold text-foreground">Configurable Payment Methods</h3>
                         <p class="text-xs text-muted-foreground">Enable, disable, or add custom merchant payment channels.</p>
                     </div>
-                    <Button size="sm" class="h-8 text-xs gap-1.5 bg-primary" @click="newMethodModal = true">
+                    <Button size="sm" class="h-8 gap-1.5 bg-primary text-xs" @click="newMethodModal = true">
                         <Plus class="size-3.5" />
                         Add Payment Method
                     </Button>
@@ -360,13 +363,21 @@ const handleSaveSettings = () => {
                     <div
                         v-for="pm in paymentMethods"
                         :key="pm.id"
-                        class="flex items-center justify-between p-4 rounded-xl border border-border/80 bg-card hover:border-primary/50 transition-all text-xs"
+                        class="flex items-center justify-between rounded-xl border border-border/80 bg-card p-4 text-xs transition-all hover:border-primary/50"
                     >
                         <div class="flex items-center gap-3">
                             <div class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                 <component
                                     :is="
-                                        pm.type === 'Cash' ? Banknote : pm.type === 'Mobile Money' ? Smartphone : pm.type === 'Card' ? CreditCard : pm.type === 'Bank' ? Building2 : Wallet
+                                        pm.type === 'Cash'
+                                            ? Banknote
+                                            : pm.type === 'Mobile Money'
+                                              ? Smartphone
+                                              : pm.type === 'Card'
+                                                ? CreditCard
+                                                : pm.type === 'Bank'
+                                                  ? Building2
+                                                  : Wallet
                                     "
                                     class="size-4"
                                 />
@@ -376,28 +387,23 @@ const handleSaveSettings = () => {
                                     <span class="font-bold text-foreground">{{ pm.name }}</span>
                                     <Badge variant="outline" class="text-[10px]">{{ pm.type }}</Badge>
                                 </div>
-                                <p class="text-[11px] text-muted-foreground mt-0.5">{{ getMethodDetailsSummary(pm) }}</p>
+                                <p class="mt-0.5 text-[11px] text-muted-foreground">{{ getMethodDetailsSummary(pm) }}</p>
                             </div>
                         </div>
 
                         <div class="flex items-center gap-2.5">
-                            <div v-if="pm.feePercent > 0 || pm.fee_percent > 0" class="text-right text-[11px] text-muted-foreground font-mono mr-1">
+                            <div v-if="pm.feePercent > 0 || pm.fee_percent > 0" class="mr-1 text-right font-mono text-[11px] text-muted-foreground">
                                 Fee: {{ pm.feePercent || pm.fee_percent }}%
                             </div>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                class="h-7 px-2.5 text-xs gap-1 border-border/80"
-                                @click="openEditMethod(pm)"
-                            >
+                            <Button variant="outline" size="sm" class="h-7 gap-1 border-border/80 px-2.5 text-xs" @click="openEditMethod(pm)">
                                 <Pencil class="size-3" />
                                 Edit
                             </Button>
                             <button
                                 type="button"
                                 :class="[
-                                    'px-3 py-1 rounded-full text-xs font-semibold border transition-all',
-                                    pm.enabled ? 'bg-emerald-500/15 text-emerald-700 border-emerald-500/30' : 'bg-muted text-muted-foreground',
+                                    'rounded-full border px-3 py-1 text-xs font-semibold transition-all',
+                                    pm.enabled ? 'border-emerald-500/30 bg-emerald-500/15 text-emerald-700' : 'bg-muted text-muted-foreground',
                                 ]"
                                 @click="pm.enabled = !pm.enabled"
                             >
@@ -427,28 +433,28 @@ const handleSaveSettings = () => {
                     </CardHeader>
                     <CardContent class="space-y-4 text-xs">
                         <div class="space-y-3">
-                            <div class="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
+                            <div class="flex items-center justify-between rounded-lg border bg-muted/20 p-3">
                                 <div>
                                     <span class="font-bold text-foreground">Play Sound on Barcode Scan</span>
                                     <p class="text-[11px] text-muted-foreground">Audio confirmation beep on valid item scan</p>
                                 </div>
-                                <input type="checkbox" checked class="rounded border-input text-primary focus:ring-primary size-4" />
+                                <input type="checkbox" checked class="size-4 rounded border-input text-primary focus:ring-primary" />
                             </div>
 
-                            <div class="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
+                            <div class="flex items-center justify-between rounded-lg border bg-muted/20 p-3">
                                 <div>
                                     <span class="font-bold text-foreground">KRA eTIMS QR Code Auto-Print</span>
                                     <p class="text-[11px] text-muted-foreground">Attach fiscal signature QR code on thermal receipts</p>
                                 </div>
-                                <input type="checkbox" checked class="rounded border-input text-primary focus:ring-primary size-4" />
+                                <input type="checkbox" checked class="size-4 rounded border-input text-primary focus:ring-primary" />
                             </div>
 
-                            <div class="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
+                            <div class="flex items-center justify-between rounded-lg border bg-muted/20 p-3">
                                 <div>
                                     <span class="font-bold text-foreground">Auto-Open Cash Drawer on Cash Tender</span>
                                     <p class="text-[11px] text-muted-foreground">Trigger ESC/POS pulse to connected RJ11 cash till</p>
                                 </div>
-                                <input type="checkbox" checked class="rounded border-input text-primary focus:ring-primary size-4" />
+                                <input type="checkbox" checked class="size-4 rounded border-input text-primary focus:ring-primary" />
                             </div>
                         </div>
                     </CardContent>
@@ -463,10 +469,10 @@ const handleSaveSettings = () => {
                         <CardDescription class="text-xs">Configure negative stock prevention and automatic reorder alerts.</CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-4 text-xs">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
                                 <Label class="text-xs">Default Low Stock Alert Threshold (Units)</Label>
-                                <Input value="10" type="number" class="mt-1 text-xs font-mono font-bold" />
+                                <Input value="10" type="number" class="mt-1 font-mono text-xs font-bold" />
                             </div>
                             <div>
                                 <Label class="text-xs">Allow Sale When Stock is Zero (Negative Stock)</Label>
@@ -505,12 +511,12 @@ const handleSaveSettings = () => {
                         </div>
                         <div>
                             <Label class="text-xs">Surcharge Fee (%)</Label>
-                            <Input v-model.number="newMethod.feePercent" type="number" step="0.1" class="mt-1 text-xs font-mono" />
+                            <Input v-model.number="newMethod.feePercent" type="number" step="0.1" class="mt-1 font-mono text-xs" />
                         </div>
                     </div>
                     <div>
                         <Label class="text-xs">Account / Till / Paybill Reference</Label>
-                        <Input v-model="newMethod.accountRef" placeholder="e.g. Paybill # 123456 Acc # 001" class="mt-1 text-xs font-mono" />
+                        <Input v-model="newMethod.accountRef" placeholder="e.g. Paybill # 123456 Acc # 001" class="mt-1 font-mono text-xs" />
                     </div>
                 </div>
                 <DialogFooter class="gap-2">
@@ -535,20 +541,25 @@ const handleSaveSettings = () => {
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <Label class="text-xs">Channel Type</Label>
-                            <Input :value="editingMethod.type" disabled class="mt-1 text-xs bg-muted" />
+                            <Input :value="editingMethod.type" disabled class="mt-1 bg-muted text-xs" />
                         </div>
                         <div>
                             <Label class="text-xs">Surcharge Fee (%)</Label>
-                            <Input v-model.number="editingMethod.feePercent" type="number" step="0.1" class="mt-1 text-xs font-mono" />
+                            <Input v-model.number="editingMethod.feePercent" type="number" step="0.1" class="mt-1 font-mono text-xs" />
                         </div>
                     </div>
 
                     <!-- M-Pesa Buy Goods Till specific fields -->
-                    <template v-if="editingMethod.type === 'Mobile Money' && (editingMethod.code === 'mpesa_till' || editingMethod.name?.toLowerCase().includes('till'))">
+                    <template
+                        v-if="
+                            editingMethod.type === 'Mobile Money' &&
+                            (editingMethod.code === 'mpesa_till' || editingMethod.name?.toLowerCase().includes('till'))
+                        "
+                    >
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <Label class="text-xs">Safaricom Till Number</Label>
-                                <Input v-model="editingMethod.details.till_number" placeholder="523910" class="mt-1 text-xs font-mono font-bold" />
+                                <Input v-model="editingMethod.details.till_number" placeholder="523910" class="mt-1 font-mono text-xs font-bold" />
                             </div>
                             <div>
                                 <Label class="text-xs">Store Name on Phone</Label>
@@ -558,15 +569,24 @@ const handleSaveSettings = () => {
                     </template>
 
                     <!-- M-Pesa Paybill specific fields -->
-                    <template v-else-if="editingMethod.type === 'Mobile Money' && (editingMethod.code === 'mpesa_paybill' || editingMethod.name?.toLowerCase().includes('paybill'))">
+                    <template
+                        v-else-if="
+                            editingMethod.type === 'Mobile Money' &&
+                            (editingMethod.code === 'mpesa_paybill' || editingMethod.name?.toLowerCase().includes('paybill'))
+                        "
+                    >
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <Label class="text-xs">Business Number (Paybill)</Label>
-                                <Input v-model="editingMethod.details.business_number" placeholder="247247" class="mt-1 text-xs font-mono font-bold" />
+                                <Input
+                                    v-model="editingMethod.details.business_number"
+                                    placeholder="247247"
+                                    class="mt-1 font-mono text-xs font-bold"
+                                />
                             </div>
                             <div>
                                 <Label class="text-xs">Account Number</Label>
-                                <Input v-model="editingMethod.details.account_number" placeholder="STORE" class="mt-1 text-xs font-mono" />
+                                <Input v-model="editingMethod.details.account_number" placeholder="STORE" class="mt-1 font-mono text-xs" />
                             </div>
                         </div>
                     </template>
@@ -576,7 +596,7 @@ const handleSaveSettings = () => {
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <Label class="text-xs">PDQ Terminal ID</Label>
-                                <Input v-model="editingMethod.details.terminal_id" placeholder="EQ-PDQ-8901" class="mt-1 text-xs font-mono" />
+                                <Input v-model="editingMethod.details.terminal_id" placeholder="EQ-PDQ-8901" class="mt-1 font-mono text-xs" />
                             </div>
                             <div>
                                 <Label class="text-xs">Acquiring Bank</Label>
@@ -594,7 +614,7 @@ const handleSaveSettings = () => {
                             </div>
                             <div>
                                 <Label class="text-xs">Bank Account Number</Label>
-                                <Input v-model="editingMethod.details.account_number" placeholder="1122334455" class="mt-1 text-xs font-mono" />
+                                <Input v-model="editingMethod.details.account_number" placeholder="1122334455" class="mt-1 font-mono text-xs" />
                             </div>
                         </div>
                     </template>
@@ -610,7 +630,7 @@ const handleSaveSettings = () => {
                     <!-- Generic Account Reference fallback -->
                     <div>
                         <Label class="text-xs">Summary Reference Code</Label>
-                        <Input v-model="editingMethod.accountRef" placeholder="e.g. Till # 523910" class="mt-1 text-xs font-mono" />
+                        <Input v-model="editingMethod.accountRef" placeholder="e.g. Till # 523910" class="mt-1 font-mono text-xs" />
                     </div>
                 </div>
                 <DialogFooter class="gap-2">

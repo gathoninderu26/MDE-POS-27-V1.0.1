@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatCurrency } from '@/composables/useCurrency';
 import { useTenant } from '@/composables/useTenant';
-import { Printer, ScanBarcode, Copy, Check, Eye } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { Check, Copy, Eye, Printer, ScanBarcode } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 export interface ProductLabelData {
     id: string | number;
@@ -43,7 +43,7 @@ const barcodeSvgBars = computed(() => {
     const code = effectiveBarcode.value;
     const bars: { x: number; width: number }[] = [];
     let currentX = 10;
-    
+
     // Lead quiet zone
     currentX += 4;
 
@@ -97,9 +97,9 @@ const handlePrint = () => {
 
 <template>
     <Dialog :open="open" @update:open="(v) => emit('update:open', v)">
-        <DialogContent class="w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent class="max-h-[90vh] w-[95vw] overflow-y-auto sm:max-w-lg">
             <DialogHeader>
-                <DialogTitle class="text-base font-bold flex items-center gap-2">
+                <DialogTitle class="flex items-center gap-2 text-base font-bold">
                     <ScanBarcode class="size-5 text-primary" />
                     Print Thermal Barcode Labels
                 </DialogTitle>
@@ -107,10 +107,10 @@ const handlePrint = () => {
 
             <div class="space-y-4 py-2 text-xs">
                 <!-- Product Summary Card -->
-                <div class="p-3 bg-muted/40 rounded-xl border border-border/80 flex items-center justify-between">
+                <div class="flex items-center justify-between rounded-xl border border-border/80 bg-muted/40 p-3">
                     <div>
-                        <h4 class="font-bold text-foreground text-sm leading-tight">{{ product?.name || 'Selected Product' }}</h4>
-                        <div class="flex items-center gap-3 mt-1 text-muted-foreground">
+                        <h4 class="text-sm font-bold leading-tight text-foreground">{{ product?.name || 'Selected Product' }}</h4>
+                        <div class="mt-1 flex items-center gap-3 text-muted-foreground">
                             <span class="font-mono">SKU: {{ product?.sku || 'N/A' }}</span>
                             <span>•</span>
                             <span class="font-bold text-foreground">{{ formatCurrency(product?.price || 0) }}</span>
@@ -119,7 +119,7 @@ const handlePrint = () => {
                     <button
                         type="button"
                         @click="copyBarcode"
-                        class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground font-mono transition-colors"
+                        class="flex items-center gap-1 rounded-lg border border-border bg-card px-2.5 py-1.5 font-mono text-muted-foreground transition-colors hover:text-foreground"
                         title="Copy Barcode Number"
                     >
                         <Check v-if="copied" class="size-3.5 text-emerald-600" />
@@ -132,20 +132,11 @@ const handlePrint = () => {
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <Label class="text-xs">Copies to Print</Label>
-                        <Input
-                            v-model.number="printQuantity"
-                            type="number"
-                            min="1"
-                            max="500"
-                            class="mt-1 font-mono font-bold text-xs"
-                        />
+                        <Input v-model.number="printQuantity" type="number" min="1" max="500" class="mt-1 font-mono text-xs font-bold" />
                     </div>
                     <div>
                         <Label class="text-xs">Thermal Label Format</Label>
-                        <select
-                            v-model="labelSize"
-                            class="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs"
-                        >
+                        <select v-model="labelSize" class="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs">
                             <option value="standard">50mm × 30mm (Standard Roll)</option>
                             <option value="shelf">40mm × 25mm (Shelf Tag)</option>
                             <option value="compact">30mm × 20mm (Compact Jewelry)</option>
@@ -154,53 +145,51 @@ const handlePrint = () => {
                 </div>
 
                 <!-- Display Toggles -->
-                <div class="grid grid-cols-3 gap-2 p-2.5 bg-muted/20 rounded-lg border border-border/60">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" v-model="showBusinessName" class="rounded border-input text-primary size-3.5" />
+                <div class="grid grid-cols-3 gap-2 rounded-lg border border-border/60 bg-muted/20 p-2.5">
+                    <label class="flex cursor-pointer items-center gap-2">
+                        <input type="checkbox" v-model="showBusinessName" class="size-3.5 rounded border-input text-primary" />
                         <span class="text-[11px] font-medium">Store Name</span>
                     </label>
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" v-model="showPrice" class="rounded border-input text-primary size-3.5" />
+                    <label class="flex cursor-pointer items-center gap-2">
+                        <input type="checkbox" v-model="showPrice" class="size-3.5 rounded border-input text-primary" />
                         <span class="text-[11px] font-medium">Display Price</span>
                     </label>
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" v-model="showSku" class="rounded border-input text-primary size-3.5" />
+                    <label class="flex cursor-pointer items-center gap-2">
+                        <input type="checkbox" v-model="showSku" class="size-3.5 rounded border-input text-primary" />
                         <span class="text-[11px] font-medium">Show SKU</span>
                     </label>
                 </div>
 
                 <!-- Live Label Print Preview -->
                 <div class="space-y-1.5">
-                    <div class="flex items-center justify-between text-muted-foreground text-[11px]">
-                        <span class="flex items-center gap-1 font-semibold">
-                            <Eye class="size-3.5" /> Live Thermal Preview
-                        </span>
-                        <span class="text-[10px] uppercase font-mono">1:1 Thermal Output</span>
+                    <div class="flex items-center justify-between text-[11px] text-muted-foreground">
+                        <span class="flex items-center gap-1 font-semibold"> <Eye class="size-3.5" /> Live Thermal Preview </span>
+                        <span class="font-mono text-[10px] uppercase">1:1 Thermal Output</span>
                     </div>
 
-                    <div class="p-4 bg-muted/40 rounded-xl border border-dashed border-border/80 flex items-center justify-center">
+                    <div class="flex items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/40 p-4">
                         <!-- Single Thermal Label Mockup -->
                         <div
-                            class="bg-white text-black p-3 rounded shadow-md flex flex-col items-center justify-between text-center select-none"
+                            class="flex select-none flex-col items-center justify-between rounded bg-white p-3 text-center text-black shadow-md"
                             :class="[
-                                labelSize === 'standard' ? 'w-[240px] h-[140px]' : labelSize === 'shelf' ? 'w-[200px] h-[120px]' : 'w-[170px] h-[100px]'
+                                labelSize === 'standard'
+                                    ? 'h-[140px] w-[240px]'
+                                    : labelSize === 'shelf'
+                                      ? 'h-[120px] w-[200px]'
+                                      : 'h-[100px] w-[170px]',
                             ]"
                         >
-                            <div v-if="showBusinessName" class="text-[10px] font-black tracking-wider uppercase text-neutral-700 truncate w-full">
+                            <div v-if="showBusinessName" class="w-full truncate text-[10px] font-black uppercase tracking-wider text-neutral-700">
                                 {{ currentTenant.name || 'MDE RETAIL' }}
                             </div>
 
-                            <div class="text-[11px] font-bold text-neutral-900 line-clamp-1 w-full mt-0.5">
+                            <div class="mt-0.5 line-clamp-1 w-full text-[11px] font-bold text-neutral-900">
                                 {{ product?.name || 'Sample Product' }}
                             </div>
 
                             <!-- SVG Barcode representation -->
-                            <div class="my-1 w-full flex flex-col items-center">
-                                <svg
-                                    :viewBox="`0 0 ${barcodeSvgBars.totalWidth} 40`"
-                                    class="w-full h-8 max-w-[190px]"
-                                    preserveAspectRatio="none"
-                                >
+                            <div class="my-1 flex w-full flex-col items-center">
+                                <svg :viewBox="`0 0 ${barcodeSvgBars.totalWidth} 40`" class="h-8 w-full max-w-[190px]" preserveAspectRatio="none">
                                     <rect
                                         v-for="(bar, idx) in barcodeSvgBars.bars"
                                         :key="idx"
@@ -211,14 +200,14 @@ const handlePrint = () => {
                                         fill="#000"
                                     />
                                 </svg>
-                                <div class="font-mono text-[9px] font-bold tracking-[0.18em] text-neutral-900 mt-0.5">
+                                <div class="mt-0.5 font-mono text-[9px] font-bold tracking-[0.18em] text-neutral-900">
                                     {{ effectiveBarcode }}
                                 </div>
                             </div>
 
                             <!-- Footer with SKU & Price -->
-                            <div class="w-full flex items-center justify-between text-[9px] font-bold pt-0.5 border-t border-neutral-200">
-                                <span v-if="showSku" class="font-mono text-neutral-600 truncate max-w-[90px]">
+                            <div class="flex w-full items-center justify-between border-t border-neutral-200 pt-0.5 text-[9px] font-bold">
+                                <span v-if="showSku" class="max-w-[90px] truncate font-mono text-neutral-600">
                                     {{ product?.sku || 'SKU' }}
                                 </span>
                                 <span v-else></span>
@@ -233,7 +222,7 @@ const handlePrint = () => {
             </div>
 
             <DialogFooter class="gap-2 sm:justify-between">
-                <div class="text-[11px] text-muted-foreground flex items-center gap-1">
+                <div class="flex items-center gap-1 text-[11px] text-muted-foreground">
                     <span>Target: {{ printQuantity }} label{{ printQuantity > 1 ? 's' : '' }}</span>
                 </div>
                 <div class="flex items-center gap-2">
@@ -249,12 +238,7 @@ const handlePrint = () => {
 
     <!-- Hidden Print Area for Thermal Printing -->
     <div id="thermal-print-container" class="hidden print:block">
-        <div
-            v-for="n in printQuantity"
-            :key="n"
-            class="thermal-label-page"
-            :class="[labelSize]"
-        >
+        <div v-for="n in printQuantity" :key="n" class="thermal-label-page" :class="[labelSize]">
             <div v-if="showBusinessName" class="label-header">
                 {{ currentTenant.name || 'MDE RETAIL' }}
             </div>
@@ -262,20 +246,8 @@ const handlePrint = () => {
                 {{ product?.name }}
             </div>
             <div class="label-barcode">
-                <svg
-                    :viewBox="`0 0 ${barcodeSvgBars.totalWidth} 40`"
-                    style="width: 100%; height: 35px;"
-                    preserveAspectRatio="none"
-                >
-                    <rect
-                        v-for="(bar, idx) in barcodeSvgBars.bars"
-                        :key="idx"
-                        :x="bar.x"
-                        y="0"
-                        :width="bar.width"
-                        height="40"
-                        fill="#000"
-                    />
+                <svg :viewBox="`0 0 ${barcodeSvgBars.totalWidth} 40`" style="width: 100%; height: 35px" preserveAspectRatio="none">
+                    <rect v-for="(bar, idx) in barcodeSvgBars.bars" :key="idx" :x="bar.x" y="0" :width="bar.width" height="40" fill="#000" />
                 </svg>
                 <div class="label-code">{{ effectiveBarcode }}</div>
             </div>

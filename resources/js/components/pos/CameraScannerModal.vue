@@ -4,22 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/composables/useToast';
-import {
-    AlertCircle,
-    Camera,
-    Check,
-    Flashlight,
-    FlipHorizontal,
-    Maximize2,
-    RefreshCw,
-    ScanBarcode,
-    Sparkles,
-    Volume2,
-    VolumeX,
-    X,
-    Zap,
-} from 'lucide-vue-next';
-import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { AlertCircle, Check, FlipHorizontal, RefreshCw, ScanBarcode, Sparkles, Volume2, VolumeX, X, Zap } from 'lucide-vue-next';
+import { nextTick, onUnmounted, ref, watch } from 'vue';
 
 const props = defineProps<{
     open: boolean;
@@ -30,7 +16,7 @@ const emit = defineEmits<{
     (e: 'scan', barcode: string): void;
 }>();
 
-const { error, success, info } = useToast();
+useToast();
 
 const videoRef = ref<HTMLVideoElement | null>(null);
 const stream = ref<MediaStream | null>(null);
@@ -79,7 +65,7 @@ const triggerHaptic = () => {
 
 const handleBarcodeDetected = (code: string) => {
     if (!code || isScanning.value) return;
-    
+
     // Debounce duplicate reads within 1.2 seconds for continuous scanning
     if (lastScanned.value === code && isScanning.value) return;
 
@@ -172,7 +158,7 @@ const toggleTorch = async () => {
             await (track as any).applyConstraints({
                 advanced: [{ torch: torchOn.value }],
             });
-        } catch (e) {
+        } catch (_e) {
             torchOn.value = false;
         }
     }
@@ -250,17 +236,23 @@ onUnmounted(() => {
 
 <template>
     <Dialog :open="open" spinnerText="Opening Camera Scanner..." @update:open="(v) => emit('update:open', v)">
-        <DialogContent class="w-[95vw] sm:max-w-md p-0 overflow-hidden bg-zinc-950 text-zinc-100 border-zinc-800 shadow-2xl flex flex-col max-h-[95vh]">
+        <DialogContent
+            class="flex max-h-[95vh] w-[95vw] flex-col overflow-hidden border-zinc-800 bg-zinc-950 p-0 text-zinc-100 shadow-2xl sm:max-w-md"
+        >
             <!-- Header -->
-            <DialogHeader class="p-3.5 border-b border-zinc-800/80 flex flex-row items-center justify-between bg-zinc-900/90 shrink-0">
+            <DialogHeader class="flex shrink-0 flex-row items-center justify-between border-b border-zinc-800/80 bg-zinc-900/90 p-3.5">
                 <div class="flex items-center gap-2">
                     <div class="flex size-7 items-center justify-center rounded-lg bg-emerald-600 font-bold text-white shadow-sm">
                         <ScanBarcode class="size-4 animate-pulse" />
                     </div>
                     <div>
-                        <DialogTitle class="text-xs sm:text-sm font-bold text-white leading-tight flex items-center gap-1.5">
+                        <DialogTitle class="flex items-center gap-1.5 text-xs font-bold leading-tight text-white sm:text-sm">
                             Camera Barcode Scanner
-                            <Badge v-if="scanCount > 0" variant="outline" class="text-[9px] px-1 py-0 font-mono bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
+                            <Badge
+                                v-if="scanCount > 0"
+                                variant="outline"
+                                class="border-emerald-500/30 bg-emerald-500/10 px-1 py-0 font-mono text-[9px] text-emerald-400"
+                            >
                                 {{ scanCount }} scanned
                             </Badge>
                         </DialogTitle>
@@ -272,7 +264,10 @@ onUnmounted(() => {
                 <div class="flex items-center gap-1">
                     <button
                         type="button"
-                        :class="['p-1.5 rounded-lg border transition-colors', soundEnabled ? 'bg-zinc-800 text-emerald-400 border-zinc-700' : 'bg-zinc-900 text-zinc-500 border-zinc-800']"
+                        :class="[
+                            'rounded-lg border p-1.5 transition-colors',
+                            soundEnabled ? 'border-zinc-700 bg-zinc-800 text-emerald-400' : 'border-zinc-800 bg-zinc-900 text-zinc-500',
+                        ]"
                         :title="soundEnabled ? 'Mute Beep' : 'Enable Beep'"
                         @click="soundEnabled = !soundEnabled"
                     >
@@ -283,7 +278,10 @@ onUnmounted(() => {
                     <button
                         v-if="torchSupported"
                         type="button"
-                        :class="['p-1.5 rounded-lg border transition-colors', torchOn ? 'bg-amber-500 text-zinc-950 border-amber-400' : 'bg-zinc-800 text-zinc-400 border-zinc-700']"
+                        :class="[
+                            'rounded-lg border p-1.5 transition-colors',
+                            torchOn ? 'border-amber-400 bg-amber-500 text-zinc-950' : 'border-zinc-700 bg-zinc-800 text-zinc-400',
+                        ]"
                         title="Toggle Flashlight"
                         @click="toggleTorch"
                     >
@@ -292,7 +290,7 @@ onUnmounted(() => {
 
                     <button
                         type="button"
-                        class="p-1.5 rounded-lg bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-700"
+                        class="rounded-lg border border-zinc-700 bg-zinc-800 p-1.5 text-zinc-400 hover:text-white"
                         title="Switch Camera"
                         @click="toggleCamera"
                     >
@@ -301,7 +299,7 @@ onUnmounted(() => {
 
                     <button
                         type="button"
-                        class="p-1.5 rounded-lg bg-zinc-800 text-zinc-400 hover:text-rose-400 border border-zinc-700 ml-1"
+                        class="ml-1 rounded-lg border border-zinc-700 bg-zinc-800 p-1.5 text-zinc-400 hover:text-rose-400"
                         @click="emit('update:open', false)"
                     >
                         <X class="size-3.5" />
@@ -310,39 +308,39 @@ onUnmounted(() => {
             </DialogHeader>
 
             <!-- Camera Viewfinder Viewport -->
-            <div class="relative bg-black aspect-[4/3] sm:aspect-[16/10] w-full flex items-center justify-center overflow-hidden shrink-0">
+            <div class="relative flex aspect-[4/3] w-full shrink-0 items-center justify-center overflow-hidden bg-black sm:aspect-[16/10]">
                 <!-- Video Element -->
-                <video
-                    ref="videoRef"
-                    autoplay
-                    playsinline
-                    muted
-                    class="h-full w-full object-cover"
-                ></video>
+                <video ref="videoRef" autoplay playsinline muted class="h-full w-full object-cover"></video>
 
                 <!-- Scanning HUD Overlay -->
-                <div v-if="cameraActive" class="absolute inset-0 pointer-events-none flex items-center justify-center">
+                <div v-if="cameraActive" class="pointer-events-none absolute inset-0 flex items-center justify-center">
                     <!-- Darkened edges mask -->
                     <div class="absolute inset-0 bg-black/40"></div>
 
                     <!-- Clear Scan Box -->
-                    <div class="relative z-10 w-64 h-36 sm:w-72 sm:h-40 rounded-xl border-2 border-emerald-500/80 bg-transparent shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]">
+                    <div
+                        class="relative z-10 h-36 w-64 rounded-xl border-2 border-emerald-500/80 bg-transparent shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] sm:h-40 sm:w-72"
+                    >
                         <!-- Corner Crosshairs -->
-                        <div class="absolute -top-1 -left-1 size-4 border-t-2 border-l-2 border-emerald-400"></div>
-                        <div class="absolute -top-1 -right-1 size-4 border-t-2 border-r-2 border-emerald-400"></div>
+                        <div class="absolute -left-1 -top-1 size-4 border-l-2 border-t-2 border-emerald-400"></div>
+                        <div class="absolute -right-1 -top-1 size-4 border-r-2 border-t-2 border-emerald-400"></div>
                         <div class="absolute -bottom-1 -left-1 size-4 border-b-2 border-l-2 border-emerald-400"></div>
                         <div class="absolute -bottom-1 -right-1 size-4 border-b-2 border-r-2 border-emerald-400"></div>
 
                         <!-- Animated Laser Scanner Line -->
-                        <div class="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_12px_#10b981] animate-laser-scan"></div>
+                        <div
+                            class="animate-laser-scan absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_12px_#10b981]"
+                        ></div>
                     </div>
 
                     <!-- Scanner Status / Flash feedback -->
                     <div
                         v-if="isScanning"
-                        class="absolute z-20 inset-0 bg-emerald-500/30 backdrop-blur-[1px] flex items-center justify-center transition-all"
+                        class="absolute inset-0 z-20 flex items-center justify-center bg-emerald-500/30 backdrop-blur-[1px] transition-all"
                     >
-                        <div class="bg-emerald-600 text-white px-3 py-1.5 rounded-full font-bold text-xs flex items-center gap-1.5 shadow-xl animate-bounce">
+                        <div
+                            class="flex animate-bounce items-center gap-1.5 rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-xl"
+                        >
                             <Check class="size-4" />
                             <span>Barcode Added: {{ lastScanned }}</span>
                         </div>
@@ -350,10 +348,13 @@ onUnmounted(() => {
                 </div>
 
                 <!-- Camera Error / Fallback Banner -->
-                <div v-if="cameraError" class="absolute inset-0 z-20 bg-zinc-950/90 p-4 flex flex-col items-center justify-center text-center space-y-2">
+                <div
+                    v-if="cameraError"
+                    class="absolute inset-0 z-20 flex flex-col items-center justify-center space-y-2 bg-zinc-950/90 p-4 text-center"
+                >
                     <AlertCircle class="size-8 text-amber-400" />
                     <p class="text-xs font-bold text-zinc-200">{{ cameraError }}</p>
-                    <Button size="sm" variant="outline" class="h-8 text-xs gap-1.5 mt-2 bg-zinc-900 border-zinc-700" @click="startCamera">
+                    <Button size="sm" variant="outline" class="mt-2 h-8 gap-1.5 border-zinc-700 bg-zinc-900 text-xs" @click="startCamera">
                         <RefreshCw class="size-3.5" />
                         Retry Camera
                     </Button>
@@ -361,15 +362,15 @@ onUnmounted(() => {
             </div>
 
             <!-- Bottom Controller & Manual Fallback Input -->
-            <div class="p-3 space-y-2.5 bg-zinc-900 border-t border-zinc-800 text-xs overflow-y-auto flex-1">
+            <div class="flex-1 space-y-2.5 overflow-y-auto border-t border-zinc-800 bg-zinc-900 p-3 text-xs">
                 <!-- Mode & Status Selector -->
-                <div class="flex items-center justify-between bg-zinc-950 p-2 rounded-lg border border-zinc-800">
+                <div class="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-950 p-2">
                     <div class="flex items-center gap-1.5 text-[11px] text-zinc-300">
-                        <span :class="['size-2 rounded-full', cameraActive ? 'bg-emerald-500 animate-ping' : 'bg-amber-500']"></span>
+                        <span :class="['size-2 rounded-full', cameraActive ? 'animate-ping bg-emerald-500' : 'bg-amber-500']"></span>
                         <span>{{ cameraActive ? 'Ready to Scan' : 'Camera Standby' }}</span>
                     </div>
 
-                    <label class="flex items-center gap-2 cursor-pointer text-[11px] text-zinc-300">
+                    <label class="flex cursor-pointer items-center gap-2 text-[11px] text-zinc-300">
                         <input
                             v-model="continuousMode"
                             type="checkbox"
@@ -384,26 +385,26 @@ onUnmounted(() => {
                     <Input
                         v-model="manualBarcode"
                         placeholder="Or enter barcode manually..."
-                        class="h-8 text-xs bg-zinc-950 border-zinc-700 text-zinc-100 font-mono"
+                        class="h-8 border-zinc-700 bg-zinc-950 font-mono text-xs text-zinc-100"
                         @keydown.enter.prevent="handleManualSubmit"
                     />
-                    <Button size="sm" class="h-8 px-3 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold" @click="handleManualSubmit">
+                    <Button size="sm" class="h-8 bg-emerald-600 px-3 text-xs font-bold text-white hover:bg-emerald-700" @click="handleManualSubmit">
                         Add
                     </Button>
                 </div>
 
                 <!-- Quick Test Barcodes (Handy for devices without test products) -->
                 <div>
-                    <div class="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <div class="mb-1 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
                         <Sparkles class="size-3 text-emerald-500" />
                         Quick Test Barcodes
                     </div>
-                    <div class="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1">
+                    <div class="scrollbar-none flex items-center gap-1.5 overflow-x-auto pb-1">
                         <button
                             v-for="b in demoBarcodes"
                             :key="b.code"
                             type="button"
-                            class="px-2 py-1 bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 rounded-md text-[10px] font-mono text-zinc-300 whitespace-nowrap active:scale-95 transition-all"
+                            class="whitespace-nowrap rounded-md border border-zinc-800 bg-zinc-950 px-2 py-1 font-mono text-[10px] text-zinc-300 transition-all hover:bg-zinc-800 active:scale-95"
                             @click="handleBarcodeDetected(b.code)"
                         >
                             {{ b.name }}

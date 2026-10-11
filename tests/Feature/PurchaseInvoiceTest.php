@@ -20,10 +20,15 @@ class PurchaseInvoiceTest extends TestCase
     use RefreshDatabase;
 
     private Tenant $tenant;
+
     private User $user;
+
     private Supplier $supplier;
+
     private Branch $branch;
+
     private Product $product;
+
     private Purchase $purchase;
 
     protected function setUp(): void
@@ -32,71 +37,71 @@ class PurchaseInvoiceTest extends TestCase
         Storage::fake('local');
 
         $this->tenant = Tenant::create([
-            'name'          => 'Test Retailer',
-            'slug'          => 'test-retailer',
-            'email'         => 'retailer@example.com',
+            'name' => 'Test Retailer',
+            'slug' => 'test-retailer',
+            'email' => 'retailer@example.com',
             'business_type' => 'Retail',
-            'status'        => 'Active',
+            'status' => 'Active',
         ]);
 
         $this->user = User::factory()->create([
             'tenant_id' => $this->tenant->id,
-            'role'      => 'Manager',
+            'role' => 'Manager',
         ]);
 
         $this->supplier = Supplier::create([
             'tenant_id' => $this->tenant->id,
-            'name'      => 'Brookside Dairies Ltd',
-            'status'    => 'Active',
+            'name' => 'Brookside Dairies Ltd',
+            'status' => 'Active',
         ]);
 
         $this->branch = Branch::create([
             'tenant_id' => $this->tenant->id,
-            'name'      => 'Westlands Branch',
-            'status'    => 'Active',
+            'name' => 'Westlands Branch',
+            'status' => 'Active',
         ]);
 
         $this->product = Product::create([
-            'tenant_id'      => $this->tenant->id,
-            'branch_id'      => $this->branch->id,
-            'name'           => 'Fresh Milk 500ml',
-            'sku'            => 'MLK-001',
-            'cost_price'     => 50.00,
-            'selling_price'  => 65.00,
+            'tenant_id' => $this->tenant->id,
+            'branch_id' => $this->branch->id,
+            'name' => 'Fresh Milk 500ml',
+            'sku' => 'MLK-001',
+            'cost_price' => 50.00,
+            'selling_price' => 65.00,
             'stock_quantity' => 10,
-            'status'         => 'Active',
+            'status' => 'Active',
         ]);
 
         $structuredNotes = json_encode([
             [
-                'product_id'   => $this->product->id,
-                'name'         => 'Fresh Milk 500ml',
-                'sku'          => 'MLK-001',
+                'product_id' => $this->product->id,
+                'name' => 'Fresh Milk 500ml',
+                'sku' => 'MLK-001',
                 'package_unit' => 'Cartons',
-                'packs'        => 5,
-                'quantity'     => 50,
-                'unit_cost'    => 50.00,
-                'total'        => 2500.00,
-            ]
+                'packs' => 5,
+                'quantity' => 50,
+                'unit_cost' => 50.00,
+                'total' => 2500.00,
+            ],
         ]);
 
         $this->purchase = Purchase::create([
-            'tenant_id'         => $this->tenant->id,
-            'user_id'           => $this->user->id,
-            'supplier_id'       => $this->supplier->id,
-            'branch_id'         => $this->branch->id,
-            'po_number'         => 'PO-0001',
-            'order_date'        => now()->toDateString(),
+            'tenant_id' => $this->tenant->id,
+            'user_id' => $this->user->id,
+            'supplier_id' => $this->supplier->id,
+            'branch_id' => $this->branch->id,
+            'po_number' => 'PO-0001',
+            'order_date' => now()->toDateString(),
             'items_description' => 'Fresh Milk 500ml (5 Cartons / 50 units)',
-            'total_amount'      => 2500.00,
-            'status'            => 'Pending',
-            'notes'             => $structuredNotes,
+            'total_amount' => 2500.00,
+            'status' => 'Pending',
+            'notes' => $structuredNotes,
         ]);
     }
 
     public function test_invoice_parser_service_extracts_etims_qr_payload(): void
     {
-        $service = new InvoiceParserService();
+        $service = new InvoiceParserService;
         $qrPayload = 'https://etims.kra.go.ke/verify?inv=INV-2026-9901&pin=P051234567Z&tot=2500.00&date=2026-09-14';
 
         $parsed = $service->parseQrPayload($qrPayload);
@@ -110,17 +115,17 @@ class PurchaseInvoiceTest extends TestCase
 
     public function test_invoice_parser_service_detects_price_and_quantity_variance(): void
     {
-        $service = new InvoiceParserService();
+        $service = new InvoiceParserService;
 
         // Supplier billed 60 units @ 55 instead of 50 units @ 50
         $invoicedItems = [
             [
-                'name'       => 'Fresh Milk 500ml',
-                'sku'        => 'MLK-001',
-                'quantity'   => 60,
-                'unit_cost'  => 55.00,
-                'total'      => 3300.00,
-            ]
+                'name' => 'Fresh Milk 500ml',
+                'sku' => 'MLK-001',
+                'quantity' => 60,
+                'unit_cost' => 55.00,
+                'total' => 3300.00,
+            ],
         ];
 
         $comparison = $service->compare($this->purchase, $invoicedItems, 3300.00);
@@ -139,15 +144,15 @@ class PurchaseInvoiceTest extends TestCase
             ->withSession(['current_tenant_id' => $this->tenant->id])
             ->postJson("/purchases/{$this->purchase->id}/invoice/upload", [
                 'invoice_file' => $file,
-                'qr_payload'   => 'https://etims.kra.go.ke/verify?inv=INV-9081&pin=P051234567Z&tot=2500',
+                'qr_payload' => 'https://etims.kra.go.ke/verify?inv=INV-9081&pin=P051234567Z&tot=2500',
             ]);
 
         $response->assertOk();
         $response->assertJson([
             'success' => true,
-            'qr'      => [
+            'qr' => [
                 'invoice_number' => 'INV-9081',
-                'tax_pin'        => 'P051234567Z',
+                'tax_pin' => 'P051234567Z',
             ],
         ]);
 
@@ -165,23 +170,23 @@ class PurchaseInvoiceTest extends TestCase
         $response = $this->actingAs($this->user)
             ->withSession(['current_tenant_id' => $this->tenant->id])
             ->post("/purchases/{$this->purchase->id}/invoice/reconcile", [
-                'file_path'          => $filePath,
-                'file_name'          => 'invoice.jpg',
-                'mime_type'          => 'image/jpeg',
-                'file_size'          => 1024,
-                'invoice_number'     => 'INV-BROOKSIDE-401',
-                'invoice_date'       => '2026-09-14',
-                'tax_pin'            => 'P051234567Z',
-                'total_amount'       => 2500.00,
-                'items'              => [
+                'file_path' => $filePath,
+                'file_name' => 'invoice.jpg',
+                'mime_type' => 'image/jpeg',
+                'file_size' => 1024,
+                'invoice_number' => 'INV-BROOKSIDE-401',
+                'invoice_date' => '2026-09-14',
+                'tax_pin' => 'P051234567Z',
+                'total_amount' => 2500.00,
+                'items' => [
                     [
-                        'name'       => 'Fresh Milk 500ml',
-                        'sku'        => 'MLK-001',
+                        'name' => 'Fresh Milk 500ml',
+                        'sku' => 'MLK-001',
                         'product_id' => $this->product->id,
-                        'quantity'   => 50,
-                        'unit_cost'  => 50.00,
-                        'total'      => 2500.00,
-                    ]
+                        'quantity' => 50,
+                        'unit_cost' => 50.00,
+                        'total' => 2500.00,
+                    ],
                 ],
                 'auto_receive_stock' => true,
             ]);
@@ -190,11 +195,11 @@ class PurchaseInvoiceTest extends TestCase
 
         // Assert PurchaseInvoice created
         $this->assertDatabaseHas('purchase_invoices', [
-            'tenant_id'      => $this->tenant->id,
-            'purchase_id'    => $this->purchase->id,
+            'tenant_id' => $this->tenant->id,
+            'purchase_id' => $this->purchase->id,
             'invoice_number' => 'INV-BROOKSIDE-401',
-            'total_amount'   => 2500.00,
-            'status'         => 'Verified',
+            'total_amount' => 2500.00,
+            'status' => 'Verified',
         ]);
 
         // Assert Purchase status updated to Received
@@ -210,15 +215,15 @@ class PurchaseInvoiceTest extends TestCase
         Storage::disk('local')->put($filePath, 'image-bytes');
 
         PurchaseInvoice::create([
-            'tenant_id'             => $this->tenant->id,
-            'purchase_id'           => $this->purchase->id,
-            'invoice_number'        => 'INV-100',
-            'total_amount'          => 2500.00,
-            'file_path'             => $filePath,
-            'file_name'             => 'receipt.jpg',
-            'mime_type'             => 'image/jpeg',
+            'tenant_id' => $this->tenant->id,
+            'purchase_id' => $this->purchase->id,
+            'invoice_number' => 'INV-100',
+            'total_amount' => 2500.00,
+            'file_path' => $filePath,
+            'file_name' => 'receipt.jpg',
+            'mime_type' => 'image/jpeg',
             'reconciliation_status' => 'MATCHED',
-            'status'                => 'Verified',
+            'status' => 'Verified',
         ]);
 
         $response = $this->actingAs($this->user)
@@ -236,20 +241,20 @@ class PurchaseInvoiceTest extends TestCase
             ->withSession(['current_tenant_id' => $this->tenant->id])
             ->postJson("/purchases/{$this->purchase->id}/invoice/upload", [
                 'invoice_file' => $file,
-                'attach_only'  => true,
+                'attach_only' => true,
             ]);
 
         $response->assertOk();
         $response->assertJson([
-            'success'  => true,
+            'success' => true,
             'attached' => true,
         ]);
 
         $this->assertDatabaseHas('purchase_invoices', [
-            'tenant_id'             => $this->tenant->id,
-            'purchase_id'           => $this->purchase->id,
+            'tenant_id' => $this->tenant->id,
+            'purchase_id' => $this->purchase->id,
             'reconciliation_status' => 'ATTACHED_ONLY',
-            'status'                => 'Verified',
+            'status' => 'Verified',
         ]);
     }
 }

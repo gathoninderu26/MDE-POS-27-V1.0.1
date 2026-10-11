@@ -1,26 +1,10 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/composables/useToast';
-import {
-    AlertCircle,
-    Camera,
-    CheckCircle2,
-    FileText,
-    Image as ImageIcon,
-    Loader2,
-    QrCode,
-    RefreshCw,
-    Scan,
-    ScanLine,
-    Upload,
-    Video,
-    VideoOff,
-    X,
-} from 'lucide-vue-next';
 import { router } from '@inertiajs/vue3';
+import { Camera, CheckCircle2, FileText, Loader2, RefreshCw, Scan, ScanLine, Upload, VideoOff } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -52,7 +36,7 @@ watch(
             internalSelectedPurchaseId.value = withoutInvoice ? withoutInvoice.id : props.purchases[0].id;
         }
     },
-    { immediate: true }
+    { immediate: true },
 );
 
 const activePurchase = computed(() => {
@@ -67,13 +51,13 @@ watch(
     () => activePurchase.value,
     (po) => {
         if (po) {
-            const ref = po.documentType === 'LPO' ? (po.lpoNumber || po.poNumber) : po.poNumber;
+            const ref = po.documentType === 'LPO' ? po.lpoNumber || po.poNumber : po.poNumber;
             manualInvoiceNumber.value = po.invoice?.invoiceNumber || `INV-${ref}`;
             manualInvoiceDate.value = po.invoice?.invoiceDate || new Date().toISOString().slice(0, 10);
             manualTotalAmount.value = po.invoice?.totalAmount || Number(po.amount) || 0;
         }
     },
-    { immediate: true }
+    { immediate: true },
 );
 
 const scanMode = ref<'camera' | 'file'>('camera');
@@ -328,7 +312,7 @@ const handleStoreSoftcopyOnly = async () => {
 
         const headers: Record<string, string> = {
             'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json',
+            Accept: 'application/json',
         };
 
         if (metaToken) {
@@ -391,7 +375,7 @@ const handleProcessAndCompare = async () => {
 
         const headers: Record<string, string> = {
             'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json',
+            Accept: 'application/json',
         };
 
         if (metaToken) {
@@ -450,7 +434,7 @@ watch(
         } else {
             stopCamera();
         }
-    }
+    },
 );
 
 watch(scanMode, (newMode) => {
@@ -473,25 +457,31 @@ onBeforeUnmount(() => {
 
 <template>
     <Dialog :open="open" @update:open="closeModal">
-        <DialogContent class="sm:max-w-2xl bg-card border-border p-0 overflow-hidden shadow-2xl">
+        <DialogContent class="overflow-hidden border-border bg-card p-0 shadow-2xl sm:max-w-2xl">
             <!-- Header with Gradient Accent -->
-            <div class="px-6 pt-5 pb-4 border-b border-border bg-muted/20">
+            <div class="border-b border-border bg-muted/20 px-6 pb-4 pt-5">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="size-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-xs">
+                        <div
+                            class="shadow-xs flex size-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary"
+                        >
                             <Scan class="size-5" />
                         </div>
                         <div>
-                            <DialogTitle class="text-base font-bold text-foreground flex items-center gap-2">
+                            <DialogTitle class="flex items-center gap-2 text-base font-bold text-foreground">
                                 <span>Scan & Capture Physical Invoice</span>
-                                <span v-if="activePurchase" class="rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 px-2 py-0.5 text-xs font-mono">
+                                <span
+                                    v-if="activePurchase"
+                                    class="rounded-full bg-sky-500/10 px-2 py-0.5 font-mono text-xs text-sky-600 dark:text-sky-400"
+                                >
                                     {{ activePurchase?.refNumber || activePurchase?.poNumber }}
                                 </span>
                             </DialogTitle>
-                            <p v-if="props.purchase" class="text-xs text-muted-foreground mt-0.5">
-                                Vendor: <strong class="text-foreground">{{ activePurchase?.supplier }}</strong> • PO Value: <strong class="text-foreground font-mono">KES {{ Number(activePurchase?.amount || 0).toLocaleString() }}</strong>
+                            <p v-if="props.purchase" class="mt-0.5 text-xs text-muted-foreground">
+                                Vendor: <strong class="text-foreground">{{ activePurchase?.supplier }}</strong> • PO Value:
+                                <strong class="font-mono text-foreground">KES {{ Number(activePurchase?.amount || 0).toLocaleString() }}</strong>
                             </p>
-                            <p v-else class="text-xs text-muted-foreground mt-0.5">
+                            <p v-else class="mt-0.5 text-xs text-muted-foreground">
                                 Upload a document or capture with camera, and link to a supplier purchase order.
                             </p>
                         </div>
@@ -499,34 +489,35 @@ onBeforeUnmount(() => {
                 </div>
 
                 <!-- Purchase Order Selector (Shown if opened from Tab section without preselected order) -->
-                <div v-if="!props.purchase" class="mt-3.5 bg-muted/40 p-2.5 rounded-lg border border-border">
-                    <div class="flex items-center justify-between mb-1">
+                <div v-if="!props.purchase" class="mt-3.5 rounded-lg border border-border bg-muted/40 p-2.5">
+                    <div class="mb-1 flex items-center justify-between">
                         <label class="text-[11px] font-semibold text-foreground">Select Purchase Order to Link Invoice:</label>
-                        <span v-if="activePurchase" class="text-[10px] text-muted-foreground font-mono">
+                        <span v-if="activePurchase" class="font-mono text-[10px] text-muted-foreground">
                             Amount: KES {{ Number(activePurchase.amount || 0).toLocaleString() }}
                         </span>
                     </div>
                     <select
                         v-model="internalSelectedPurchaseId"
-                        class="w-full h-8 text-xs rounded-md border border-border bg-background px-2.5 text-foreground font-medium focus:ring-1 focus:ring-primary cursor-pointer"
+                        class="h-8 w-full cursor-pointer rounded-md border border-border bg-background px-2.5 text-xs font-medium text-foreground focus:ring-1 focus:ring-primary"
                     >
                         <option :value="null" disabled>Select an Order...</option>
-                        <option v-for="po in (purchases || [])" :key="po.id" :value="po.id">
-                            {{ po.documentType === 'LPO' ? (po.lpoNumber || po.poNumber) : po.poNumber }} — {{ po.supplier }} (KES {{ Number(po.amount).toLocaleString() }}) {{ po.invoice ? '• [Attached: ' + po.invoice.invoiceNumber + ']' : '' }}
+                        <option v-for="po in purchases || []" :key="po.id" :value="po.id">
+                            {{ po.documentType === 'LPO' ? po.lpoNumber || po.poNumber : po.poNumber }} — {{ po.supplier }} (KES
+                            {{ Number(po.amount).toLocaleString() }}) {{ po.invoice ? '• [Attached: ' + po.invoice.invoiceNumber + ']' : '' }}
                         </option>
                     </select>
                 </div>
 
                 <!-- Segmented Tabs: Live Camera vs File Upload -->
                 <div class="mt-4 flex items-center justify-between">
-                    <div class="inline-flex items-center rounded-lg border border-border bg-muted/40 p-1 text-xs font-semibold gap-1">
+                    <div class="inline-flex items-center gap-1 rounded-lg border border-border bg-muted/40 p-1 text-xs font-semibold">
                         <button
                             type="button"
                             :class="[
-                                'px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer',
+                                'flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 transition-all',
                                 scanMode === 'camera'
-                                    ? 'bg-background text-primary shadow-xs font-bold'
-                                    : 'text-muted-foreground hover:text-foreground'
+                                    ? 'shadow-xs bg-background font-bold text-primary'
+                                    : 'text-muted-foreground hover:text-foreground',
                             ]"
                             @click="scanMode = 'camera'"
                         >
@@ -536,10 +527,10 @@ onBeforeUnmount(() => {
                         <button
                             type="button"
                             :class="[
-                                'px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer',
+                                'flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 transition-all',
                                 scanMode === 'file'
-                                    ? 'bg-background text-primary shadow-xs font-bold'
-                                    : 'text-muted-foreground hover:text-foreground'
+                                    ? 'shadow-xs bg-background font-bold text-primary'
+                                    : 'text-muted-foreground hover:text-foreground',
                             ]"
                             @click="scanMode = 'file'"
                         >
@@ -549,7 +540,10 @@ onBeforeUnmount(() => {
                     </div>
 
                     <!-- QR Detection Status Badge -->
-                    <div v-if="isQrDetected" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 animate-pulse">
+                    <div
+                        v-if="isQrDetected"
+                        class="inline-flex animate-pulse items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400"
+                    >
                         <CheckCircle2 class="size-3.5" />
                         <span>QR Code Detected</span>
                     </div>
@@ -557,14 +551,17 @@ onBeforeUnmount(() => {
             </div>
 
             <!-- Modal Body -->
-            <div class="p-6 space-y-4">
+            <div class="space-y-4 p-6">
                 <!-- CAMERA SCANNER VIEW -->
-                <div v-if="scanMode === 'camera'" class="relative rounded-2xl overflow-hidden bg-slate-950 border border-border aspect-video flex items-center justify-center shadow-inner">
+                <div
+                    v-if="scanMode === 'camera'"
+                    class="relative flex aspect-video items-center justify-center overflow-hidden rounded-2xl border border-border bg-slate-950 shadow-inner"
+                >
                     <!-- Live Stream -->
                     <video
                         v-show="isCameraActive && !capturedImageBase64"
                         ref="videoRef"
-                        class="w-full h-full object-cover"
+                        class="h-full w-full object-cover"
                         autoplay
                         playsinline
                         muted
@@ -575,26 +572,30 @@ onBeforeUnmount(() => {
                         v-if="capturedImageBase64"
                         :src="capturedImageBase64"
                         alt="Captured Invoice"
-                        class="w-full h-full object-contain bg-black/90"
+                        class="h-full w-full bg-black/90 object-contain"
                     />
 
                     <!-- Camera Reticle Overlay (When active and not captured) -->
                     <div
                         v-if="isCameraActive && !capturedImageBase64"
-                        class="absolute inset-0 pointer-events-none flex items-center justify-center p-8"
+                        class="pointer-events-none absolute inset-0 flex items-center justify-center p-8"
                     >
-                        <div class="relative w-full max-w-sm aspect-4/3 rounded-xl border-2 border-dashed border-emerald-400/70 shadow-[0_0_0_9999px_rgba(0,0,0,0.45)]">
+                        <div
+                            class="aspect-4/3 relative w-full max-w-sm rounded-xl border-2 border-dashed border-emerald-400/70 shadow-[0_0_0_9999px_rgba(0,0,0,0.45)]"
+                        >
                             <!-- Reticle Corners -->
-                            <div class="absolute -top-1 -left-1 size-5 border-t-3 border-l-3 border-emerald-400"></div>
-                            <div class="absolute -top-1 -right-1 size-5 border-t-3 border-r-3 border-emerald-400"></div>
-                            <div class="absolute -bottom-1 -left-1 size-5 border-b-3 border-l-3 border-emerald-400"></div>
-                            <div class="absolute -bottom-1 -right-1 size-5 border-b-3 border-r-3 border-emerald-400"></div>
+                            <div class="border-t-3 border-l-3 absolute -left-1 -top-1 size-5 border-emerald-400"></div>
+                            <div class="border-t-3 border-r-3 absolute -right-1 -top-1 size-5 border-emerald-400"></div>
+                            <div class="border-b-3 border-l-3 absolute -bottom-1 -left-1 size-5 border-emerald-400"></div>
+                            <div class="border-b-3 border-r-3 absolute -bottom-1 -right-1 size-5 border-emerald-400"></div>
 
                             <!-- Animated Laser Scan Line -->
-                            <div class="w-full h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_12px_#34d399] animate-pulse"></div>
+                            <div
+                                class="h-0.5 w-full animate-pulse bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_12px_#34d399]"
+                            ></div>
 
-                            <div class="absolute bottom-2 inset-x-0 text-center">
-                                <span class="bg-black/70 text-white text-[10px] font-mono px-2 py-0.5 rounded-full backdrop-blur-xs">
+                            <div class="absolute inset-x-0 bottom-2 text-center">
+                                <span class="backdrop-blur-xs rounded-full bg-black/70 px-2 py-0.5 font-mono text-[10px] text-white">
                                     Align invoice document or QR code
                                 </span>
                             </div>
@@ -602,21 +603,19 @@ onBeforeUnmount(() => {
                     </div>
 
                     <!-- Camera Error Notice -->
-                    <div v-if="cameraError" class="p-6 text-center space-y-3 max-w-sm">
-                        <VideoOff class="size-10 text-amber-500 mx-auto" />
+                    <div v-if="cameraError" class="max-w-sm space-y-3 p-6 text-center">
+                        <VideoOff class="mx-auto size-10 text-amber-500" />
                         <p class="text-xs text-slate-300">{{ cameraError }}</p>
-                        <Button variant="outline" size="sm" class="text-xs" @click="scanMode = 'file'">
-                            Switch to File Upload
-                        </Button>
+                        <Button variant="outline" size="sm" class="text-xs" @click="scanMode = 'file'"> Switch to File Upload </Button>
                     </div>
 
                     <!-- Controls floating over camera -->
-                    <div class="absolute bottom-4 inset-x-0 flex items-center justify-center gap-3">
+                    <div class="absolute inset-x-0 bottom-4 flex items-center justify-center gap-3">
                         <Button
                             v-if="isCameraActive && !capturedImageBase64"
                             type="button"
                             size="sm"
-                            class="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg font-semibold px-4 h-9 gap-1.5 rounded-full"
+                            class="h-9 gap-1.5 rounded-full bg-emerald-600 px-4 font-semibold text-white shadow-lg hover:bg-emerald-700"
                             @click="captureFrame"
                         >
                             <Camera class="size-4" />
@@ -627,7 +626,7 @@ onBeforeUnmount(() => {
                             type="button"
                             variant="secondary"
                             size="sm"
-                            class="h-8 text-xs font-semibold rounded-full gap-1"
+                            class="h-8 gap-1 rounded-full text-xs font-semibold"
                             @click="retakePhoto"
                         >
                             <RefreshCw class="size-3" />
@@ -639,7 +638,7 @@ onBeforeUnmount(() => {
                 <!-- FILE UPLOAD VIEW -->
                 <div v-else class="space-y-3">
                     <div
-                        class="border-2 border-dashed border-border hover:border-primary/50 transition-colors rounded-2xl p-8 text-center cursor-pointer bg-muted/10 hover:bg-muted/20"
+                        class="cursor-pointer rounded-2xl border-2 border-dashed border-border bg-muted/10 p-8 text-center transition-colors hover:border-primary/50 hover:bg-muted/20"
                         @click="fileInputRef?.click()"
                         @dragover.prevent
                         @drop="handleDrop"
@@ -653,35 +652,30 @@ onBeforeUnmount(() => {
                         />
 
                         <div v-if="!filePreviewUrl" class="space-y-3">
-                            <div class="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
+                            <div class="mx-auto flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                                 <Upload class="size-6" />
                             </div>
                             <div>
                                 <p class="text-sm font-semibold text-foreground">Click to upload or drag & drop invoice scan</p>
-                                <p class="text-xs text-muted-foreground mt-0.5">Supports JPG, PNG, WebP, or PDF up to 10MB</p>
+                                <p class="mt-0.5 text-xs text-muted-foreground">Supports JPG, PNG, WebP, or PDF up to 10MB</p>
                             </div>
                         </div>
 
                         <!-- Preview if Selected -->
                         <div v-else class="space-y-3">
-                            <div class="relative max-h-48 max-w-sm mx-auto overflow-hidden rounded-xl border border-border shadow-xs">
+                            <div class="shadow-xs relative mx-auto max-h-48 max-w-sm overflow-hidden rounded-xl border border-border">
                                 <img
                                     v-if="selectedFile?.type.startsWith('image/')"
                                     :src="filePreviewUrl"
                                     alt="Invoice Preview"
-                                    class="w-full object-contain max-h-48 bg-muted/40"
+                                    class="max-h-48 w-full bg-muted/40 object-contain"
                                 />
-                                <div v-else class="p-8 flex items-center justify-center gap-2 text-foreground font-semibold text-xs">
+                                <div v-else class="flex items-center justify-center gap-2 p-8 text-xs font-semibold text-foreground">
                                     <FileText class="size-8 text-rose-500" />
                                     <span>{{ selectedFile?.name }}</span>
                                 </div>
                             </div>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                class="text-xs h-7 gap-1"
-                                @click.stop="fileInputRef?.click()"
-                            >
+                            <Button variant="outline" size="sm" class="h-7 gap-1 text-xs" @click.stop="fileInputRef?.click()">
                                 <RefreshCw class="size-3" />
                                 <span>Choose Different File</span>
                             </Button>
@@ -690,25 +684,16 @@ onBeforeUnmount(() => {
                 </div>
 
                 <!-- INVOICE METADATA INPUTS (Clean & Professional) -->
-                <div v-if="capturedImageBase64 || selectedFile" class="bg-muted/30 p-3.5 rounded-xl border border-border space-y-3">
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div v-if="capturedImageBase64 || selectedFile" class="space-y-3 rounded-xl border border-border bg-muted/30 p-3.5">
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
                         <div class="space-y-1">
                             <label class="text-[11px] font-semibold text-foreground">Invoice / Receipt No:</label>
-                            <Input
-                                v-model="manualInvoiceNumber"
-                                type="text"
-                                placeholder="e.g. INV-2026-001"
-                                class="h-8 text-xs font-mono"
-                            />
+                            <Input v-model="manualInvoiceNumber" type="text" placeholder="e.g. INV-2026-001" class="h-8 font-mono text-xs" />
                         </div>
 
                         <div class="space-y-1">
                             <label class="text-[11px] font-semibold text-foreground">Invoice Date:</label>
-                            <Input
-                                v-model="manualInvoiceDate"
-                                type="date"
-                                class="h-8 text-xs font-mono"
-                            />
+                            <Input v-model="manualInvoiceDate" type="date" class="h-8 font-mono text-xs" />
                         </div>
 
                         <div class="space-y-1">
@@ -718,35 +703,36 @@ onBeforeUnmount(() => {
                                 type="number"
                                 step="0.01"
                                 placeholder="0.00"
-                                class="h-8 text-xs font-mono font-bold"
+                                class="h-8 font-mono text-xs font-bold"
                             />
                         </div>
                     </div>
 
                     <!-- Clean QR Verification Confirmation (Without raw URL clutter) -->
-                    <div v-if="detectedQrPayload" class="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 flex items-center justify-between gap-2 text-xs">
-                        <div class="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+                    <div
+                        v-if="detectedQrPayload"
+                        class="flex items-center justify-between gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs"
+                    >
+                        <div class="flex items-center gap-1.5 font-semibold text-emerald-600 dark:text-emerald-400">
                             <CheckCircle2 class="size-3.5 shrink-0" />
                             <span>Fiscal / QR Code Decoded</span>
                         </div>
-                        <span class="text-[10px] font-mono text-muted-foreground">Ready to archive</span>
+                        <span class="font-mono text-[10px] text-muted-foreground">Ready to archive</span>
                     </div>
                 </div>
             </div>
 
             <!-- Dialog Footer -->
-            <DialogFooter class="px-6 py-4 border-t border-border bg-muted/20 flex flex-col sm:flex-row items-center justify-between gap-2.5">
-                <Button variant="ghost" size="sm" class="text-xs order-last sm:order-first" @click="closeModal">
-                    Cancel
-                </Button>
+            <DialogFooter class="flex flex-col items-center justify-between gap-2.5 border-t border-border bg-muted/20 px-6 py-4 sm:flex-row">
+                <Button variant="ghost" size="sm" class="order-last text-xs sm:order-first" @click="closeModal"> Cancel </Button>
 
-                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <div class="flex w-full items-center justify-end gap-2 sm:w-auto">
                     <!-- Optional: Item-by-Item PO Comparison -->
                     <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        class="h-9 px-3 text-xs font-medium gap-1.5 border-border shadow-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                        class="shadow-xs h-9 cursor-pointer gap-1.5 border-border px-3 text-xs font-medium text-muted-foreground hover:text-foreground"
                         :disabled="isProcessing || isSavingSoftcopy || (!capturedImageBase64 && !selectedFile)"
                         @click="handleProcessAndCompare"
                         title="Compare line items against Purchase Order"
@@ -760,7 +746,7 @@ onBeforeUnmount(() => {
                     <Button
                         type="button"
                         size="sm"
-                        class="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer"
+                        class="shadow-xs h-9 cursor-pointer gap-1.5 bg-indigo-600 px-4 text-xs font-bold text-white hover:bg-indigo-700"
                         :disabled="isProcessing || isSavingSoftcopy || (!capturedImageBase64 && !selectedFile)"
                         @click="handleStoreSoftcopyOnly"
                     >

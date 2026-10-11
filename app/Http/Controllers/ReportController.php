@@ -5,9 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Expense;
 use App\Models\Sale;
 use App\Models\SaleItem;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -61,7 +59,7 @@ class ReportController extends Controller
             ->orderByDesc('sales')
             ->take(6)
             ->get()
-            ->map(fn($cat) => [
+            ->map(fn ($cat) => [
                 'name' => $cat->name,
                 'sales' => (float) $cat->sales,
                 'margin' => (float) $cat->sales > 0 ? round(((float) $cat->profit / (float) $cat->sales) * 100, 1) : 0,
@@ -84,6 +82,7 @@ class ReportController extends Controller
             ->map(function ($cs) {
                 $vol = (float) $cs->volume;
                 $tix = (int) $cs->tickets;
+
                 return [
                     'cashier' => $cs->user?->name ?? 'Staff Cashier',
                     'shift' => 'General Shift',

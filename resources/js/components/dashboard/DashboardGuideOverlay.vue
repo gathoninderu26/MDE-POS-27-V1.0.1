@@ -12,7 +12,6 @@ import {
     CreditCard,
     DollarSign,
     Info,
-    Keyboard,
     Receipt,
     ShieldCheck,
     ShoppingCart,
@@ -71,14 +70,8 @@ const ownerSections: TourSection[] = [
         rx: 10,
         icon: Compass,
         usedFor: 'Start a step-by-step walkthrough of your business dashboard — covering analytics, staff shifts, financials, and POS.',
-        capabilities: [
-            'Multi-Branch Analytics',
-            'Staff & POS Overview',
-        ],
-        howToUse: [
-            'Click "Start Tour" below to begin.',
-            'Use ← → arrow keys or Esc to navigate and exit.',
-        ],
+        capabilities: ['Multi-Branch Analytics', 'Staff & POS Overview'],
+        howToUse: ['Click "Start Tour" below to begin.', 'Use ← → arrow keys or Esc to navigate and exit.'],
         proTip: 'Re-open this guide anytime from the header button.',
         actionLabel: 'Start Tour',
         actionType: 'start-walkthrough',
@@ -93,14 +86,8 @@ const ownerSections: TourSection[] = [
         rx: 16,
         icon: Building2,
         usedFor: 'Shows your branch name, code badge, and time-range filters. All dashboard numbers update instantly when you switch periods.',
-        capabilities: [
-            'Today / 7D / 30D filters',
-            'Branch scope indicator',
-        ],
-        howToUse: [
-            'Click a time pill (Today, 7 Days…) to recalculate all metrics.',
-            'Check the branch badge to confirm the active location.',
-        ],
+        capabilities: ['Today / 7D / 30D filters', 'Branch scope indicator'],
+        howToUse: ['Click a time pill (Today, 7 Days…) to recalculate all metrics.', 'Check the branch badge to confirm the active location.'],
         proTip: '"7 Days" auto-compares vs the prior week so you spot growth immediately.',
     },
     {
@@ -112,15 +99,9 @@ const ownerSections: TourSection[] = [
         shape: 'rect',
         rx: 16,
         icon: Users,
-        usedFor: 'Live view of clocked-in cashiers, breaks, absences, and each cashier\'s sales progress against their shift target.',
-        capabilities: [
-            'Active / Break / Absent status',
-            'Per-cashier sales vs target',
-        ],
-        howToUse: [
-            'Click the strip to expand the full attendance roster.',
-            'Search or filter by branch to find a specific cashier.',
-        ],
+        usedFor: "Live view of clocked-in cashiers, breaks, absences, and each cashier's sales progress against their shift target.",
+        capabilities: ['Active / Break / Absent status', 'Per-cashier sales vs target'],
+        howToUse: ['Click the strip to expand the full attendance roster.', 'Search or filter by branch to find a specific cashier.'],
         proTip: 'Late arrivals are auto-flagged in minutes so supervisors can act immediately.',
     },
     {
@@ -132,15 +113,10 @@ const ownerSections: TourSection[] = [
         shape: 'rect',
         rx: 16,
         icon: TrendingUp,
-        usedFor: 'Gross Revenue, Gross Profit (with live margin ~29.4%), total orders, and operating expenses — all scoped to your selected time period.',
-        capabilities: [
-            'Gross Revenue & Profit margins',
-            'Orders & Expense tracking',
-        ],
-        howToUse: [
-            'Compare Revenue vs Expenses to gauge daily profitability.',
-            'Hover a card for prior-period percentage change.',
-        ],
+        usedFor:
+            'Gross Revenue, Gross Profit (with live margin ~29.4%), total orders, and operating expenses — all scoped to your selected time period.',
+        capabilities: ['Gross Revenue & Profit margins', 'Orders & Expense tracking'],
+        howToUse: ['Compare Revenue vs Expenses to gauge daily profitability.', 'Hover a card for prior-period percentage change.'],
         proTip: 'Margins are calculated per transaction using actual batch purchase cost.',
     },
     {
@@ -153,10 +129,7 @@ const ownerSections: TourSection[] = [
         rx: 16,
         icon: CircleDollarSign,
         usedFor: 'Four key balance indicators: Customer Receivables, Supplier Payables, Branch Stock Value, and Active Customer accounts.',
-        capabilities: [
-            'Customer & Supplier balances',
-            'Stock value at cost',
-        ],
+        capabilities: ['Customer & Supplier balances', 'Stock value at cost'],
         howToUse: [
             'Monitor receivables to follow up on outstanding credit customers.',
             'Track payables to avoid missing supplier payment deadlines.',
@@ -173,14 +146,8 @@ const ownerSections: TourSection[] = [
         rx: 16,
         icon: TrendingUp,
         usedFor: 'Bar chart showing combined cashier revenue by hour. Pinpoints peak trading windows and average basket trends.',
-        capabilities: [
-            'Hourly revenue bars',
-            'Peak hour detection',
-        ],
-        howToUse: [
-            'Hover a bar to see exact revenue for that hour.',
-            'Identify peak hours to schedule breaks and extra register coverage.',
-        ],
+        capabilities: ['Hourly revenue bars', 'Peak hour detection'],
+        howToUse: ['Hover a bar to see exact revenue for that hour.', 'Identify peak hours to schedule breaks and extra register coverage.'],
         proTip: 'Schedule cashier breaks outside the highest-revenue hours to maximise throughput.',
     },
     {
@@ -193,10 +160,7 @@ const ownerSections: TourSection[] = [
         rx: 16,
         icon: CreditCard,
         usedFor: 'Tender split showing M-Pesa, Cash, Card, and Credit percentages with progress bars for quick reconciliation.',
-        capabilities: [
-            'M-Pesa / Cash / Card split',
-            'Channel % progress bars',
-        ],
+        capabilities: ['M-Pesa / Cash / Card split', 'Channel % progress bars'],
         howToUse: [
             'Compare "Cash in Drawer" against physical till count at shift-end.',
             'Verify card totals against bank merchant settlement slips.',
@@ -213,10 +177,7 @@ const ownerSections: TourSection[] = [
         rx: 16,
         icon: Building2,
         usedFor: 'Per-branch sales vs daily target comparison with health status badges and active staff counts.',
-        capabilities: [
-            'Revenue vs target per branch',
-            'On Track / Warning status',
-        ],
+        capabilities: ['Revenue vs target per branch', 'On Track / Warning status'],
         howToUse: [
             'Check branch bars early in the day to spot underperforming locations.',
             'Click "Manage Branches" to adjust targets or transfer inventory.',
@@ -233,14 +194,8 @@ const ownerSections: TourSection[] = [
         rx: 16,
         icon: ShoppingCart,
         usedFor: 'Ranked list of best-selling items by units and revenue, showing margin contribution per product.',
-        capabilities: [
-            'Units sold & revenue',
-            'Margin % per item',
-        ],
-        howToUse: [
-            'Focus on high-margin items rather than pure volume leaders.',
-            'Click "View Catalog" to adjust pricing or create bundles.',
-        ],
+        capabilities: ['Units sold & revenue', 'Margin % per item'],
+        howToUse: ['Focus on high-margin items rather than pure volume leaders.', 'Click "View Catalog" to adjust pricing or create bundles.'],
         proTip: 'Pair thin-margin bestsellers with high-margin accessories to lift average ticket value.',
     },
     {
@@ -253,14 +208,8 @@ const ownerSections: TourSection[] = [
         rx: 16,
         icon: Zap,
         usedFor: 'Items near or below their minimum stock threshold, flagged with Critical (red) or Warning (amber) badges.',
-        capabilities: [
-            'Critical & warning badges',
-            'Minimum safety stock thresholds',
-        ],
-        howToUse: [
-            'Act on Critical alerts (≤ 5 units) immediately.',
-            'Click "Stock Mgmt" to raise a purchase order.',
-        ],
+        capabilities: ['Critical & warning badges', 'Minimum safety stock thresholds'],
+        howToUse: ['Act on Critical alerts (≤ 5 units) immediately.', 'Click "Stock Mgmt" to raise a purchase order.'],
         proTip: 'Set safety stock levels with supplier lead-time in mind so shelves never go empty.',
     },
     {
@@ -273,14 +222,8 @@ const ownerSections: TourSection[] = [
         rx: 16,
         icon: Receipt,
         usedFor: 'Real-time stream of all cashier receipts with receipt numbers, cashier IDs, payment method, and completion status.',
-        capabilities: [
-            'Live receipt feed',
-            'Cashier & payment tags',
-        ],
-        howToUse: [
-            'Click a receipt number to see itemised lines and tax.',
-            'Use "Sales Log" to reprint or process supervisor returns.',
-        ],
+        capabilities: ['Live receipt feed', 'Cashier & payment tags'],
+        howToUse: ['Click a receipt number to see itemised lines and tax.', 'Use "Sales Log" to reprint or process supervisor returns.'],
         proTip: 'Voided or refunded tickets show immediate status flags for instant fraud detection.',
     },
     {
@@ -293,13 +236,8 @@ const ownerSections: TourSection[] = [
         rx: 10,
         icon: Zap,
         usedFor: 'One-click launch into the full-screen cashier register with barcode scanner, M-Pesa STK, and KRA thermal receipts.',
-        capabilities: [
-            'Instant POS launch',
-            'Barcode & M-Pesa ready',
-        ],
-        howToUse: [
-            'Click "Open POS Register" to enter selling mode.',
-        ],
+        capabilities: ['Instant POS launch', 'Barcode & M-Pesa ready'],
+        howToUse: ['Click "Open POS Register" to enter selling mode.'],
         proTip: 'Restrict cashiers to POS-only mode so profit data stays confidential.',
         actionLabel: 'Launch POS Register',
         actionType: 'open-pos',
@@ -318,14 +256,8 @@ const cashierSections: TourSection[] = [
         rx: 10,
         icon: Compass,
         usedFor: 'Quick tour of your register dashboard — shift stats, cash drawer, attendance, and your personal sales.',
-        capabilities: [
-            'Shift & drawer tracking',
-            'Attendance calendar',
-        ],
-        howToUse: [
-            'Click "Start Tour" to begin.',
-            'Use ← → or Esc to navigate and exit.',
-        ],
+        capabilities: ['Shift & drawer tracking', 'Attendance calendar'],
+        howToUse: ['Click "Start Tour" to begin.', 'Use ← → or Esc to navigate and exit.'],
         proTip: 'Check this dashboard before and after every shift handover.',
         actionLabel: 'Start Tour',
         actionType: 'start-walkthrough',
@@ -340,14 +272,8 @@ const cashierSections: TourSection[] = [
         rx: 16,
         icon: ShoppingCart,
         usedFor: 'Shows your name, assigned terminal, branch, shift start time, and live elapsed duration.',
-        capabilities: [
-            'Live shift timer',
-            'Terminal ID & branch',
-        ],
-        howToUse: [
-            'Check elapsed time to plan meal and relief breaks.',
-            'Use "Open POS Register" to start ringing up customers.',
-        ],
+        capabilities: ['Live shift timer', 'Terminal ID & branch'],
+        howToUse: ['Check elapsed time to plan meal and relief breaks.', 'Use "Open POS Register" to start ringing up customers.'],
         proTip: 'Lock your terminal with a supervisor code before stepping away from your till.',
     },
     {
@@ -360,14 +286,8 @@ const cashierSections: TourSection[] = [
         rx: 16,
         icon: Calendar,
         usedFor: 'Your monthly shift calendar showing worked, absent, and upcoming shifts with clock-in times.',
-        capabilities: [
-            'Shifts worked this month',
-            'Clock-in history',
-        ],
-        howToUse: [
-            'Click the strip to expand your calendar.',
-            'Tap a past day to review its clock-in and sales.',
-        ],
+        capabilities: ['Shifts worked this month', 'Clock-in history'],
+        howToUse: ['Click the strip to expand your calendar.', 'Tap a past day to review its clock-in and sales.'],
         proTip: 'Green dots = completed shifts. Red dots = absent days.',
     },
     {
@@ -380,14 +300,8 @@ const cashierSections: TourSection[] = [
         rx: 16,
         icon: TrendingUp,
         usedFor: 'Progress bar showing your shift sales vs your daily target set by the store manager.',
-        capabilities: [
-            'Completion % bar',
-            'Remaining amount to goal',
-        ],
-        howToUse: [
-            'Monitor your percentage throughout the shift.',
-            'Upsell items to hit 100% before shift end.',
-        ],
+        capabilities: ['Completion % bar', 'Remaining amount to goal'],
+        howToUse: ['Monitor your percentage throughout the shift.', 'Upsell items to hit 100% before shift end.'],
         proTip: 'Consistently hitting 100%+ qualifies you for monthly performance bonuses.',
     },
     {
@@ -400,14 +314,8 @@ const cashierSections: TourSection[] = [
         rx: 16,
         icon: TrendingUp,
         usedFor: 'Your personal shift metrics: total sales, orders processed, average basket size, and refunds issued.',
-        capabilities: [
-            'Shift sales & order count',
-            'Basket size & refunds',
-        ],
-        howToUse: [
-            'Track sales to stay on target.',
-            'Upsell to raise your average basket value.',
-        ],
+        capabilities: ['Shift sales & order count', 'Basket size & refunds'],
+        howToUse: ['Track sales to stay on target.', 'Upsell to raise your average basket value.'],
         proTip: 'All refunds are tagged to your cashier ID for inventory audit.',
     },
     {
@@ -420,10 +328,7 @@ const cashierSections: TourSection[] = [
         rx: 16,
         icon: DollarSign,
         usedFor: 'Live tender breakdown: Cash in Drawer, M-Pesa received, Card payments, and Credit sales.',
-        capabilities: [
-            'Cash in drawer amount',
-            'M-Pesa & Card totals',
-        ],
+        capabilities: ['Cash in drawer amount', 'M-Pesa & Card totals'],
         howToUse: [
             'At shift end, physically count drawer cash and compare to this figure.',
             'Report any discrepancy to your supervisor before clocking out.',
@@ -440,13 +345,8 @@ const cashierSections: TourSection[] = [
         rx: 16,
         icon: TrendingUp,
         usedFor: 'Hourly bar chart of sales on your register, highlighting your busiest checkout window.',
-        capabilities: [
-            'Hourly revenue bars',
-            'Peak hour badge',
-        ],
-        howToUse: [
-            'Hover a bar to see the exact revenue for that hour.',
-        ],
+        capabilities: ['Hourly revenue bars', 'Peak hour badge'],
+        howToUse: ['Hover a bar to see the exact revenue for that hour.'],
         proTip: 'Stock up on receipt paper and float before your peak hour starts.',
     },
     {
@@ -459,13 +359,8 @@ const cashierSections: TourSection[] = [
         rx: 16,
         icon: ShoppingCart,
         usedFor: 'Products you have sold most today by quantity and total value on this terminal.',
-        capabilities: [
-            'Units sold per item',
-            'Revenue per bestseller',
-        ],
-        howToUse: [
-            'Learn the PLU codes of your top items for faster scanning.',
-        ],
+        capabilities: ['Units sold per item', 'Revenue per bestseller'],
+        howToUse: ['Learn the PLU codes of your top items for faster scanning.'],
         proTip: 'Fast scanning on top items keeps queue wait times under 60 seconds.',
     },
     {
@@ -478,14 +373,8 @@ const cashierSections: TourSection[] = [
         rx: 16,
         icon: Receipt,
         usedFor: 'Log of receipts issued on your terminal today with receipt numbers, customers, amounts, and status.',
-        capabilities: [
-            'Receipt number & customer',
-            'Payment method & status',
-        ],
-        howToUse: [
-            'Look up a receipt here if a customer requests a duplicate.',
-            'Click "Full Sales Log" for older receipts.',
-        ],
+        capabilities: ['Receipt number & customer', 'Payment method & status'],
+        howToUse: ['Look up a receipt here if a customer requests a duplicate.', 'Click "Full Sales Log" for older receipts.'],
         proTip: 'Receipt numbers match the barcode on printed dockets for instant scan lookup.',
     },
     {
@@ -498,14 +387,8 @@ const cashierSections: TourSection[] = [
         rx: 16,
         icon: ShieldCheck,
         usedFor: 'End-of-shift balance sheet: orders, cash drawer, M-Pesa total, refunds deducted, and net shift revenue.',
-        capabilities: [
-            'Net revenue after refunds',
-            'Cash & M-Pesa reconciliation',
-        ],
-        howToUse: [
-            'Count physical cash and compare to "Cash in Drawer".',
-            'Confirm M-Pesa total vs Daraja/till phone confirmations.',
-        ],
+        capabilities: ['Net revenue after refunds', 'Cash & M-Pesa reconciliation'],
+        howToUse: ['Count physical cash and compare to "Cash in Drawer".', 'Confirm M-Pesa total vs Daraja/till phone confirmations.'],
         proTip: 'Reconcile to zero before handing over the register keys.',
     },
     {
@@ -518,13 +401,8 @@ const cashierSections: TourSection[] = [
         rx: 10,
         icon: Zap,
         usedFor: 'One-click into the full cashier register — barcode scanner, M-Pesa STK, and thermal receipt printing ready.',
-        capabilities: [
-            'Instant POS launch',
-            'Barcode & M-Pesa ready',
-        ],
-        howToUse: [
-            'Click "Open POS Register" to start serving customers.',
-        ],
+        capabilities: ['Instant POS launch', 'Barcode & M-Pesa ready'],
+        howToUse: ['Click "Open POS Register" to start serving customers.'],
         proTip: 'F2 = scan barcode · Space = open checkout in POS mode.',
         actionLabel: 'Open POS Register',
         actionType: 'open-pos',
@@ -544,7 +422,7 @@ watch(
     (val) => {
         internalStep.value = val;
         updateTargetPosition();
-    }
+    },
 );
 
 const currentSection = computed(() => {
@@ -666,7 +544,7 @@ watch(
             window.removeEventListener('keydown', handleKeyDown);
         }
     },
-    { immediate: true }
+    { immediate: true },
 );
 
 onMounted(() => {
@@ -847,15 +725,9 @@ const speechBubbleTail = computed(() => {
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
         >
-            <div
-                v-if="open"
-                class="fixed inset-0 z-50 pointer-events-none select-none font-sans"
-            >
+            <div v-if="open" class="pointer-events-none fixed inset-0 z-50 select-none font-sans">
                 <!-- SVG Dimming Backdrop with Cutout Hole -->
-                <svg
-                    class="absolute inset-0 w-full h-full pointer-events-none transition-all duration-300"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
+                <svg class="pointer-events-none absolute inset-0 h-full w-full transition-all duration-300" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <!-- Cutout Mask Hole -->
                         <mask id="dashboard-guide-mask">
@@ -888,7 +760,7 @@ const speechBubbleTail = computed(() => {
                 <!-- Clickable Spotlight Hole: clicking highlighted button advances tour -->
                 <div
                     v-if="targetRect"
-                    class="absolute pointer-events-auto cursor-pointer z-40"
+                    class="pointer-events-auto absolute z-40 cursor-pointer"
                     :style="{
                         top: `${targetRect.top - 4}px`,
                         left: `${targetRect.left - 4}px`,
@@ -902,7 +774,7 @@ const speechBubbleTail = computed(() => {
                 <!-- Glowing Target Boundary Ring -->
                 <div
                     v-if="targetRect"
-                    class="absolute pointer-events-none transition-all duration-300 ease-out border-2 border-primary shadow-[0_0_35px_rgba(16,185,129,0.5)] ring-4 ring-primary/30"
+                    class="pointer-events-none absolute border-2 border-primary shadow-[0_0_35px_rgba(16,185,129,0.5)] ring-4 ring-primary/30 transition-all duration-300 ease-out"
                     :style="{
                         top: `${targetRect.top - 8}px`,
                         left: `${targetRect.left - 8}px`,
@@ -913,25 +785,15 @@ const speechBubbleTail = computed(() => {
                 ></div>
 
                 <!-- Guided Callout Text Bubble (Speech bubble dialog pointing directly to target) -->
-                <div
-                    ref="cardRef"
-                    class="absolute z-50 pointer-events-auto transition-all duration-300 ease-out"
-                    :style="cardStyle"
-                    @click.stop
-                >
+                <div ref="cardRef" class="pointer-events-auto absolute z-50 transition-all duration-300 ease-out" :style="cardStyle" @click.stop>
                     <!-- Speech Bubble Tail: Top (points UP to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'top'"
-                        class="absolute -top-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -top-3.5 z-30"
                         :style="{ left: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="24" height="15" viewBox="0 0 24 15" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,15 L 12,0 L 24,15"
-                                class="fill-muted/95 stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,15 L 12,0 L 24,15" class="fill-muted/95 stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="1" y="14" width="22" height="3" class="fill-muted/95" />
                         </svg>
                     </div>
@@ -939,16 +801,11 @@ const speechBubbleTail = computed(() => {
                     <!-- Speech Bubble Tail: Bottom (points DOWN to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'bottom'"
-                        class="absolute -bottom-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -bottom-3.5 z-30"
                         :style="{ left: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="24" height="15" viewBox="0 0 24 15" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,0 L 12,15 L 24,0"
-                                class="fill-muted/80 stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,0 L 12,15 L 24,0" class="fill-muted/80 stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="1" y="-2" width="22" height="3" class="fill-muted/80" />
                         </svg>
                     </div>
@@ -956,16 +813,11 @@ const speechBubbleTail = computed(() => {
                     <!-- Speech Bubble Tail: Left (points LEFT to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'left'"
-                        class="absolute -left-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -left-3.5 z-30"
                         :style="{ top: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="15" height="24" viewBox="0 0 15 24" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 15,0 L 0,12 L 15,24"
-                                class="fill-card stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 15,0 L 0,12 L 15,24" class="fill-card stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="14" y="1" width="3" height="22" class="fill-card" />
                         </svg>
                     </div>
@@ -973,38 +825,44 @@ const speechBubbleTail = computed(() => {
                     <!-- Speech Bubble Tail: Right (points RIGHT to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'right'"
-                        class="absolute -right-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -right-3.5 z-30"
                         :style="{ top: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="15" height="24" viewBox="0 0 15 24" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,0 L 15,12 L 0,24"
-                                class="fill-card stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,0 L 15,12 L 0,24" class="fill-card stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="-2" y="1" width="3" height="22" class="fill-card" />
                         </svg>
                     </div>
 
                     <!-- Text Bubble Container Card -->
-                    <div class="rounded-2xl border-2 border-border bg-card shadow-2xl overflow-hidden text-card-foreground flex flex-col max-h-[calc(100vh-90px)] ring-1 ring-black/10 dark:ring-white/15">
+                    <div
+                        class="flex max-h-[calc(100vh-90px)] flex-col overflow-hidden rounded-2xl border-2 border-border bg-card text-card-foreground shadow-2xl ring-1 ring-black/10 dark:ring-white/15"
+                    >
                         <!-- Card Header -->
-                        <div class="px-4 py-3 bg-muted/80 border-b border-border flex items-center justify-between shrink-0">
-                            <div class="flex items-center gap-3 min-w-0 flex-1">
-                                <div class="size-8 rounded-lg bg-primary/15 text-primary border border-primary/25 flex items-center justify-center font-bold text-xs shadow-2xs shrink-0">
+                        <div class="flex shrink-0 items-center justify-between border-b border-border bg-muted/80 px-4 py-3">
+                            <div class="flex min-w-0 flex-1 items-center gap-3">
+                                <div
+                                    class="shadow-2xs flex size-8 shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/15 text-xs font-bold text-primary"
+                                >
                                     <component :is="currentSection.icon" class="size-4.5" />
                                 </div>
                                 <div class="min-w-0 flex-1">
-                                    <div class="flex items-center gap-2 flex-wrap">
-                                        <Badge variant="outline" class="text-[9.5px] px-2 py-0.5 h-4.5 border-primary/40 bg-primary/10 text-primary uppercase font-mono font-bold shrink-0">
-                                            {{ currentSection.id === 'start' ? 'ORIENTATION' : `Part ${currentSection.stepNumber}/${sections.length - 1}` }}
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <Badge
+                                            variant="outline"
+                                            class="h-4.5 shrink-0 border-primary/40 bg-primary/10 px-2 py-0.5 font-mono text-[9.5px] font-bold uppercase text-primary"
+                                        >
+                                            {{
+                                                currentSection.id === 'start'
+                                                    ? 'ORIENTATION'
+                                                    : `Part ${currentSection.stepNumber}/${sections.length - 1}`
+                                            }}
                                         </Badge>
-                                        <span class="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-wider truncate">
+                                        <span class="truncate text-[10px] font-bold uppercase tracking-wider text-muted-foreground sm:text-[11px]">
                                             {{ currentSection.tag }}
                                         </span>
                                     </div>
-                                    <h3 class="text-sm sm:text-[15px] font-bold text-foreground leading-snug mt-0.5">
+                                    <h3 class="mt-0.5 text-sm font-bold leading-snug text-foreground sm:text-[15px]">
                                         {{ currentSection.title }}
                                     </h3>
                                 </div>
@@ -1016,7 +874,7 @@ const speechBubbleTail = computed(() => {
                                 variant="ghost"
                                 size="sm"
                                 @click="close"
-                                class="h-7 px-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/80 shrink-0 gap-1 rounded-lg ml-2"
+                                class="ml-2 h-7 shrink-0 gap-1 rounded-lg px-2.5 text-xs font-semibold text-muted-foreground hover:bg-muted/80 hover:text-foreground"
                                 title="Exit Tour (Esc)"
                             >
                                 <span>Exit</span>
@@ -1025,14 +883,14 @@ const speechBubbleTail = computed(() => {
                         </div>
 
                         <!-- Card Body -->
-                        <div class="p-3 space-y-2.5 overflow-y-auto max-h-[min(380px,calc(100vh-190px))] text-xs">
+                        <div class="max-h-[min(380px,calc(100vh-190px))] space-y-2.5 overflow-y-auto p-3 text-xs">
                             <!-- Purpose & Function -->
                             <div class="space-y-1.5">
-                                <div class="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-primary">
+                                <div class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-primary sm:text-xs">
                                     <Info class="size-3.5" />
                                     <span>Purpose & Function:</span>
                                 </div>
-                                <p class="text-xs sm:text-[13px] text-foreground font-normal leading-relaxed">
+                                <p class="text-xs font-normal leading-relaxed text-foreground sm:text-[13px]">
                                     {{ currentSection.usedFor }}
                                 </p>
 
@@ -1041,16 +899,16 @@ const speechBubbleTail = computed(() => {
                                     <span
                                         v-for="cap in currentSection.capabilities"
                                         :key="cap"
-                                        class="inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-md font-semibold bg-muted/80 border border-border/80 text-foreground shadow-2xs"
+                                        class="shadow-2xs inline-flex items-center gap-1.5 rounded-md border border-border/80 bg-muted/80 px-2 py-0.5 text-[10px] font-semibold text-foreground"
                                     >
-                                        <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
+                                        <span class="size-1.5 shrink-0 rounded-full bg-primary"></span>
                                         <span>{{ cap }}</span>
                                     </span>
                                 </div>
                             </div>
 
                             <!-- Guidance Steps -->
-                            <div class="p-2.5 rounded-xl bg-muted/40 border border-border/80 space-y-2">
+                            <div class="space-y-2 rounded-xl border border-border/80 bg-muted/40 p-2.5">
                                 <span class="text-[10px] font-bold uppercase tracking-wider text-foreground/70">How to use:</span>
                                 <div class="space-y-2">
                                     <div
@@ -1058,10 +916,12 @@ const speechBubbleTail = computed(() => {
                                         :key="idx"
                                         class="flex items-start gap-2 text-[11.5px] text-foreground"
                                     >
-                                        <div class="size-4.5 rounded-full bg-primary text-primary-foreground font-mono font-bold text-[9px] flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                                        <div
+                                            class="size-4.5 shadow-2xs mt-0.5 flex shrink-0 items-center justify-center rounded-full bg-primary font-mono text-[9px] font-bold text-primary-foreground"
+                                        >
                                             {{ idx + 1 }}
                                         </div>
-                                        <span class="leading-relaxed font-normal text-foreground/95 flex-1 break-words">
+                                        <span class="flex-1 break-words font-normal leading-relaxed text-foreground/95">
                                             {{ step }}
                                         </span>
                                     </div>
@@ -1069,12 +929,14 @@ const speechBubbleTail = computed(() => {
                             </div>
 
                             <!-- Pro Tip -->
-                            <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-950 dark:text-amber-100 space-y-1">
-                                <span class="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-300 text-[10px] uppercase tracking-wide">
-                                    <Zap class="size-3 text-amber-600 dark:text-amber-400 fill-amber-500/30 shrink-0" />
+                            <div class="space-y-1 rounded-xl border border-amber-500/30 bg-amber-500/10 p-2.5 text-amber-950 dark:text-amber-100">
+                                <span
+                                    class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-amber-900 dark:text-amber-300"
+                                >
+                                    <Zap class="size-3 shrink-0 fill-amber-500/30 text-amber-600 dark:text-amber-400" />
                                     <span>Tip</span>
                                 </span>
-                                <p class="text-[11px] leading-relaxed font-medium">
+                                <p class="text-[11px] font-medium leading-relaxed">
                                     {{ currentSection.proTip }}
                                 </p>
                             </div>
@@ -1084,7 +946,7 @@ const speechBubbleTail = computed(() => {
                                 <button
                                     type="button"
                                     @click="handleAction"
-                                    class="w-full py-2.5 px-4 rounded-xl bg-primary/15 hover:bg-primary/25 text-primary text-xs sm:text-[13px] font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer border border-primary/30 shadow-2xs active:scale-[0.99]"
+                                    class="shadow-2xs flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/15 px-4 py-2.5 text-xs font-bold text-primary transition-colors hover:bg-primary/25 active:scale-[0.99] sm:text-[13px]"
                                 >
                                     <span>{{ currentSection.actionLabel }}</span>
                                     <ArrowRight class="size-4 shrink-0" />
@@ -1093,13 +955,13 @@ const speechBubbleTail = computed(() => {
                         </div>
 
                         <!-- Footer Navigation -->
-                        <div class="px-4 py-3 bg-muted/70 border-t border-border flex items-center justify-between shrink-0">
+                        <div class="flex shrink-0 items-center justify-between border-t border-border bg-muted/70 px-4 py-3">
                             <!-- Prev Button -->
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                class="h-8 text-xs px-3 gap-1 text-muted-foreground hover:text-foreground font-semibold"
+                                class="h-8 gap-1 px-3 text-xs font-semibold text-muted-foreground hover:text-foreground"
                                 :disabled="internalStep === 0"
                                 @click="prevStep"
                             >
@@ -1114,8 +976,8 @@ const speechBubbleTail = computed(() => {
                                     :key="idx"
                                     type="button"
                                     @click="goToStep(idx)"
-                                    class="size-2 rounded-full transition-all cursor-pointer"
-                                    :class="idx === internalStep ? 'bg-primary w-4' : 'bg-muted-foreground/30 hover:bg-muted-foreground/60'"
+                                    class="size-2 cursor-pointer rounded-full transition-all"
+                                    :class="idx === internalStep ? 'w-4 bg-primary' : 'bg-muted-foreground/30 hover:bg-muted-foreground/60'"
                                     :title="idx === 0 ? 'Start: Dashboard Guide' : `Part ${idx}`"
                                 ></button>
                             </div>
@@ -1124,10 +986,12 @@ const speechBubbleTail = computed(() => {
                             <Button
                                 type="button"
                                 size="sm"
-                                class="h-8 text-xs px-3.5 gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-xs cursor-pointer"
+                                class="shadow-xs h-8 cursor-pointer gap-1.5 bg-primary px-3.5 text-xs font-bold text-primary-foreground hover:bg-primary/90"
                                 @click="nextStep"
                             >
-                                <span>{{ currentSection.id === 'start' ? 'Start Tour' : internalStep === sections.length - 1 ? 'Done' : 'Next' }}</span>
+                                <span>{{
+                                    currentSection.id === 'start' ? 'Start Tour' : internalStep === sections.length - 1 ? 'Done' : 'Next'
+                                }}</span>
                                 <ArrowRight v-if="internalStep < sections.length - 1" class="size-3.5" />
                                 <Check v-else class="size-3.5" />
                             </Button>

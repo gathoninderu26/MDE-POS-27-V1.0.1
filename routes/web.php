@@ -4,6 +4,7 @@ use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\MpesaController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PublicPortalController;
@@ -11,15 +12,17 @@ use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboard;
 use App\Http\Controllers\SuperAdmin\SuperAdminAuthController;
 use App\Http\Controllers\SuperAdmin\TenantController;
 use App\Http\Controllers\SuperAdmin\TenantDetailController;
 use App\Http\Controllers\SuperAdmin\TenantUserController;
-use App\Http\Controllers\MpesaController;
+use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
-use App\Http\Middleware\IdentifyTenantFromSubdomain;
+use App\Models\Tenant;
+use App\Services\CloudSyncService;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -45,35 +48,38 @@ Route::post('super-admin/logout', [SuperAdminAuthController::class, 'destroy'])
 // ─── Public Central Portal Routes ─────────────────────────────────────────────
 
 Route::middleware([])->group(function () {
-    Route::get('/', function (\Illuminate\Http\Request $request) {
+    Route::get('/', function (Request $request) {
         // If request is on a tenant subdomain or has an active tenant, route straight to dashboard (if authenticated) or dedicated login
         if (app()->bound('currentTenant')) {
             $tenant = app('currentTenant');
             if ($request->user()) {
                 return redirect()->route('dashboard');
             }
+
             return redirect()->to($tenant->getSubdomainUrl('/login'));
         }
 
-        $tenants = \App\Models\Tenant::where('status', '!=', 'Suspended')
+        $tenants = Tenant::where('status', '!=', 'Suspended')
             ->select(['id', 'name', 'slug', 'business_type', 'plan', 'status', 'email', 'phone', 'address'])
             ->orderBy('name')
             ->get();
 
         return Inertia::render('Welcome', [
-            'tenants'    => $tenants,
+            'tenants' => $tenants,
             'baseDomain' => config('app.domain', 'localhost'),
         ]);
     })->name('home');
 
-    Route::get('/welcome', function (\Illuminate\Http\Request $request) {
+    Route::get('/welcome', function (Request $request) {
         if (app()->bound('currentTenant')) {
             $tenant = app('currentTenant');
             if ($request->user()) {
                 return redirect()->route('dashboard');
             }
+
             return redirect()->to($tenant->getSubdomainUrl('/login'));
         }
+
         return redirect('/');
     })->name('welcome');
 
@@ -293,10 +299,10 @@ Route::middleware([])->group(function () {
 // Callback must be CSRF-exempt – use withoutMiddleware to exclude it
 Route::post('/mpesa/callback', [MpesaController::class, 'callback'])
     ->name('mpesa.callback')
-    ->withoutMiddleware(['web', \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+    ->withoutMiddleware(['web', VerifyCsrfToken::class]);
 
 Route::middleware(['auth'])->group(function () {
-    Route::post('/mpesa/stk-push',  [MpesaController::class, 'stkPush'])->name('mpesa.stk-push');
+    Route::post('/mpesa/stk-push', [MpesaController::class, 'stkPush'])->name('mpesa.stk-push');
     Route::post('/mpesa/stk-query', [MpesaController::class, 'stkQuery'])->name('mpesa.stk-query');
 });
 
@@ -304,12 +310,14 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->prefix('api/sync')->name('sync.')->group(function () {
     Route::get('/status', function () {
         $tenant = app()->bound('currentTenant') ? app('currentTenant') : request()->user()?->tenant;
-        return response()->json(app(\App\Services\CloudSyncService::class)->getSyncStatus($tenant?->id));
+
+        return response()->json(app(CloudSyncService::class)->getSyncStatus($tenant?->id));
     })->name('status');
 
     Route::post('/trigger', function () {
         $tenant = app()->bound('currentTenant') ? app('currentTenant') : request()->user()?->tenant;
-        $res = app(\App\Services\CloudSyncService::class)->pushPendingToCloud($tenant?->id);
+        $res = app(CloudSyncService::class)->pushPendingToCloud($tenant?->id);
+
         return response()->json($res);
     })->name('trigger');
 });

@@ -7,18 +7,7 @@ import { useSuperAdmin } from '@/composables/useSuperAdmin';
 import { useToast } from '@/composables/useToast';
 import SuperAdminLayout from '@/layouts/SuperAdminLayout.vue';
 import { Head } from '@inertiajs/vue3';
-import {
-    KeyRound,
-    Lock,
-    Plus,
-    Search,
-    Shield,
-    ShieldCheck,
-    ShieldOff,
-    Trash2,
-    UserCheck,
-    Users,
-} from 'lucide-vue-next';
+import { KeyRound, Lock, Plus, Search, ShieldCheck, ShieldOff, Trash2, Users } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 const { systemUsers } = useSuperAdmin();
@@ -84,23 +73,17 @@ const roleColor: Record<string, string> = {
 <template>
     <Head title="Super Admin — System Users" />
     <SuperAdminLayout>
-        <div class="p-6 space-y-6 max-w-[1600px] mx-auto">
+        <div class="mx-auto max-w-[1600px] space-y-6 p-6">
             <!-- Header -->
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 class="text-xl font-bold text-zinc-100 flex items-center gap-2">
+                    <h1 class="flex items-center gap-2 text-xl font-bold text-zinc-100">
                         <Users class="size-5 text-violet-400" />
                         Platform System Users
                     </h1>
-                    <p class="text-xs text-zinc-500 mt-0.5">
-                        Manage super admin accounts and support personnel with access to the platform console.
-                    </p>
+                    <p class="mt-0.5 text-xs text-zinc-500">Manage super admin accounts and support personnel with access to the platform console.</p>
                 </div>
-                <Button
-                    size="sm"
-                    class="h-8 text-xs bg-violet-600 hover:bg-violet-700 text-white gap-1.5"
-                    @click="addUserModal = true"
-                >
+                <Button size="sm" class="h-8 gap-1.5 bg-violet-600 text-xs text-white hover:bg-violet-700" @click="addUserModal = true">
                     <Plus class="size-3.5" />
                     Add System User
                 </Button>
@@ -109,22 +92,24 @@ const roleColor: Record<string, string> = {
             <!-- Stats -->
             <div class="grid grid-cols-3 gap-3">
                 <div class="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-                    <p class="text-[11px] text-zinc-500 uppercase font-semibold mb-1">Total Admin Accounts</p>
-                    <p class="text-2xl font-extrabold text-zinc-100 font-mono">{{ systemUsers.length }}</p>
+                    <p class="mb-1 text-[11px] font-semibold uppercase text-zinc-500">Total Admin Accounts</p>
+                    <p class="font-mono text-2xl font-extrabold text-zinc-100">{{ systemUsers.length }}</p>
                 </div>
                 <div class="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-                    <p class="text-[11px] text-zinc-500 uppercase font-semibold mb-1">Active Sessions</p>
-                    <p class="text-2xl font-extrabold text-emerald-400 font-mono">{{ systemUsers.filter(u => u.status === 'Active').length }}</p>
+                    <p class="mb-1 text-[11px] font-semibold uppercase text-zinc-500">Active Sessions</p>
+                    <p class="font-mono text-2xl font-extrabold text-emerald-400">{{ systemUsers.filter((u) => u.status === 'Active').length }}</p>
                 </div>
                 <div class="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-                    <p class="text-[11px] text-zinc-500 uppercase font-semibold mb-1">MFA Protected</p>
-                    <p class="text-2xl font-extrabold text-violet-400 font-mono">{{ systemUsers.filter(u => u.mfaEnabled).length }}/{{ systemUsers.length }}</p>
+                    <p class="mb-1 text-[11px] font-semibold uppercase text-zinc-500">MFA Protected</p>
+                    <p class="font-mono text-2xl font-extrabold text-violet-400">
+                        {{ systemUsers.filter((u) => u.mfaEnabled).length }}/{{ systemUsers.length }}
+                    </p>
                 </div>
             </div>
 
             <!-- Search -->
             <div class="relative w-72">
-                <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-zinc-500" />
+                <Search class="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-zinc-500" />
                 <input
                     v-model="searchQuery"
                     type="text"
@@ -134,9 +119,9 @@ const roleColor: Record<string, string> = {
             </div>
 
             <!-- Users Table -->
-            <div class="rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden">
+            <div class="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900">
                 <table class="w-full text-xs">
-                    <thead class="bg-zinc-800/60 border-b border-zinc-800 text-zinc-400">
+                    <thead class="border-b border-zinc-800 bg-zinc-800/60 text-zinc-400">
                         <tr>
                             <th class="px-5 py-3 text-left font-semibold uppercase">User / Email</th>
                             <th class="px-4 py-3 text-left font-semibold uppercase">System Role</th>
@@ -151,12 +136,20 @@ const roleColor: Record<string, string> = {
                         <tr
                             v-for="user in filteredUsers"
                             :key="user.id"
-                            :class="['hover:bg-zinc-800/30 transition-colors', user.status !== 'Active' && 'opacity-50']"
+                            :class="['transition-colors hover:bg-zinc-800/30', user.status !== 'Active' && 'opacity-50']"
                         >
                             <td class="px-5 py-3">
                                 <div class="flex items-center gap-3">
-                                    <div class="size-8 rounded-full bg-violet-600/30 border border-violet-600/30 flex items-center justify-center text-[10px] font-bold text-violet-300 shrink-0">
-                                        {{ user.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2) }}
+                                    <div
+                                        class="flex size-8 shrink-0 items-center justify-center rounded-full border border-violet-600/30 bg-violet-600/30 text-[10px] font-bold text-violet-300"
+                                    >
+                                        {{
+                                            user.name
+                                                .split(' ')
+                                                .map((n: string) => n[0])
+                                                .join('')
+                                                .slice(0, 2)
+                                        }}
                                     </div>
                                     <div>
                                         <p class="font-bold text-zinc-100">{{ user.name }}</p>
@@ -165,26 +158,36 @@ const roleColor: Record<string, string> = {
                                 </div>
                             </td>
                             <td class="px-4 py-3">
-                                <span :class="['inline-flex px-2 py-0.5 rounded border text-[10px] font-bold', roleColor[user.role] || 'text-zinc-300 bg-zinc-700/60 border-zinc-600/30']">
+                                <span
+                                    :class="[
+                                        'inline-flex rounded border px-2 py-0.5 text-[10px] font-bold',
+                                        roleColor[user.role] || 'border-zinc-600/30 bg-zinc-700/60 text-zinc-300',
+                                    ]"
+                                >
                                     {{ user.role }}
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <span :class="['text-[10px] font-bold px-2 py-0.5 rounded', user.status === 'Active' ? 'bg-emerald-600/20 text-emerald-300' : 'bg-zinc-700/60 text-zinc-400']">
+                                <span
+                                    :class="[
+                                        'rounded px-2 py-0.5 text-[10px] font-bold',
+                                        user.status === 'Active' ? 'bg-emerald-600/20 text-emerald-300' : 'bg-zinc-700/60 text-zinc-400',
+                                    ]"
+                                >
                                     {{ user.status }}
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <ShieldCheck v-if="user.mfaEnabled" class="size-4 text-emerald-400 mx-auto" />
-                                <ShieldOff v-else class="size-4 text-zinc-600 mx-auto" />
+                                <ShieldCheck v-if="user.mfaEnabled" class="mx-auto size-4 text-emerald-400" />
+                                <ShieldOff v-else class="mx-auto size-4 text-zinc-600" />
                             </td>
                             <td class="px-4 py-3 text-zinc-400">{{ user.lastLogin }}</td>
-                            <td class="px-4 py-3 text-zinc-500 font-mono">{{ user.createdAt }}</td>
+                            <td class="px-4 py-3 font-mono text-zinc-500">{{ user.createdAt }}</td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-end gap-1.5">
                                     <button
                                         type="button"
-                                        class="p-1.5 rounded text-zinc-500 hover:text-amber-400 hover:bg-amber-600/10 transition-colors"
+                                        class="rounded p-1.5 text-zinc-500 transition-colors hover:bg-amber-600/10 hover:text-amber-400"
                                         title="Toggle MFA"
                                         @click="handleResetMfa(user)"
                                     >
@@ -192,7 +195,7 @@ const roleColor: Record<string, string> = {
                                     </button>
                                     <button
                                         type="button"
-                                        class="p-1.5 rounded text-zinc-500 hover:text-sky-400 hover:bg-sky-600/10 transition-colors"
+                                        class="rounded p-1.5 text-zinc-500 transition-colors hover:bg-sky-600/10 hover:text-sky-400"
                                         title="Toggle Active"
                                         @click="handleDeactivate(user)"
                                     >
@@ -200,7 +203,7 @@ const roleColor: Record<string, string> = {
                                     </button>
                                     <button
                                         type="button"
-                                        class="p-1.5 rounded text-zinc-500 hover:text-rose-400 hover:bg-rose-600/10 transition-colors"
+                                        class="rounded p-1.5 text-zinc-500 transition-colors hover:bg-rose-600/10 hover:text-rose-400"
                                         title="Delete User"
                                         @click="handleDelete(user)"
                                     >
@@ -216,7 +219,7 @@ const roleColor: Record<string, string> = {
 
         <!-- Add System User Modal -->
         <Dialog :open="addUserModal" @update:open="(v) => (addUserModal = v)">
-            <DialogContent class="sm:max-w-sm bg-zinc-900 border-zinc-700 text-zinc-100">
+            <DialogContent class="border-zinc-700 bg-zinc-900 text-zinc-100 sm:max-w-sm">
                 <DialogHeader>
                     <DialogTitle class="text-base font-bold">Add Platform System User</DialogTitle>
                     <DialogDescription class="sr-only">Create a new platform-level system user with an assigned admin role</DialogDescription>
@@ -224,15 +227,26 @@ const roleColor: Record<string, string> = {
                 <div class="space-y-3 py-2 text-xs">
                     <div>
                         <Label class="text-xs text-zinc-400">Full Name</Label>
-                        <Input v-model="newUser.name" placeholder="e.g. Support Engineer" class="mt-1 text-xs bg-zinc-800 border-zinc-700 text-zinc-100" />
+                        <Input
+                            v-model="newUser.name"
+                            placeholder="e.g. Support Engineer"
+                            class="mt-1 border-zinc-700 bg-zinc-800 text-xs text-zinc-100"
+                        />
                     </div>
                     <div>
                         <Label class="text-xs text-zinc-400">Work Email</Label>
-                        <Input v-model="newUser.email" placeholder="user@mdepos.co.ke" class="mt-1 text-xs bg-zinc-800 border-zinc-700 text-zinc-100" />
+                        <Input
+                            v-model="newUser.email"
+                            placeholder="user@mdepos.co.ke"
+                            class="mt-1 border-zinc-700 bg-zinc-800 text-xs text-zinc-100"
+                        />
                     </div>
                     <div>
                         <Label class="text-xs text-zinc-400">System Role</Label>
-                        <select v-model="newUser.role" class="mt-1 h-9 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 text-xs text-zinc-200">
+                        <select
+                            v-model="newUser.role"
+                            class="mt-1 h-9 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 text-xs text-zinc-200"
+                        >
                             <option value="Super Admin">Super Admin (Full Platform Access)</option>
                             <option value="Support Admin">Support Admin (Tenant Viewing Only)</option>
                             <option value="Billing Admin">Billing Admin (Subscriptions & Billing)</option>
@@ -241,7 +255,7 @@ const roleColor: Record<string, string> = {
                 </div>
                 <DialogFooter class="gap-2">
                     <Button variant="ghost" size="sm" class="text-zinc-400" @click="addUserModal = false">Cancel</Button>
-                    <Button size="sm" class="bg-violet-600 hover:bg-violet-700 text-white" @click="handleAddUser">Create System User</Button>
+                    <Button size="sm" class="bg-violet-600 text-white hover:bg-violet-700" @click="handleAddUser">Create System User</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

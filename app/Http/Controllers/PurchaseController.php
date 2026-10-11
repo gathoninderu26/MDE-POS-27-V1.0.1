@@ -27,7 +27,7 @@ class PurchaseController extends Controller
             ->with(['supplier', 'branch', 'user', 'invoice.verifiedBy'])
             ->latest()
             ->get()
-            ->map(fn($p) => [
+            ->map(fn ($p) => [
                 'id' => $p->id,
                 'poNumber' => $p->po_number,
                 'documentType' => $p->document_type ?? 'PO',
@@ -59,7 +59,7 @@ class PurchaseController extends Controller
                     'varianceAmount' => (float) $p->invoice->variance_amount,
                     'reconciliationStatus' => $p->invoice->reconciliation_status,
                     'status' => $p->invoice->status,
-                    'hasDocument' => !empty($p->invoice->file_path) && $p->invoice->file_path !== 'stored',
+                    'hasDocument' => ! empty($p->invoice->file_path) && $p->invoice->file_path !== 'stored',
                     'filePath' => $p->invoice->file_path,
                     'fileName' => $p->invoice->file_name,
                     'verifiedAt' => $p->invoice->verified_at?->format('Y-m-d H:i'),
@@ -111,13 +111,13 @@ class PurchaseController extends Controller
 
         if ($docType === 'LPO') {
             $lpoCount = Purchase::where('tenant_id', $tenant->id)->where('document_type', 'LPO')->count() + 1;
-            $lpoNumber = 'LPO-' . str_pad((string) $lpoCount, 4, '0', STR_PAD_LEFT);
+            $lpoNumber = 'LPO-'.str_pad((string) $lpoCount, 4, '0', STR_PAD_LEFT);
             $poNumber = $lpoNumber;
         } else {
             $poCount = Purchase::where('tenant_id', $tenant->id)->where(function ($q) {
                 $q->where('document_type', 'PO')->orWhereNull('document_type');
             })->count() + 1;
-            $poNumber = 'PO-' . str_pad((string) $poCount, 4, '0', STR_PAD_LEFT);
+            $poNumber = 'PO-'.str_pad((string) $poCount, 4, '0', STR_PAD_LEFT);
             $lpoNumber = null;
         }
 
@@ -140,7 +140,7 @@ class PurchaseController extends Controller
             'notes' => $validated['notes'] ?? null,
         ]);
 
-        if (!empty($validated['supplier_id'])) {
+        if (! empty($validated['supplier_id'])) {
             $supplier = Supplier::find($validated['supplier_id']);
             if ($supplier) {
                 $supplier->increment('total_purchases', $validated['total_amount']);
@@ -149,6 +149,7 @@ class PurchaseController extends Controller
         }
 
         $label = $docType === 'LPO' ? "Local Purchase Order {$lpoNumber}" : "Purchase order {$poNumber}";
+
         return back()->with('success', "{$label} created successfully.");
     }
 
@@ -168,18 +169,18 @@ class PurchaseController extends Controller
         $totalUnitsAdded = 0;
 
         // Check if notes contains JSON structured bulk items
-        if (!empty($purchase->notes)) {
+        if (! empty($purchase->notes)) {
             $items = json_decode($purchase->notes, true);
             if (is_array($items)) {
                 $receivedIds = $validated['received_items'] ?? null;
 
                 foreach ($items as $item) {
                     $prodId = $item['product_id'] ?? null;
-                    if ($receivedIds !== null && !in_array($prodId, $receivedIds)) {
+                    if ($receivedIds !== null && ! in_array($prodId, $receivedIds)) {
                         continue;
                     }
 
-                    if (!empty($prodId) && !empty($item['quantity'])) {
+                    if (! empty($prodId) && ! empty($item['quantity'])) {
                         $product = Product::where('tenant_id', $tenant->id)->find($prodId);
                         if ($product) {
                             $qty = (int) $item['quantity'];
@@ -193,6 +194,7 @@ class PurchaseController extends Controller
         }
 
         $ref = $purchase->document_type === 'LPO' ? ($purchase->lpo_number ?? $purchase->po_number) : $purchase->po_number;
+
         return back()->with('success', "{$ref} received & synced: +{$totalUnitsAdded} units updated across {$restockedCount} products.");
     }
 
@@ -216,12 +218,12 @@ class PurchaseController extends Controller
         abort_unless($purchase->tenant_id === $tenant->id, 403);
 
         $request->validate([
-            'invoice_file'   => 'nullable|file|mimes:jpeg,png,webp,jpg,pdf|max:10240',
-            'image_base64'   => 'nullable|string',
-            'qr_payload'     => 'nullable|string|max:2000',
+            'invoice_file' => 'nullable|file|mimes:jpeg,png,webp,jpg,pdf|max:10240',
+            'image_base64' => 'nullable|string',
+            'qr_payload' => 'nullable|string|max:2000',
             'invoice_number' => 'nullable|string|max:100',
-            'invoice_date'   => 'nullable|string|max:50',
-            'total_amount'   => 'nullable|numeric|min:0',
+            'invoice_date' => 'nullable|string|max:50',
+            'total_amount' => 'nullable|numeric|min:0',
         ]);
 
         $filePath = null;
@@ -230,7 +232,7 @@ class PurchaseController extends Controller
         $fileSize = 0;
 
         $disk = Storage::disk('local');
-        $tenantDir = "tenants/{$tenant->id}/invoices/" . date('Y/m');
+        $tenantDir = "tenants/{$tenant->id}/invoices/".date('Y/m');
 
         if ($request->hasFile('invoice_file')) {
             $file = $request->file('invoice_file');
@@ -249,13 +251,13 @@ class PurchaseController extends Controller
             }
 
             $decoded = base64_decode($base64Data);
-            $fileName = 'scan_' . time() . '.' . $type;
+            $fileName = 'scan_'.time().'.'.$type;
             $fileSize = strlen($decoded);
             $filePath = "{$tenantDir}/{$fileName}";
             $disk->put($filePath, $decoded);
         }
 
-        if (!$filePath) {
+        if (! $filePath) {
             return response()->json(['error' => 'No valid invoice document or image was provided.'], 422);
         }
 
@@ -269,17 +271,17 @@ class PurchaseController extends Controller
             : ($parsedQr['total_amount'] ?? (float) $purchase->total_amount);
         $initialInvoicedItems = [];
 
-        if (!empty($purchase->notes)) {
+        if (! empty($purchase->notes)) {
             $decoded = json_decode($purchase->notes, true);
             if (is_array($decoded)) {
                 $initialInvoicedItems = array_map(function ($item) {
                     return [
                         'product_id' => $item['product_id'] ?? null,
-                        'name'       => $item['name'] ?? 'Item',
-                        'sku'        => $item['sku'] ?? '',
-                        'quantity'   => (float) ($item['quantity'] ?? $item['total_units'] ?? 1),
-                        'unit_cost'  => (float) ($item['unit_cost'] ?? 0),
-                        'total'      => (float) ($item['total'] ?? $item['line_total'] ?? 0),
+                        'name' => $item['name'] ?? 'Item',
+                        'sku' => $item['sku'] ?? '',
+                        'quantity' => (float) ($item['quantity'] ?? $item['total_units'] ?? 1),
+                        'unit_cost' => (float) ($item['unit_cost'] ?? 0),
+                        'total' => (float) ($item['total'] ?? $item['line_total'] ?? 0),
                     ];
                 }, $decoded);
             }
@@ -288,11 +290,11 @@ class PurchaseController extends Controller
         if (empty($initialInvoicedItems)) {
             $initialInvoicedItems = [[
                 'product_id' => null,
-                'name'       => $purchase->items_description ?: 'General Supplies',
-                'sku'        => '',
-                'quantity'   => 1,
-                'unit_cost'  => $defaultInvoicedTotal,
-                'total'      => $defaultInvoicedTotal,
+                'name' => $purchase->items_description ?: 'General Supplies',
+                'sku' => '',
+                'quantity' => 1,
+                'unit_cost' => $defaultInvoicedTotal,
+                'total' => $defaultInvoicedTotal,
             ]];
         }
 
@@ -302,64 +304,64 @@ class PurchaseController extends Controller
         if ($request->boolean('attach_only')) {
             $user = $request->user();
             $invNum = $request->input('invoice_number')
-                ?: ($parsedQr['invoice_number'] ?? ('INV-' . ($purchase->document_type === 'LPO' ? ($purchase->lpo_number ?? $purchase->po_number) : $purchase->po_number)));
+                ?: ($parsedQr['invoice_number'] ?? ('INV-'.($purchase->document_type === 'LPO' ? ($purchase->lpo_number ?? $purchase->po_number) : $purchase->po_number)));
             $invDate = $request->input('invoice_date')
                 ?: ($parsedQr['invoice_date'] ?? now()->toDateString());
             $invTotal = $defaultInvoicedTotal;
 
             PurchaseInvoice::updateOrCreate(
                 [
-                    'tenant_id'   => $tenant->id,
+                    'tenant_id' => $tenant->id,
                     'purchase_id' => $purchase->id,
                 ],
                 [
-                    'supplier_id'           => $purchase->supplier_id,
-                    'invoice_number'        => $invNum,
-                    'invoice_date'          => $invDate,
-                    'tax_pin'               => $parsedQr['tax_pin'] ?? null,
-                    'control_unit_code'     => $parsedQr['control_unit_code'] ?? null,
-                    'subtotal'              => $invTotal,
-                    'tax_amount'            => 0,
-                    'total_amount'          => $invTotal,
-                    'po_expected_total'     => (float) $purchase->total_amount,
-                    'variance_amount'       => 0,
-                    'raw_qr_payload'        => $qrPayload,
-                    'extracted_items'       => $initialInvoicedItems,
+                    'supplier_id' => $purchase->supplier_id,
+                    'invoice_number' => $invNum,
+                    'invoice_date' => $invDate,
+                    'tax_pin' => $parsedQr['tax_pin'] ?? null,
+                    'control_unit_code' => $parsedQr['control_unit_code'] ?? null,
+                    'subtotal' => $invTotal,
+                    'tax_amount' => 0,
+                    'total_amount' => $invTotal,
+                    'po_expected_total' => (float) $purchase->total_amount,
+                    'variance_amount' => 0,
+                    'raw_qr_payload' => $qrPayload,
+                    'extracted_items' => $initialInvoicedItems,
                     'reconciliation_matrix' => $comparison['rows'],
-                    'file_path'             => $filePath,
-                    'file_name'             => $fileName ?? 'invoice_scan.jpg',
-                    'mime_type'             => $mimeType ?? 'image/jpeg',
-                    'file_size'             => $fileSize ?? 0,
+                    'file_path' => $filePath,
+                    'file_name' => $fileName ?? 'invoice_scan.jpg',
+                    'mime_type' => $mimeType ?? 'image/jpeg',
+                    'file_size' => $fileSize ?? 0,
                     'reconciliation_status' => 'ATTACHED_ONLY',
-                    'status'                => 'Verified',
-                    'verified_by_user_id'   => $user->id,
-                    'verified_at'           => now(),
-                    'notes'                 => 'Physical invoice softcopy archived.',
+                    'status' => 'Verified',
+                    'verified_by_user_id' => $user->id,
+                    'verified_at' => now(),
+                    'notes' => 'Physical invoice softcopy archived.',
                 ]
             );
 
             return response()->json([
-                'success'   => true,
-                'attached'  => true,
-                'message'   => "Invoice {$invNum} stored and attached to {$purchase->po_number}.",
+                'success' => true,
+                'attached' => true,
+                'message' => "Invoice {$invNum} stored and attached to {$purchase->po_number}.",
                 'file_path' => $filePath,
                 'file_name' => $fileName,
             ]);
         }
 
         return response()->json([
-            'success'   => true,
+            'success' => true,
             'file_path' => $filePath,
             'file_name' => $fileName,
             'mime_type' => $mimeType,
             'file_size' => $fileSize,
-            'qr'        => $parsedQr,
-            'comparison'=> $comparison,
-            'po'        => [
-                'id'       => $purchase->id,
+            'qr' => $parsedQr,
+            'comparison' => $comparison,
+            'po' => [
+                'id' => $purchase->id,
                 'poNumber' => $purchase->po_number,
                 'supplier' => $purchase->supplier?->name,
-                'amount'   => (float) $purchase->total_amount,
+                'amount' => (float) $purchase->total_amount,
             ],
         ]);
     }
@@ -375,82 +377,82 @@ class PurchaseController extends Controller
         $user = $request->user();
 
         $validated = $request->validate([
-            'file_path'            => 'required|string',
-            'file_name'            => 'nullable|string',
-            'mime_type'            => 'nullable|string',
-            'file_size'            => 'nullable|integer',
-            'invoice_number'       => 'nullable|string|max:100',
-            'invoice_date'         => 'nullable|date',
-            'tax_pin'              => 'nullable|string|max:50',
-            'control_unit_code'    => 'nullable|string|max:100',
-            'raw_qr_payload'       => 'nullable|string',
-            'total_amount'         => 'nullable|numeric|min:0',
-            'items'                => 'nullable|array',
-            'items.*.name'         => 'nullable|string',
-            'items.*.sku'          => 'nullable|string',
-            'items.*.product_id'   => 'nullable|integer',
-            'items.*.quantity'     => 'nullable|numeric|min:0',
-            'items.*.unit_cost'    => 'nullable|numeric|min:0',
-            'items.*.total'        => 'nullable|numeric|min:0',
-            'auto_receive_stock'   => 'nullable|boolean',
-            'notes'                => 'nullable|string|max:1000',
+            'file_path' => 'required|string',
+            'file_name' => 'nullable|string',
+            'mime_type' => 'nullable|string',
+            'file_size' => 'nullable|integer',
+            'invoice_number' => 'nullable|string|max:100',
+            'invoice_date' => 'nullable|date',
+            'tax_pin' => 'nullable|string|max:50',
+            'control_unit_code' => 'nullable|string|max:100',
+            'raw_qr_payload' => 'nullable|string',
+            'total_amount' => 'nullable|numeric|min:0',
+            'items' => 'nullable|array',
+            'items.*.name' => 'nullable|string',
+            'items.*.sku' => 'nullable|string',
+            'items.*.product_id' => 'nullable|integer',
+            'items.*.quantity' => 'nullable|numeric|min:0',
+            'items.*.unit_cost' => 'nullable|numeric|min:0',
+            'items.*.total' => 'nullable|numeric|min:0',
+            'auto_receive_stock' => 'nullable|boolean',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
-        $invoiceNumber = !empty($validated['invoice_number'])
+        $invoiceNumber = ! empty($validated['invoice_number'])
             ? trim($validated['invoice_number'])
-            : ('INV-' . ($purchase->document_type === 'LPO' ? ($purchase->lpo_number ?? $purchase->po_number) : $purchase->po_number));
+            : ('INV-'.($purchase->document_type === 'LPO' ? ($purchase->lpo_number ?? $purchase->po_number) : $purchase->po_number));
 
         $totalAmount = isset($validated['total_amount']) ? (float) $validated['total_amount'] : (float) $purchase->total_amount;
 
-        $items = !empty($validated['items']) ? $validated['items'] : [[
-            'name'       => $purchase->items_description ?: 'General Supplies (Softcopy Attached)',
-            'sku'        => '',
+        $items = ! empty($validated['items']) ? $validated['items'] : [[
+            'name' => $purchase->items_description ?: 'General Supplies (Softcopy Attached)',
+            'sku' => '',
             'product_id' => null,
-            'quantity'   => 1,
-            'unit_cost'  => $totalAmount,
-            'total'      => $totalAmount,
+            'quantity' => 1,
+            'unit_cost' => $totalAmount,
+            'total' => $totalAmount,
         ]];
 
-        $hasExtractedItems = !empty($validated['items']) && count($validated['items']) > 0;
+        $hasExtractedItems = ! empty($validated['items']) && count($validated['items']) > 0;
         $comparison = $parser->compare($purchase, $items, $totalAmount);
         $reconciliationStatus = $hasExtractedItems ? $comparison['reconciliation_status'] : 'ATTACHED_ONLY';
 
-                $resolvedFilePath = $validated['file_path'];
-                $existingInv = $purchase->invoice;
-                if (($resolvedFilePath === 'stored' || empty($resolvedFilePath)) && $existingInv && !empty($existingInv->file_path) && $existingInv->file_path !== 'stored') {
-                    $resolvedFilePath = $existingInv->file_path;
-                }
+        $resolvedFilePath = $validated['file_path'];
+        $existingInv = $purchase->invoice;
+        if (($resolvedFilePath === 'stored' || empty($resolvedFilePath)) && $existingInv && ! empty($existingInv->file_path) && $existingInv->file_path !== 'stored') {
+            $resolvedFilePath = $existingInv->file_path;
+        }
 
-                PurchaseInvoice::updateOrCreate(
-                    [
-                        'tenant_id'   => $tenant->id,
-                        'purchase_id' => $purchase->id,
-                    ],
-                    [
-                        'supplier_id'           => $purchase->supplier_id,
-                        'invoice_number'        => $invoiceNumber,
-                        'invoice_date'          => $validated['invoice_date'] ?? now()->toDateString(),
-                        'tax_pin'               => $validated['tax_pin'] ?? null,
-                        'control_unit_code'     => $validated['control_unit_code'] ?? null,
-                        'subtotal'              => $totalAmount,
-                        'tax_amount'            => 0,
-                        'total_amount'          => $totalAmount,
-                        'po_expected_total'     => (float) $purchase->total_amount,
-                        'variance_amount'       => $comparison['variance_total'],
-                        'raw_qr_payload'        => $validated['raw_qr_payload'] ?? null,
-                        'extracted_items'       => $items,
-                        'reconciliation_matrix' => $comparison['rows'],
-                        'file_path'             => $resolvedFilePath,
-                        'file_name'             => $validated['file_name'] ?? ($existingInv?->file_name ?? 'invoice_scan.jpg'),
-                        'mime_type'             => $validated['mime_type'] ?? ($existingInv?->mime_type ?? 'image/jpeg'),
-                        'file_size'             => $validated['file_size'] ?? ($existingInv?->file_size ?? 0),
-                        'reconciliation_status' => $reconciliationStatus,
-                        'status'                => 'Verified',
-                        'verified_by_user_id'   => $user->id,
-                        'verified_at'           => now(),
-                        'notes'                 => $validated['notes'] ?? ($hasExtractedItems ? null : 'Physical invoice softcopy archived.'),
-                    ]
-                );
+        PurchaseInvoice::updateOrCreate(
+            [
+                'tenant_id' => $tenant->id,
+                'purchase_id' => $purchase->id,
+            ],
+            [
+                'supplier_id' => $purchase->supplier_id,
+                'invoice_number' => $invoiceNumber,
+                'invoice_date' => $validated['invoice_date'] ?? now()->toDateString(),
+                'tax_pin' => $validated['tax_pin'] ?? null,
+                'control_unit_code' => $validated['control_unit_code'] ?? null,
+                'subtotal' => $totalAmount,
+                'tax_amount' => 0,
+                'total_amount' => $totalAmount,
+                'po_expected_total' => (float) $purchase->total_amount,
+                'variance_amount' => $comparison['variance_total'],
+                'raw_qr_payload' => $validated['raw_qr_payload'] ?? null,
+                'extracted_items' => $items,
+                'reconciliation_matrix' => $comparison['rows'],
+                'file_path' => $resolvedFilePath,
+                'file_name' => $validated['file_name'] ?? ($existingInv?->file_name ?? 'invoice_scan.jpg'),
+                'mime_type' => $validated['mime_type'] ?? ($existingInv?->mime_type ?? 'image/jpeg'),
+                'file_size' => $validated['file_size'] ?? ($existingInv?->file_size ?? 0),
+                'reconciliation_status' => $reconciliationStatus,
+                'status' => 'Verified',
+                'verified_by_user_id' => $user->id,
+                'verified_at' => now(),
+                'notes' => $validated['notes'] ?? ($hasExtractedItems ? null : 'Physical invoice softcopy archived.'),
+            ]
+        );
 
         $autoReceive = $validated['auto_receive_stock'] ?? true;
         if ($autoReceive) {
@@ -463,7 +465,7 @@ class PurchaseController extends Controller
                 $prodId = $item['product_id'] ?? null;
                 $qty = (int) ($item['quantity'] ?? 0);
 
-                if (!empty($prodId) && $qty > 0) {
+                if (! empty($prodId) && $qty > 0) {
                     $product = Product::where('tenant_id', $tenant->id)->find($prodId);
                     if ($product) {
                         $product->increment('stock_quantity', $qty);
@@ -474,6 +476,7 @@ class PurchaseController extends Controller
             }
 
             $ref = $purchase->document_type === 'LPO' ? ($purchase->lpo_number ?? $purchase->po_number) : $purchase->po_number;
+
             return back()->with('success', "Invoice {$validated['invoice_number']} verified & attached to {$ref}. +{$totalUnitsAdded} units stocked into inventory.");
         }
 
@@ -489,12 +492,12 @@ class PurchaseController extends Controller
         abort_unless($purchase->tenant_id === $tenant->id, 403);
 
         $invoice = $purchase->invoice;
-        abort_unless($invoice && !empty($invoice->file_path), 404, 'Invoice document not found.');
+        abort_unless($invoice && ! empty($invoice->file_path), 404, 'Invoice document not found.');
 
         $disk = Storage::disk('local');
         $filePath = $invoice->file_path;
 
-        if (!$disk->exists($filePath) && !empty($invoice->file_name)) {
+        if (! $disk->exists($filePath) && ! empty($invoice->file_name)) {
             $allFiles = $disk->allFiles("tenants/{$tenant->id}/invoices");
             foreach ($allFiles as $candidate) {
                 if (basename($candidate) === $invoice->file_name) {
@@ -508,9 +511,10 @@ class PurchaseController extends Controller
         abort_unless($disk->exists($filePath), 404, 'File missing from storage.');
 
         $fullPath = $disk->path($filePath);
+
         return response()->file($fullPath, [
-            'Content-Type'        => $invoice->mime_type ?? 'image/jpeg',
-            'Content-Disposition' => 'inline; filename="' . ($invoice->file_name ?? 'invoice.jpg') . '"',
+            'Content-Type' => $invoice->mime_type ?? 'image/jpeg',
+            'Content-Disposition' => 'inline; filename="'.($invoice->file_name ?? 'invoice.jpg').'"',
         ]);
     }
 }

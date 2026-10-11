@@ -23,10 +23,11 @@ class BindTenantCommand extends Command
         $identifier = $this->argument('tenant') ?? $this->option('slug') ?? $this->option('id');
 
         if (! $identifier) {
-            $this->info("Available Tenants in local database:");
+            $this->info('Available Tenants in local database:');
             $tenants = Tenant::all(['id', 'name', 'slug', 'business_type']);
             if ($tenants->isEmpty()) {
-                $this->error("No tenants exist in local database. Please run migrations and seeders or connect to cloud first.");
+                $this->error('No tenants exist in local database. Please run migrations and seeders or connect to cloud first.');
+
                 return Command::FAILURE;
             }
 
@@ -43,22 +44,23 @@ class BindTenantCommand extends Command
 
         if (! $tenant) {
             $this->error("Tenant \"{$identifier}\" not found.");
+
             return Command::FAILURE;
         }
 
-        $license = $this->option('license') ?? 'LIC-' . strtoupper(substr(md5($tenant->slug . microtime()), 0, 12));
+        $license = $this->option('license') ?? 'LIC-'.strtoupper(substr(md5($tenant->slug.microtime()), 0, 12));
 
         // Update local .env
         $this->updateEnvFile([
-            'TENANT_MODE'        => 'single',
-            'LOCKED_TENANT_ID'   => (string) $tenant->id,
+            'TENANT_MODE' => 'single',
+            'LOCKED_TENANT_ID' => (string) $tenant->id,
             'LOCKED_TENANT_SLUG' => $tenant->slug,
             'TENANT_LICENSE_KEY' => $license,
         ]);
 
         $this->call('config:clear');
 
-        $this->info("✓ PC Hardware Lock Applied Successfully!");
+        $this->info('✓ PC Hardware Lock Applied Successfully!');
         $this->info("• Store: {$tenant->name}");
         $this->info("• Tenant ID: {$tenant->id}");
         $this->info("• Locked Slug: {$tenant->slug}");
@@ -66,12 +68,12 @@ class BindTenantCommand extends Command
         $this->line("This PC will now strictly run {$tenant->name} without requiring subdomains or allowing cross-tenant switching.");
 
         if ($this->option('pull')) {
-            $this->info("Pulling catalog from Supabase...");
+            $this->info('Pulling catalog from Supabase...');
             $pull = $syncService->pullFromCloud($tenant->id);
             if ($pull['success'] ?? false) {
                 $this->info("• Synchronized {$pull['updated_products']} products from cloud.");
             } else {
-                $this->warn("• Cloud pull: " . ($pull['message'] ?? 'Skipped'));
+                $this->warn('• Cloud pull: '.($pull['message'] ?? 'Skipped'));
             }
         }
 

@@ -58,4 +58,3 @@ Route::middleware('auth')->group(function () {
 // Demo access route: accessible by anyone, allows instant switching between demo roles and tenants
 Route::match(['get', 'post'], 'demo-login', [AuthenticatedSessionController::class, 'demoLogin'])
     ->name('demo.login');
-

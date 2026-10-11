@@ -14,9 +14,9 @@ import { useBranch } from '@/composables/useBranch';
 import { useBusinessTerms } from '@/composables/useBusinessTerms';
 import { useCart } from '@/composables/useCart';
 import { useDemoCountdown } from '@/composables/useDemoCountdown';
+import { useFeatures } from '@/composables/useFeatures';
 import { usePermissions } from '@/composables/usePermissions';
 import { useTenant } from '@/composables/useTenant';
-import { useFeatures } from '@/composables/useFeatures';
 import { Link, usePage } from '@inertiajs/vue3';
 import {
     BarChart3,
@@ -25,6 +25,7 @@ import {
     ChevronRight,
     CircleDollarSign,
     Clock,
+    Layers,
     LayoutDashboard,
     LogOut,
     Package,
@@ -37,21 +38,20 @@ import {
     Smartphone,
     Store,
     Truck,
-    Utensils,
-    Layers,
     Users,
+    Utensils,
     Wrench,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 const page = usePage();
 const { currentTenant, hasModule, isDemo } = useTenant();
-const { isMultiBranch, hasFeature } = useFeatures();
+const { isMultiBranch } = useFeatures();
 const { terms } = useBusinessTerms();
 const { currentBranch } = useBranch();
 const { can, currentRole } = usePermissions();
 const { countdownText, isUrgent } = useDemoCountdown();
-const { heldSales, itemsCount } = useCart();
+useCart();
 
 const currentPath = computed(() => page.url);
 
@@ -77,10 +77,10 @@ const toggleSection = (section: string) => {
 };
 
 const getVerticalItemIcon = () => {
-    if (terms.value.showPrescriptions)    return Pill;
+    if (terms.value.showPrescriptions) return Pill;
     if (terms.value.showDimensionsAndSite) return Wrench;
-    if (terms.value.showTableManagement)  return Utensils;
-    if (terms.value.showSerialWarranty)   return Smartphone;
+    if (terms.value.showTableManagement) return Utensils;
+    if (terms.value.showSerialWarranty) return Smartphone;
     if (terms.value.businessType === 'Wholesale') return Truck;
     return Package;
 };
@@ -91,20 +91,22 @@ const getVerticalItemIcon = () => {
         <!-- Brand / Tenant Header -->
         <SidebarHeader class="border-b border-border/60 p-4">
             <div class="flex items-center gap-3">
-                <div class="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground font-black text-sm shadow-md shrink-0">
+                <div
+                    class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-sm font-black text-primary-foreground shadow-md"
+                >
                     <component :is="getVerticalItemIcon()" class="size-4 text-primary-foreground" />
                 </div>
                 <div class="flex flex-col overflow-hidden text-left leading-tight group-data-[collapsible=icon]:hidden">
-                    <span class="truncate font-bold text-sm text-foreground">{{ currentTenant.name }}</span>
-                    <div v-if="isMultiBranch" class="flex items-center gap-1.5 mt-0.5">
-                        <span class="truncate text-[11px] text-muted-foreground font-medium flex items-center gap-1">
-                            <Store class="size-3 text-emerald-600 dark:text-emerald-400 inline" />
+                    <span class="truncate text-sm font-bold text-foreground">{{ currentTenant.name }}</span>
+                    <div v-if="isMultiBranch" class="mt-0.5 flex items-center gap-1.5">
+                        <span class="flex items-center gap-1 truncate text-[11px] font-medium text-muted-foreground">
+                            <Store class="inline size-3 text-emerald-600 dark:text-emerald-400" />
                             {{ currentBranch.name }}
                         </span>
                     </div>
-                    <div v-else class="flex items-center gap-1.5 mt-0.5">
-                        <span class="truncate text-[11px] text-muted-foreground font-medium flex items-center gap-1">
-                            <Store class="size-3 text-primary inline" />
+                    <div v-else class="mt-0.5 flex items-center gap-1.5">
+                        <span class="flex items-center gap-1 truncate text-[11px] font-medium text-muted-foreground">
+                            <Store class="inline size-3 text-primary" />
                             {{ currentTenant.businessType }}
                         </span>
                     </div>
@@ -112,10 +114,10 @@ const getVerticalItemIcon = () => {
                     <div
                         v-if="isDemo"
                         :class="[
-                            'mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[10px] font-mono font-bold tracking-wide w-fit shadow-xs',
+                            'shadow-xs mt-1.5 inline-flex w-fit items-center gap-1.5 rounded-md border px-2 py-0.5 font-mono text-[10px] font-bold tracking-wide',
                             isUrgent
-                                ? 'bg-destructive/15 border-destructive/30 text-destructive animate-pulse'
-                                : 'bg-amber-500/15 border-amber-500/30 text-amber-600 dark:text-amber-400',
+                                ? 'animate-pulse border-destructive/30 bg-destructive/15 text-destructive'
+                                : 'border-amber-500/30 bg-amber-500/15 text-amber-600 dark:text-amber-400',
                         ]"
                         title="Active Sandbox Demo Duration"
                     >
@@ -124,10 +126,10 @@ const getVerticalItemIcon = () => {
                     </div>
                     <div
                         v-else
-                        class="mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold tracking-wide w-fit shadow-xs"
+                        class="shadow-xs mt-1.5 inline-flex w-fit items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold tracking-wide text-emerald-700 dark:text-emerald-400"
                         title="Live Production Workspace"
                     >
-                        <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="size-1.5 animate-pulse rounded-full bg-emerald-500"></span>
                         <span>LIVE ACCOUNT</span>
                     </div>
                 </div>
@@ -136,10 +138,10 @@ const getVerticalItemIcon = () => {
 
         <SidebarContent class="py-2">
             <!-- Quick POS Launch -->
-            <div v-if="hasModule('pos') && can('pos', 'create')" class="px-3 mb-2 group-data-[collapsible=icon]:hidden">
+            <div v-if="hasModule('pos') && can('pos', 'create')" class="mb-2 px-3 group-data-[collapsible=icon]:hidden">
                 <Link
                     href="/pos"
-                    class="flex items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2.5 text-xs font-bold text-primary-foreground shadow hover:bg-primary/90 transition-all"
+                    class="flex items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2.5 text-xs font-bold text-primary-foreground shadow transition-all hover:bg-primary/90"
                 >
                     <ShoppingCart class="size-4" />
                     <span>Launch {{ terms.badgeLabel.split(' ')[0] }} POS</span>
@@ -163,10 +165,12 @@ const getVerticalItemIcon = () => {
             <!-- Sales & Orders -->
             <SidebarGroup v-if="hasModule('sales') && can('sales', 'view')" class="px-2 py-1">
                 <SidebarGroupLabel
-                    class="cursor-pointer text-[11px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground flex items-center justify-between"
+                    class="flex cursor-pointer items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground"
                     @click="toggleSection('sales')"
                 >
-                    <span>{{ terms.showPrescriptions ? 'Dispensary & Orders' : terms.showTableManagement ? 'Dining & Tabs' : 'Sales & Orders' }}</span>
+                    <span>{{
+                        terms.showPrescriptions ? 'Dispensary & Orders' : terms.showTableManagement ? 'Dining & Tabs' : 'Sales & Orders'
+                    }}</span>
                     <ChevronRight :class="['size-3.5 transition-transform', openSections.sales ? 'rotate-90' : '']" />
                 </SidebarGroupLabel>
                 <SidebarMenu v-show="openSections.sales">
@@ -175,7 +179,9 @@ const getVerticalItemIcon = () => {
                         <SidebarMenuButton as-child :is-active="isPathActive('/pos')" tooltip="POS Register">
                             <Link href="/pos">
                                 <ShoppingCart class="size-4 text-emerald-600" />
-                                <span>{{ terms.showPrescriptions ? 'Dispensary POS' : terms.showTableManagement ? 'Table Register' : 'POS Register' }}</span>
+                                <span>{{
+                                    terms.showPrescriptions ? 'Dispensary POS' : terms.showTableManagement ? 'Table Register' : 'POS Register'
+                                }}</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -185,7 +191,13 @@ const getVerticalItemIcon = () => {
                         <SidebarMenuButton as-child :is-active="isPathActive('/sales') && !isPathActive('/sales/returns')" tooltip="Sales History">
                             <Link href="/sales">
                                 <Receipt class="size-4" />
-                                <span>{{ terms.showPrescriptions ? 'Dispensation Log' : terms.showDimensionsAndSite ? 'Invoice & Delivery Notes' : 'Sales History' }}</span>
+                                <span>{{
+                                    terms.showPrescriptions
+                                        ? 'Dispensation Log'
+                                        : terms.showDimensionsAndSite
+                                          ? 'Invoice & Delivery Notes'
+                                          : 'Sales History'
+                                }}</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -205,7 +217,7 @@ const getVerticalItemIcon = () => {
             <!-- Products / Catalog -->
             <SidebarGroup v-if="hasModule('products') && can('products', 'view')" class="px-2 py-1">
                 <SidebarGroupLabel
-                    class="cursor-pointer text-[11px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground flex items-center justify-between"
+                    class="flex cursor-pointer items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground"
                     @click="toggleSection('products')"
                 >
                     <span>{{ terms.itemsPlural }}</span>
@@ -213,7 +225,11 @@ const getVerticalItemIcon = () => {
                 </SidebarGroupLabel>
                 <SidebarMenu v-show="openSections.products">
                     <SidebarMenuItem>
-                        <SidebarMenuButton as-child :is-active="isPathActive('/products') && !isPathActive('/products/categories')" tooltip="Product Catalog">
+                        <SidebarMenuButton
+                            as-child
+                            :is-active="isPathActive('/products') && !isPathActive('/products/categories')"
+                            tooltip="Product Catalog"
+                        >
                             <Link href="/products">
                                 <component :is="getVerticalItemIcon()" class="size-4 text-primary" />
                                 <span>{{ terms.catalogTitle }}</span>
@@ -235,7 +251,7 @@ const getVerticalItemIcon = () => {
             <!-- Inventory -->
             <SidebarGroup v-if="hasModule('inventory') && can('inventory', 'view')" class="px-2 py-1">
                 <SidebarGroupLabel
-                    class="cursor-pointer text-[11px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground flex items-center justify-between"
+                    class="flex cursor-pointer items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground"
                     @click="toggleSection('inventory')"
                 >
                     <span>Inventory & Stock</span>
@@ -246,7 +262,13 @@ const getVerticalItemIcon = () => {
                         <SidebarMenuButton as-child :is-active="isPathActive('/inventory')" tooltip="Stock Overview">
                             <Link href="/inventory">
                                 <Boxes class="size-4" />
-                                <span>{{ terms.showPrescriptions ? 'Batch & Expiry Stock' : terms.showDimensionsAndSite ? 'Yard & Material Stock' : 'Stock Overview' }}</span>
+                                <span>{{
+                                    terms.showPrescriptions
+                                        ? 'Batch & Expiry Stock'
+                                        : terms.showDimensionsAndSite
+                                          ? 'Yard & Material Stock'
+                                          : 'Stock Overview'
+                                }}</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -256,7 +278,7 @@ const getVerticalItemIcon = () => {
             <!-- Purchases & Suppliers -->
             <SidebarGroup v-if="hasModule('purchases') && can('purchases', 'view')" class="px-2 py-1">
                 <SidebarGroupLabel
-                    class="cursor-pointer text-[11px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground flex items-center justify-between"
+                    class="flex cursor-pointer items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground"
                     @click="toggleSection('purchasing')"
                 >
                     <span>Purchases & Suppliers</span>
@@ -302,9 +324,7 @@ const getVerticalItemIcon = () => {
 
             <!-- Expenses -->
             <SidebarGroup v-if="hasModule('expenses') && can('expenses', 'view')" class="px-2 py-1">
-                <SidebarGroupLabel class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Finance
-                </SidebarGroupLabel>
+                <SidebarGroupLabel class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground"> Finance </SidebarGroupLabel>
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton as-child :is-active="isPathActive('/expenses')" tooltip="Expenses">
@@ -336,11 +356,15 @@ const getVerticalItemIcon = () => {
 
             <!-- Management / Admin -->
             <SidebarGroup
-                v-if="(hasModule('users') && can('users', 'view')) || (isMultiBranch && can('branches', 'view')) || (hasModule('settings') && can('settings', 'view'))"
+                v-if="
+                    (hasModule('users') && can('users', 'view')) ||
+                    (isMultiBranch && can('branches', 'view')) ||
+                    (hasModule('settings') && can('settings', 'view'))
+                "
                 class="px-2 py-1"
             >
                 <SidebarGroupLabel
-                    class="cursor-pointer text-[11px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground flex items-center justify-between"
+                    class="flex cursor-pointer items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground"
                     @click="toggleSection('settings')"
                 >
                     <span>Management</span>
@@ -378,14 +402,14 @@ const getVerticalItemIcon = () => {
         </SidebarContent>
 
         <!-- Footer -->
-        <SidebarFooter class="border-t border-border/70 p-3 bg-muted/20 space-y-2">
+        <SidebarFooter class="space-y-2 border-t border-border/70 bg-muted/20 p-3">
             <div class="flex items-center justify-between text-xs group-data-[collapsible=icon]:hidden">
                 <div class="flex items-center gap-2">
-                    <div class="size-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                    <span class="text-muted-foreground font-medium">Role:</span>
+                    <div class="size-2 animate-pulse rounded-full bg-emerald-500"></div>
+                    <span class="font-medium text-muted-foreground">Role:</span>
                     <Badge variant="outline" class="font-bold">{{ currentRole }}</Badge>
                 </div>
-                <span class="text-[10px] text-muted-foreground font-mono uppercase">{{ currentTenant.businessType }}</span>
+                <span class="font-mono text-[10px] uppercase text-muted-foreground">{{ currentTenant.businessType }}</span>
             </div>
 
             <Link
@@ -393,7 +417,7 @@ const getVerticalItemIcon = () => {
                 href="/super-admin/stop-impersonating"
                 method="post"
                 as="button"
-                class="w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 transition-all cursor-pointer group-data-[collapsible=icon]:p-2"
+                class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-xs font-semibold text-amber-600 transition-all hover:bg-amber-500/20 group-data-[collapsible=icon]:p-2 dark:text-amber-400"
                 title="Return to Super Admin console"
             >
                 <ShieldCheck class="size-3.5" />
@@ -404,7 +428,7 @@ const getVerticalItemIcon = () => {
                 href="/logout"
                 method="post"
                 as="button"
-                class="w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition-all cursor-pointer group-data-[collapsible=icon]:p-2"
+                class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-600 transition-all hover:bg-rose-500/20 group-data-[collapsible=icon]:p-2 dark:text-rose-400"
                 title="Log out of business account"
             >
                 <LogOut class="size-3.5" />

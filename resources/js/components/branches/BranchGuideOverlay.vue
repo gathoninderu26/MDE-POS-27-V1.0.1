@@ -1,32 +1,7 @@
 <script setup lang="ts">
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    AlertCircle,
-    ArrowLeft,
-    ArrowRight,
-    Building2,
-    Check,
-    Clock,
-    Compass,
-    DollarSign,
-    GitBranch,
-    Handshake,
-    HelpCircle,
-    Info,
-    Keyboard,
-    Layers,
-    MapPin,
-    Network,
-    Plus,
-    Sparkles,
-    Store,
-    TrendingUp,
-    Users,
-    Wifi,
-    X,
-    Zap,
-} from 'lucide-vue-next';
+import { ArrowLeft, ArrowRight, Building2, Check, Compass, Handshake, Layers, Network, Plus, Sparkles, Store, X, Zap } from 'lucide-vue-next';
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
 interface Props {
@@ -75,7 +50,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 10,
         icon: Compass,
-        usedFor: 'Manage physical retail stores, satellite concessions, sub-locations, and franchise outlets from a single unified cloud ledger. Centralize stock transfers, cashier staffing, and multi-store reporting.',
+        usedFor:
+            'Manage physical retail stores, satellite concessions, sub-locations, and franchise outlets from a single unified cloud ledger. Centralize stock transfers, cashier staffing, and multi-store reporting.',
         capabilities: [
             'Multi-Location Store Provisioning',
             'Independent POS Station Switching',
@@ -105,7 +81,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 10,
         icon: Plus,
-        usedFor: 'Provision a new physical retail branch, kiosk, or satellite outlet. Assign store operating hours, local Wi-Fi router BSSID, store manager credentials, and parent-child inventory distribution links.',
+        usedFor:
+            'Provision a new physical retail branch, kiosk, or satellite outlet. Assign store operating hours, local Wi-Fi router BSSID, store manager credentials, and parent-child inventory distribution links.',
         capabilities: [
             'Sub-Branch & Satellite Outlet Setup',
             'Parent HQ Inventory Hierarchy',
@@ -132,7 +109,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 10,
         icon: Handshake,
-        usedFor: 'Establish B2B collaborative links with authorized partner merchants, concessionaires, or wholesale suppliers for live stock visibility, consignment inventory reconciliation, and cross-store transfers.',
+        usedFor:
+            'Establish B2B collaborative links with authorized partner merchants, concessionaires, or wholesale suppliers for live stock visibility, consignment inventory reconciliation, and cross-store transfers.',
         capabilities: [
             'Cross-Tenant B2B Store Linking',
             'Real-Time Consignment Stock Sync',
@@ -158,7 +136,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 12,
         icon: Building2,
-        usedFor: 'High-level operational scorecard: monitors allocated branch license quotas (e.g. 10 allowed), total staff headcount across all stores, aggregate network inventory value, and month-to-date sales run-rate.',
+        usedFor:
+            'High-level operational scorecard: monitors allocated branch license quotas (e.g. 10 allowed), total staff headcount across all stores, aggregate network inventory value, and month-to-date sales run-rate.',
         capabilities: [
             'Real-Time Branch License Quota Bar',
             'Enterprise-Wide Staff Aggregation',
@@ -182,10 +161,11 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 14,
         icon: Store,
-        usedFor: 'Spotlight panel for the store you are currently operating on. Any transaction processed in the POS Terminal, receipt issued, or inventory adjustment executed is recorded under this designated station.',
+        usedFor:
+            'Spotlight panel for the store you are currently operating on. Any transaction processed in the POS Terminal, receipt issued, or inventory adjustment executed is recorded under this designated station.',
         capabilities: [
             'Active Cashier Station Identification',
-            'Live Today\'s Sales & Transaction Count',
+            "Live Today's Sales & Transaction Count",
             'In-Store Inventory Valuation',
             'Branch Manager & Cashier Shift Roster',
             'Store Operating Hours & Local Wi-Fi Status',
@@ -209,7 +189,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 10,
         icon: Layers,
-        usedFor: 'Quickly toggle view between All Accessible outlets, Direct & Sub-Branches, Colab Partner Stores, or Suspended registers requiring supervisory intervention.',
+        usedFor:
+            'Quickly toggle view between All Accessible outlets, Direct & Sub-Branches, Colab Partner Stores, or Suspended registers requiring supervisory intervention.',
         capabilities: [
             'All Accessible Network Outlets View',
             'Internal Direct Branches Only',
@@ -235,7 +216,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 14,
         icon: Network,
-        usedFor: 'Individual branch control cards: switch your active POS terminal to any location, view assigned staff, inspect inventory value, or remotely suspend register operations during security emergencies.',
+        usedFor:
+            'Individual branch control cards: switch your active POS terminal to any location, view assigned staff, inspect inventory value, or remotely suspend register operations during security emergencies.',
         capabilities: [
             '1-Click Active POS Terminal Switching',
             'Remote Outlet Pause & Lockout Control',
@@ -560,15 +542,9 @@ onUnmounted(() => {
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
         >
-            <div
-                v-if="open"
-                class="fixed inset-0 z-50 pointer-events-none select-none font-sans"
-            >
+            <div v-if="open" class="pointer-events-none fixed inset-0 z-50 select-none font-sans">
                 <!-- SVG Dimming Backdrop with EnjoyHint Cutout Hole -->
-                <svg
-                    class="absolute inset-0 w-full h-full pointer-events-none transition-all duration-300"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
+                <svg class="pointer-events-none absolute inset-0 h-full w-full transition-all duration-300" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <!-- EnjoyHint SVG Mask Hole -->
                         <mask id="branch-enjoyhint-mask">
@@ -604,7 +580,7 @@ onUnmounted(() => {
                 <!-- Clickable Spotlight Hole: clicking highlighted element triggers action or advances step -->
                 <div
                     v-if="targetRect"
-                    class="absolute pointer-events-auto cursor-pointer z-40"
+                    class="pointer-events-auto absolute z-40 cursor-pointer"
                     :style="{
                         top: `${targetRect.top - 4}px`,
                         left: `${targetRect.left - 4}px`,
@@ -618,7 +594,7 @@ onUnmounted(() => {
                 <!-- EnjoyHint Glowing Target Boundary Ring -->
                 <div
                     v-if="targetRect"
-                    class="absolute pointer-events-none transition-all duration-300 ease-out border-2 border-primary shadow-[0_0_35px_rgba(16,185,129,0.5)] ring-4 ring-primary/30"
+                    class="pointer-events-none absolute border-2 border-primary shadow-[0_0_35px_rgba(16,185,129,0.5)] ring-4 ring-primary/30 transition-all duration-300 ease-out"
                     :style="{
                         top: `${targetRect.top - 8}px`,
                         left: `${targetRect.left - 8}px`,
@@ -629,25 +605,15 @@ onUnmounted(() => {
                 ></div>
 
                 <!-- Guided Callout Text Bubble (Speech bubble dialog pointing directly to target) -->
-                <div
-                    ref="cardRef"
-                    class="absolute z-50 pointer-events-auto transition-all duration-300 ease-out"
-                    :style="cardStyle"
-                    @click.stop
-                >
+                <div ref="cardRef" class="pointer-events-auto absolute z-50 transition-all duration-300 ease-out" :style="cardStyle" @click.stop>
                     <!-- Speech Bubble Tail: Top (points UP to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'top'"
-                        class="absolute -top-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -top-3.5 z-30"
                         :style="{ left: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="24" height="15" viewBox="0 0 24 15" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,15 L 12,0 L 24,15"
-                                class="fill-muted/95 stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,15 L 12,0 L 24,15" class="fill-muted/95 stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="1" y="14" width="22" height="3" class="fill-muted/95" />
                         </svg>
                     </div>
@@ -655,16 +621,11 @@ onUnmounted(() => {
                     <!-- Speech Bubble Tail: Bottom (points DOWN to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'bottom'"
-                        class="absolute -bottom-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -bottom-3.5 z-30"
                         :style="{ left: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="24" height="15" viewBox="0 0 24 15" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,0 L 12,15 L 24,0"
-                                class="fill-muted/80 stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,0 L 12,15 L 24,0" class="fill-muted/80 stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="1" y="-2" width="22" height="3" class="fill-muted/80" />
                         </svg>
                     </div>
@@ -672,16 +633,11 @@ onUnmounted(() => {
                     <!-- Speech Bubble Tail: Left (points LEFT to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'left'"
-                        class="absolute -left-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -left-3.5 z-30"
                         :style="{ top: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="15" height="24" viewBox="0 0 15 24" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 15,0 L 0,12 L 15,24"
-                                class="fill-card stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 15,0 L 0,12 L 15,24" class="fill-card stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="14" y="1" width="3" height="22" class="fill-card" />
                         </svg>
                     </div>
@@ -689,37 +645,43 @@ onUnmounted(() => {
                     <!-- Speech Bubble Tail: Right (points RIGHT to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'right'"
-                        class="absolute -right-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -right-3.5 z-30"
                         :style="{ top: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="15" height="24" viewBox="0 0 15 24" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,0 L 15,12 L 0,24"
-                                class="fill-card stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,0 L 15,12 L 0,24" class="fill-card stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="-2" y="1" width="3" height="22" class="fill-card" />
                         </svg>
                     </div>
 
-                    <div class="rounded-2xl border-2 border-border bg-card shadow-2xl overflow-hidden text-card-foreground flex flex-col max-h-[calc(100vh-90px)] ring-1 ring-black/10 dark:ring-white/15">
+                    <div
+                        class="flex max-h-[calc(100vh-90px)] flex-col overflow-hidden rounded-2xl border-2 border-border bg-card text-card-foreground shadow-2xl ring-1 ring-black/10 dark:ring-white/15"
+                    >
                         <!-- Card Header with Visible Background -->
-                        <div class="px-3.5 py-2.5 sm:px-4 sm:py-3 bg-muted/80 border-b border-border flex items-center justify-between shrink-0">
-                            <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                                <div class="size-7.5 rounded-lg bg-primary/15 text-primary border border-primary/25 flex items-center justify-center font-bold text-xs shadow-2xs shrink-0">
+                        <div class="flex shrink-0 items-center justify-between border-b border-border bg-muted/80 px-3.5 py-2.5 sm:px-4 sm:py-3">
+                            <div class="flex min-w-0 flex-1 items-center gap-2.5">
+                                <div
+                                    class="size-7.5 shadow-2xs flex shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/15 text-xs font-bold text-primary"
+                                >
                                     <component :is="currentSection.icon" class="size-4" />
                                 </div>
                                 <div class="min-w-0 flex-1">
-                                    <div class="flex items-center gap-1.5 flex-wrap">
-                                        <Badge variant="outline" class="text-[9px] px-1.5 py-0 h-4 border-primary/40 bg-primary/10 text-primary uppercase font-mono font-bold shrink-0">
-                                            {{ currentSection.id === 'start' ? 'ORIENTATION' : `Part ${currentSection.stepNumber}/${sections.length - 1}` }}
+                                    <div class="flex flex-wrap items-center gap-1.5">
+                                        <Badge
+                                            variant="outline"
+                                            class="h-4 shrink-0 border-primary/40 bg-primary/10 px-1.5 py-0 font-mono text-[9px] font-bold uppercase text-primary"
+                                        >
+                                            {{
+                                                currentSection.id === 'start'
+                                                    ? 'ORIENTATION'
+                                                    : `Part ${currentSection.stepNumber}/${sections.length - 1}`
+                                            }}
                                         </Badge>
-                                        <span class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                                             {{ currentSection.tag }}
                                         </span>
                                     </div>
-                                    <h3 class="text-xs sm:text-sm font-bold text-foreground leading-snug mt-0.5">
+                                    <h3 class="mt-0.5 text-xs font-bold leading-snug text-foreground sm:text-sm">
                                         {{ currentSection.title }}
                                     </h3>
                                 </div>
@@ -729,7 +691,7 @@ onUnmounted(() => {
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                class="size-7 p-0 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted shrink-0 ml-1.5"
+                                class="ml-1.5 size-7 shrink-0 rounded-full p-0 text-muted-foreground hover:bg-muted hover:text-foreground"
                                 @click="close"
                                 title="Exit Tour (Esc)"
                             >
@@ -740,39 +702,35 @@ onUnmounted(() => {
                         <!-- Special Activation Policy Notice (if defined on section) -->
                         <div
                             v-if="currentSection.notice"
-                            class="px-3 py-2 bg-amber-500/15 border-b border-amber-500/30 text-amber-900 dark:text-amber-200 text-[11px] flex items-start gap-2 shrink-0 leading-tight"
+                            class="flex shrink-0 items-start gap-2 border-b border-amber-500/30 bg-amber-500/15 px-3 py-2 text-[11px] leading-tight text-amber-900 dark:text-amber-200"
                         >
-                            <Sparkles class="size-3.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                            <Sparkles class="mt-0.5 size-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
                             <div>
-                                <strong class="font-semibold block">Activation Requirement:</strong>
+                                <strong class="block font-semibold">Activation Requirement:</strong>
                                 <span>{{ currentSection.notice }}</span>
                             </div>
                         </div>
 
                         <!-- Scrollable Card Body -->
-                        <div class="p-3.5 sm:p-4 space-y-3 overflow-y-auto flex-1 text-xs">
+                        <div class="flex-1 space-y-3 overflow-y-auto p-3.5 text-xs sm:p-4">
                             <!-- Purpose -->
                             <div>
-                                <h4 class="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">
-                                    What is this used for?
-                                </h4>
-                                <p class="text-foreground leading-relaxed text-xs">
+                                <h4 class="mb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">What is this used for?</h4>
+                                <p class="text-xs leading-relaxed text-foreground">
                                     {{ currentSection.usedFor }}
                                 </p>
                             </div>
 
                             <!-- Capabilities Tags -->
                             <div>
-                                <h4 class="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1.5">
-                                    Core Capabilities
-                                </h4>
+                                <h4 class="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Core Capabilities</h4>
                                 <div class="flex flex-wrap gap-1">
                                     <span
                                         v-for="(cap, i) in currentSection.capabilities"
                                         :key="i"
-                                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/80 border border-border/80 text-[10px] text-foreground font-medium"
+                                        class="inline-flex items-center gap-1 rounded-md border border-border/80 bg-muted/80 px-2 py-0.5 text-[10px] font-medium text-foreground"
                                     >
-                                        <Check class="size-2.5 text-primary shrink-0" />
+                                        <Check class="size-2.5 shrink-0 text-primary" />
                                         <span>{{ cap }}</span>
                                     </span>
                                 </div>
@@ -780,16 +738,16 @@ onUnmounted(() => {
 
                             <!-- How to use -->
                             <div>
-                                <h4 class="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">
-                                    How to use it
-                                </h4>
+                                <h4 class="mb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">How to use it</h4>
                                 <ul class="space-y-1.5 pl-1">
                                     <li
                                         v-for="(instruction, i) in currentSection.howToUse"
                                         :key="i"
-                                        class="text-foreground leading-relaxed flex items-start gap-2 text-[11px]"
+                                        class="flex items-start gap-2 text-[11px] leading-relaxed text-foreground"
                                     >
-                                        <span class="size-3.5 rounded-full bg-primary/20 text-primary font-bold text-[9px] flex items-center justify-center shrink-0 mt-0.5">
+                                        <span
+                                            class="mt-0.5 flex size-3.5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[9px] font-bold text-primary"
+                                        >
                                             {{ i + 1 }}
                                         </span>
                                         <span class="flex-1">{{ instruction }}</span>
@@ -798,12 +756,17 @@ onUnmounted(() => {
                             </div>
 
                             <!-- Pro Tip Box -->
-                            <div v-if="currentSection.proTip" class="p-2.5 sm:p-3 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-950 dark:text-amber-100 space-y-1">
-                                <span class="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-300 text-[10px] uppercase tracking-wide">
-                                    <Zap class="size-3.5 text-amber-600 dark:text-amber-400 fill-amber-500/30 shrink-0" />
+                            <div
+                                v-if="currentSection.proTip"
+                                class="space-y-1 rounded-lg border border-amber-500/25 bg-amber-500/10 p-2.5 text-amber-950 dark:text-amber-100 sm:p-3"
+                            >
+                                <span
+                                    class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-amber-900 dark:text-amber-300"
+                                >
+                                    <Zap class="size-3.5 shrink-0 fill-amber-500/30 text-amber-600 dark:text-amber-400" />
                                     <span>Store Manager Tip</span>
                                 </span>
-                                <p class="text-[11px] leading-relaxed font-medium">
+                                <p class="text-[11px] font-medium leading-relaxed">
                                     {{ currentSection.proTip }}
                                 </p>
                             </div>
@@ -813,7 +776,7 @@ onUnmounted(() => {
                                 <button
                                     type="button"
                                     @click="handleAction"
-                                    class="w-full py-2 px-3 rounded-lg bg-primary/15 hover:bg-primary/25 text-primary text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer border border-primary/30 shadow-2xs active:scale-[0.99]"
+                                    class="shadow-2xs flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/15 px-3 py-2 text-xs font-bold text-primary transition-colors hover:bg-primary/25 active:scale-[0.99]"
                                 >
                                     <span>{{ currentSection.actionLabel }}</span>
                                     <ArrowRight class="size-3.5 shrink-0" />
@@ -822,13 +785,13 @@ onUnmounted(() => {
                         </div>
 
                         <!-- EnjoyHint Navigation Footer -->
-                        <div class="px-3.5 py-2.5 bg-muted/70 border-t border-border flex items-center justify-between shrink-0">
+                        <div class="flex shrink-0 items-center justify-between border-t border-border bg-muted/70 px-3.5 py-2.5">
                             <!-- Previous Button -->
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                class="h-7 text-xs px-2.5 gap-1 text-muted-foreground hover:text-foreground font-semibold"
+                                class="h-7 gap-1 px-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground"
                                 :disabled="internalStep === 0"
                                 @click="prevStep"
                             >
@@ -843,8 +806,8 @@ onUnmounted(() => {
                                     :key="idx"
                                     type="button"
                                     @click="goToStep(idx)"
-                                    class="size-2 rounded-full transition-all cursor-pointer"
-                                    :class="idx === internalStep ? 'bg-primary w-4' : 'bg-muted-foreground/30 hover:bg-muted-foreground/60'"
+                                    class="size-2 cursor-pointer rounded-full transition-all"
+                                    :class="idx === internalStep ? 'w-4 bg-primary' : 'bg-muted-foreground/30 hover:bg-muted-foreground/60'"
                                     :title="idx === 0 ? 'Start: Page Guide' : `Part ${idx}`"
                                 ></button>
                             </div>
@@ -853,10 +816,12 @@ onUnmounted(() => {
                             <Button
                                 type="button"
                                 size="sm"
-                                class="h-7 text-xs px-3 gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-xs cursor-pointer"
+                                class="shadow-xs h-7 cursor-pointer gap-1.5 bg-primary px-3 text-xs font-bold text-primary-foreground hover:bg-primary/90"
                                 @click="nextStep"
                             >
-                                <span>{{ currentSection.id === 'start' ? 'Start Tour' : internalStep === sections.length - 1 ? 'Done' : 'Next' }}</span>
+                                <span>{{
+                                    currentSection.id === 'start' ? 'Start Tour' : internalStep === sections.length - 1 ? 'Done' : 'Next'
+                                }}</span>
                                 <ArrowRight v-if="internalStep < sections.length - 1" class="size-3" />
                                 <Check v-else class="size-3" />
                             </Button>

@@ -57,11 +57,12 @@ class BranchController extends Controller
             ->get()
             ->map(function ($b) use ($branchStockValues, $branchProductCounts, $branchTodaySales, $branchMonthSales) {
                 $todayData = $branchTodaySales->get($b->id);
+
                 return [
                     'id' => (string) $b->id,
                     'tenantId' => (string) $b->tenant_id,
                     'name' => $b->name,
-                    'code' => $b->code ?? 'BR-' . $b->id,
+                    'code' => $b->code ?? 'BR-'.$b->id,
                     'branchType' => $b->type ?: 'Retail Branch',
                     'location' => $b->location ?? 'Not specified',
                     'phone' => $b->phone ?? 'N/A',
@@ -108,10 +109,10 @@ class BranchController extends Controller
         if (empty($validated['code'])) {
             $words = preg_split('/\s+/', trim($validated['name']));
             $prefix = count($words) > 1
-                ? strtoupper(substr($words[0], 0, 2) . substr($words[1], 0, 1))
+                ? strtoupper(substr($words[0], 0, 2).substr($words[1], 0, 1))
                 : strtoupper(substr($validated['name'], 0, 3));
             $count = Branch::where('tenant_id', $tenant->id)->count() + 1;
-            $validated['code'] = $prefix . '-' . str_pad((string) $count, 2, '0', STR_PAD_LEFT);
+            $validated['code'] = $prefix.'-'.str_pad((string) $count, 2, '0', STR_PAD_LEFT);
         }
 
         $cloneProducts = (bool) ($validated['clone_products'] ?? false);
@@ -126,7 +127,7 @@ class BranchController extends Controller
         // If user requested cloning product definitions into new branch
         if ($cloneProducts) {
             $masterProducts = Product::where('tenant_id', $tenant->id)->get();
-            $uniqueProducts = $masterProducts->unique(fn($p) => $p->sku ?: ($p->barcode ?: $p->name));
+            $uniqueProducts = $masterProducts->unique(fn ($p) => $p->sku ?: ($p->barcode ?: $p->name));
 
             foreach ($uniqueProducts as $p) {
                 Product::create([

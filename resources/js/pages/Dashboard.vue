@@ -1,14 +1,14 @@
 <script setup lang="ts">
+import DashboardGuideOverlay from '@/components/dashboard/DashboardGuideOverlay.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import StatCard from '@/components/ui/StatCard.vue';
 import { useBranch } from '@/composables/useBranch';
-import { useFeatures } from '@/composables/useFeatures';
 import { formatCurrency } from '@/composables/useCurrency';
+import { useFeatures } from '@/composables/useFeatures';
 import { usePermissions } from '@/composables/usePermissions';
 import { useTenant } from '@/composables/useTenant';
-import DashboardGuideOverlay from '@/components/dashboard/DashboardGuideOverlay.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
@@ -18,7 +18,6 @@ import {
     BarChart3,
     Building2,
     CalendarDays,
-    CheckCircle2,
     ChevronLeft,
     ChevronRight,
     CircleDollarSign,
@@ -27,10 +26,8 @@ import {
     Compass,
     CreditCard,
     DollarSign,
-    Filter,
     LogIn,
     LogOut,
-    MapPin,
     Receipt,
     RotateCcw,
     Search,
@@ -39,9 +36,7 @@ import {
     Smartphone,
     Star,
     TrendingUp,
-    UserCheck,
     Users,
-    UserX,
     Wallet,
     Zap,
 } from 'lucide-vue-next';
@@ -78,23 +73,71 @@ const ownerTimeFilter = ref<'Today' | '7 Days' | '30 Days' | 'This Month' | 'Thi
 const ownerKpis = computed(() => {
     const k = props.kpis;
     if (!k) {
-        return { sales: 0, profit: 0, transactions: 0, customers: 0, custBalance: 0, suppBalance: 0, stockValue: 0, expenses: 0, salesGrowth: 0, profitGrowth: 0, transGrowth: 0 };
+        return {
+            sales: 0,
+            profit: 0,
+            transactions: 0,
+            customers: 0,
+            custBalance: 0,
+            suppBalance: 0,
+            stockValue: 0,
+            expenses: 0,
+            salesGrowth: 0,
+            profitGrowth: 0,
+            transGrowth: 0,
+        };
     }
     switch (ownerTimeFilter.value) {
         case '7 Days':
-            return { sales: k.seven_days.sales, profit: k.seven_days.profit, transactions: k.seven_days.transactions, customers: 0, custBalance: 0, suppBalance: 0, stockValue: k.seven_days.stock_value, expenses: k.seven_days.expenses, salesGrowth: 0, profitGrowth: 0, transGrowth: 0 };
+            return {
+                sales: k.seven_days.sales,
+                profit: k.seven_days.profit,
+                transactions: k.seven_days.transactions,
+                customers: 0,
+                custBalance: 0,
+                suppBalance: 0,
+                stockValue: k.seven_days.stock_value,
+                expenses: k.seven_days.expenses,
+                salesGrowth: 0,
+                profitGrowth: 0,
+                transGrowth: 0,
+            };
         case '30 Days':
         case 'This Month':
         case 'This Year':
-            return { sales: k.thirty_days.sales, profit: k.thirty_days.profit, transactions: k.thirty_days.transactions, customers: 0, custBalance: 0, suppBalance: 0, stockValue: k.thirty_days.stock_value, expenses: k.thirty_days.expenses, salesGrowth: 0, profitGrowth: 0, transGrowth: 0 };
+            return {
+                sales: k.thirty_days.sales,
+                profit: k.thirty_days.profit,
+                transactions: k.thirty_days.transactions,
+                customers: 0,
+                custBalance: 0,
+                suppBalance: 0,
+                stockValue: k.thirty_days.stock_value,
+                expenses: k.thirty_days.expenses,
+                salesGrowth: 0,
+                profitGrowth: 0,
+                transGrowth: 0,
+            };
         default:
-            return { sales: k.today.sales, profit: k.today.profit, transactions: k.today.transactions, customers: 0, custBalance: 0, suppBalance: 0, stockValue: k.today.stock_value, expenses: k.today.expenses, salesGrowth: 0, profitGrowth: 0, transGrowth: 0 };
+            return {
+                sales: k.today.sales,
+                profit: k.today.profit,
+                transactions: k.today.transactions,
+                customers: 0,
+                custBalance: 0,
+                suppBalance: 0,
+                stockValue: k.today.stock_value,
+                expenses: k.today.expenses,
+                salesGrowth: 0,
+                profitGrowth: 0,
+                transGrowth: 0,
+            };
     }
 });
 
 const paymentMix = computed(() => {
     if (props.paymentMix && props.paymentMix.length > 0) {
-        return props.paymentMix.map(p => ({
+        return props.paymentMix.map((p) => ({
             method: p.method,
             amount: p.amount,
             percent: p.percent,
@@ -114,7 +157,7 @@ const lowStockItems: any[] = [];
 
 const recentSales = computed(() => {
     if (props.recentSales && props.recentSales.length > 0) {
-        return props.recentSales.map(s => ({
+        return props.recentSales.map((s) => ({
             receipt: s.receipt_number,
             time: s.time,
             customer: s.customer_name || 'Walk-in Customer',
@@ -130,7 +173,7 @@ const recentSales = computed(() => {
 // Branch performance for multi-branch owners
 const branchPerformance = computed(() => {
     if (props.branches && props.branches.length > 0) {
-        return props.branches.map(b => ({
+        return props.branches.map((b) => ({
             name: b.name,
             revenue: b.today_sales,
             target: 50000,
@@ -201,10 +244,34 @@ const myRecentReceipts = computed(() => {
     }
     if (isDemo.value) {
         return [
-            { receipt: 'REC-2026-904128', time: '10:32 AM', customer: 'Walk-in Customer', items: 5, amount: 4850, method: 'M-Pesa', status: 'Completed' },
+            {
+                receipt: 'REC-2026-904128',
+                time: '10:32 AM',
+                customer: 'Walk-in Customer',
+                items: 5,
+                amount: 4850,
+                method: 'M-Pesa',
+                status: 'Completed',
+            },
             { receipt: 'REC-2026-904126', time: '10:05 AM', customer: 'Grace Muthoni', items: 3, amount: 1250, method: 'Cash', status: 'Completed' },
-            { receipt: 'REC-2026-904125', time: '09:44 AM', customer: 'Sarit Cafe Supplies', items: 12, amount: 18900, method: 'Credit', status: 'Completed' },
-            { receipt: 'REC-2026-904121', time: '09:12 AM', customer: 'Walk-in Customer', items: 2, amount: 680, method: 'M-Pesa', status: 'Completed' },
+            {
+                receipt: 'REC-2026-904125',
+                time: '09:44 AM',
+                customer: 'Sarit Cafe Supplies',
+                items: 12,
+                amount: 18900,
+                method: 'Credit',
+                status: 'Completed',
+            },
+            {
+                receipt: 'REC-2026-904121',
+                time: '09:12 AM',
+                customer: 'Walk-in Customer',
+                items: 2,
+                amount: 680,
+                method: 'M-Pesa',
+                status: 'Completed',
+            },
             { receipt: 'REC-2026-904119', time: '08:48 AM', customer: 'Peter Kimani', items: 8, amount: 12770, method: 'Card', status: 'Completed' },
         ];
     }
@@ -243,12 +310,18 @@ const myCashierTopItems = computed(() => {
 
 // Owner bar chart data
 const ownerHourlyBars = [
-    { label: '08:00', h: '25%', val: '18k' }, { label: '09:00', h: '45%', val: '32k' },
-    { label: '10:00', h: '85%', val: '64k' }, { label: '11:00', h: '60%', val: '45k' },
-    { label: '12:00', h: '95%', val: '78k' }, { label: '13:00', h: '70%', val: '52k' },
-    { label: '14:00', h: '50%', val: '38k' }, { label: '15:00', h: '65%', val: '49k' },
-    { label: '16:00', h: '80%', val: '62k' }, { label: '17:00', h: '100%', val: '86k' },
-    { label: '18:00', h: '90%', val: '72k' }, { label: '19:00', h: '40%', val: '30k' },
+    { label: '08:00', h: '25%', val: '18k' },
+    { label: '09:00', h: '45%', val: '32k' },
+    { label: '10:00', h: '85%', val: '64k' },
+    { label: '11:00', h: '60%', val: '45k' },
+    { label: '12:00', h: '95%', val: '78k' },
+    { label: '13:00', h: '70%', val: '52k' },
+    { label: '14:00', h: '50%', val: '38k' },
+    { label: '15:00', h: '65%', val: '49k' },
+    { label: '16:00', h: '80%', val: '62k' },
+    { label: '17:00', h: '100%', val: '86k' },
+    { label: '18:00', h: '90%', val: '72k' },
+    { label: '19:00', h: '40%', val: '30k' },
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -270,16 +343,20 @@ const calendarYear = ref(new Date().getFullYear());
 const calendarMonth = ref(new Date().getMonth()); // 0-indexed
 
 const calendarMonthLabel = computed(() =>
-    new Date(calendarYear.value, calendarMonth.value, 1).toLocaleString('default', { month: 'long', year: 'numeric' })
+    new Date(calendarYear.value, calendarMonth.value, 1).toLocaleString('default', { month: 'long', year: 'numeric' }),
 );
 
 function prevMonth() {
-    if (calendarMonth.value === 0) { calendarMonth.value = 11; calendarYear.value--; }
-    else calendarMonth.value--;
+    if (calendarMonth.value === 0) {
+        calendarMonth.value = 11;
+        calendarYear.value--;
+    } else calendarMonth.value--;
 }
 function nextMonth() {
-    if (calendarMonth.value === 11) { calendarMonth.value = 0; calendarYear.value++; }
-    else calendarMonth.value++;
+    if (calendarMonth.value === 11) {
+        calendarMonth.value = 0;
+        calendarYear.value++;
+    } else calendarMonth.value++;
 }
 
 // Shift data for the month (demo only — real accounts compute dynamically)
@@ -294,7 +371,15 @@ const demoShiftData: Record<string, ShiftDay> = {
     '2026-08-08': { date: 8, status: 'completed', shiftLabel: 'Morning', clockIn: '08:00 AM', clockOut: '04:02 PM', shiftSales: 48100, orders: 99 },
     '2026-08-09': { date: 9, status: 'off', shiftLabel: 'Day Off' },
     '2026-08-10': { date: 10, status: 'off', shiftLabel: 'Day Off' },
-    '2026-08-11': { date: 11, status: 'completed', shiftLabel: 'Afternoon', clockIn: '12:02 PM', clockOut: '08:00 PM', shiftSales: 53400, orders: 112 },
+    '2026-08-11': {
+        date: 11,
+        status: 'completed',
+        shiftLabel: 'Afternoon',
+        clockIn: '12:02 PM',
+        clockOut: '08:00 PM',
+        shiftSales: 53400,
+        orders: 112,
+    },
     '2026-08-12': { date: 12, status: 'completed', shiftLabel: 'Morning', clockIn: '08:00 AM', clockOut: '04:00 PM', shiftSales: 40100, orders: 83 },
     '2026-08-13': { date: 13, status: 'absent', shiftLabel: 'Morning', note: 'No clock-in recorded' },
     '2026-08-14': { date: 14, status: 'completed', shiftLabel: 'Morning', clockIn: '08:05 AM', clockOut: '04:10 PM', shiftSales: 39600, orders: 79 },
@@ -302,7 +387,15 @@ const demoShiftData: Record<string, ShiftDay> = {
     '2026-08-16': { date: 16, status: 'off', shiftLabel: 'Day Off' },
     '2026-08-17': { date: 17, status: 'off', shiftLabel: 'Day Off' },
     '2026-08-18': { date: 18, status: 'completed', shiftLabel: 'Morning', clockIn: '08:01 AM', clockOut: '04:05 PM', shiftSales: 44000, orders: 88 },
-    '2026-08-19': { date: 19, status: 'completed', shiftLabel: 'Afternoon', clockIn: '12:00 PM', clockOut: '07:58 PM', shiftSales: 49800, orders: 103 },
+    '2026-08-19': {
+        date: 19,
+        status: 'completed',
+        shiftLabel: 'Afternoon',
+        clockIn: '12:00 PM',
+        clockOut: '07:58 PM',
+        shiftSales: 49800,
+        orders: 103,
+    },
     '2026-08-20': { date: 20, status: 'completed', shiftLabel: 'Morning', clockIn: '08:00 AM', clockOut: '04:00 PM', shiftSales: 41500, orders: 85 },
     '2026-08-21': { date: 21, status: 'completed', shiftLabel: 'Morning', clockIn: '08:04 AM', clockOut: '04:02 PM', shiftSales: 38200, orders: 76 },
     '2026-08-22': { date: 22, status: 'completed', shiftLabel: 'Morning', clockIn: '07:57 AM', clockOut: '04:00 PM', shiftSales: 43700, orders: 90 },
@@ -310,14 +403,22 @@ const demoShiftData: Record<string, ShiftDay> = {
     '2026-08-24': { date: 24, status: 'off', shiftLabel: 'Day Off' },
     '2026-08-25': { date: 25, status: 'completed', shiftLabel: 'Morning', clockIn: '08:00 AM', clockOut: '04:00 PM', shiftSales: 46900, orders: 94 },
     '2026-08-26': { date: 26, status: 'completed', shiftLabel: 'Morning', clockIn: '08:02 AM', clockOut: '04:08 PM', shiftSales: 35800, orders: 72 },
-    '2026-08-27': { date: 27, status: 'completed', shiftLabel: 'Afternoon', clockIn: '11:59 AM', clockOut: '08:02 PM', shiftSales: 52600, orders: 108 },
+    '2026-08-27': {
+        date: 27,
+        status: 'completed',
+        shiftLabel: 'Afternoon',
+        clockIn: '11:59 AM',
+        clockOut: '08:02 PM',
+        shiftSales: 52600,
+        orders: 108,
+    },
     '2026-08-28': { date: 28, status: 'completed', shiftLabel: 'Morning', clockIn: '08:00 AM', clockOut: '04:00 PM', shiftSales: 40800, orders: 83 },
     '2026-08-29': { date: 29, status: 'active', shiftLabel: 'Morning', clockIn: '08:00 AM', shiftSales: 38450, orders: 47 },
     '2026-08-30': { date: 30, status: 'scheduled', shiftLabel: 'Morning' },
     '2026-08-31': { date: 31, status: 'scheduled', shiftLabel: 'Afternoon' },
 };
 
-const shiftData = computed<Record<string, ShiftDay>>(() => isDemo.value ? demoShiftData : {});
+const shiftData = computed<Record<string, ShiftDay>>(() => (isDemo.value ? demoShiftData : {}));
 
 const calendarDays = computed(() => {
     const year = calendarYear.value;
@@ -345,11 +446,21 @@ function selectDay(shift: ShiftDay | null) {
 }
 
 const shiftStatusConfig: Record<ShiftStatus, { bg: string; text: string; dot: string; label: string }> = {
-    completed: { bg: 'bg-emerald-500/15 border border-emerald-500/40', text: 'text-emerald-700 dark:text-emerald-400', dot: 'bg-emerald-500', label: 'Completed' },
-    active:    { bg: 'bg-sky-500/15 border border-sky-500/40 ring-2 ring-sky-500/30', text: 'text-sky-700 dark:text-sky-400', dot: 'bg-sky-500 animate-pulse', label: 'Active Now' },
+    completed: {
+        bg: 'bg-emerald-500/15 border border-emerald-500/40',
+        text: 'text-emerald-700 dark:text-emerald-400',
+        dot: 'bg-emerald-500',
+        label: 'Completed',
+    },
+    active: {
+        bg: 'bg-sky-500/15 border border-sky-500/40 ring-2 ring-sky-500/30',
+        text: 'text-sky-700 dark:text-sky-400',
+        dot: 'bg-sky-500 animate-pulse',
+        label: 'Active Now',
+    },
     scheduled: { bg: 'bg-muted/40 border border-border/60', text: 'text-muted-foreground', dot: 'bg-muted-foreground/40', label: 'Scheduled' },
-    absent:    { bg: 'bg-rose-500/10 border border-rose-500/30', text: 'text-rose-600', dot: 'bg-rose-500', label: 'Absent' },
-    off:       { bg: 'bg-transparent', text: 'text-muted-foreground/40', dot: '', label: 'Day Off' },
+    absent: { bg: 'bg-rose-500/10 border border-rose-500/30', text: 'text-rose-600', dot: 'bg-rose-500', label: 'Absent' },
+    off: { bg: 'bg-transparent', text: 'text-muted-foreground/40', dot: '', label: 'Day Off' },
 };
 
 const calendarMonthSummary = computed(() => {
@@ -360,9 +471,9 @@ const calendarMonthSummary = computed(() => {
         .filter(([k]) => k.startsWith(prefix))
         .map(([, v]) => v);
     return {
-        worked: relevant.filter(d => d.status === 'completed' || d.status === 'active').length,
-        absent: relevant.filter(d => d.status === 'absent').length,
-        scheduled: relevant.filter(d => d.status === 'scheduled').length,
+        worked: relevant.filter((d) => d.status === 'completed' || d.status === 'active').length,
+        absent: relevant.filter((d) => d.status === 'absent').length,
+        scheduled: relevant.filter((d) => d.status === 'scheduled').length,
         totalSales: relevant.reduce((s, d) => s + (d.shiftSales ?? 0), 0),
         totalOrders: relevant.reduce((s, d) => s + (d.orders ?? 0), 0),
     };
@@ -400,10 +511,7 @@ const ownerStaffSearch = ref<string>('');
 
 const ownerBranchTabs = computed(() => {
     if (props.branches && props.branches.length > 0) {
-        return [
-            { id: 'all', name: 'All Branches' },
-            ...props.branches.map((b) => ({ id: String(b.id), name: b.name })),
-        ];
+        return [{ id: 'all', name: 'All Branches' }, ...props.branches.map((b) => ({ id: String(b.id), name: b.name }))];
     }
     if (isDemo.value) {
         return [
@@ -533,7 +641,12 @@ const ownerStaffMembers = computed<StaffAttendanceSession[]>(() => {
             id: `st-${s.id || idx}`,
             name: s.name,
             role: s.role,
-            avatar: s.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase(),
+            avatar: s.name
+                .split(' ')
+                .map((n: string) => n[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase(),
             branchId: String(s.branch_id || 'main'),
             branchName: s.branch || 'Main HQ',
             terminal: 'Terminal #01',
@@ -568,14 +681,13 @@ const filteredOwnerStaff = computed(() => {
 });
 
 const ownerScheduleSummary = computed(() => {
-    const list = ownerBranchFilter.value === 'all'
-        ? ownerStaffMembers.value
-        : ownerStaffMembers.value.filter(s => s.branchId === ownerBranchFilter.value);
-    
-    const active = list.filter(s => s.status === 'clocked_in').length;
-    const onBreak = list.filter(s => s.status === 'on_break').length;
-    const scheduled = list.filter(s => s.status === 'scheduled').length;
-    const absent = list.filter(s => s.status === 'absent').length;
+    const list =
+        ownerBranchFilter.value === 'all' ? ownerStaffMembers.value : ownerStaffMembers.value.filter((s) => s.branchId === ownerBranchFilter.value);
+
+    const active = list.filter((s) => s.status === 'clocked_in').length;
+    const onBreak = list.filter((s) => s.status === 'on_break').length;
+    const scheduled = list.filter((s) => s.status === 'scheduled').length;
+    const absent = list.filter((s) => s.status === 'absent').length;
     const totalSales = list.reduce((sum, s) => sum + s.salesToday, 0);
     const totalTarget = list.reduce((sum, s) => sum + s.salesTarget, 0);
     const targetPercent = totalTarget > 0 ? Math.round((totalSales / totalTarget) * 100) : 0;
@@ -612,9 +724,7 @@ const handleGuideAction = (actionType: string) => {
 
 onMounted(() => {
     // Auto-prompt guide on first visit or when initiated after login
-    const shouldAutoOpen =
-        sessionStorage.getItem('mde_auto_open_guide') === 'true' ||
-        !sessionStorage.getItem('mde_dashboard_guide_prompted');
+    const shouldAutoOpen = sessionStorage.getItem('mde_auto_open_guide') === 'true' || !sessionStorage.getItem('mde_dashboard_guide_prompted');
 
     if (shouldAutoOpen) {
         sessionStorage.setItem('mde_dashboard_guide_prompted', 'true');
@@ -630,41 +740,41 @@ onMounted(() => {
     <Head title="Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
-
+        <div class="mx-auto max-w-[1600px] p-4 sm:p-6 lg:p-8">
             <!-- ═══════════════════════════════════════════════════════ -->
             <!-- CASHIER DASHBOARD                                       -->
             <!-- ═══════════════════════════════════════════════════════ -->
             <div v-if="isCashier" class="space-y-6">
-
                 <!-- Header: Cashier Identity & Shift Status -->
-                <div id="cashier-step-header" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div id="cashier-step-header" class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex items-center gap-4">
-                        <div class="size-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shrink-0">
+                        <div
+                            class="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 shadow-lg"
+                        >
                             <ShoppingCart class="size-7 text-white" />
                         </div>
                         <div>
-                            <div class="flex items-center gap-2 flex-wrap">
+                            <div class="flex flex-wrap items-center gap-2">
                                 <h2 class="text-xl font-bold text-foreground">My Register Dashboard</h2>
-                                <Badge class="bg-emerald-500/15 text-emerald-700 border-emerald-500/30 font-mono text-[11px]">
-                                    <span class="size-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse inline-block"></span>
+                                <Badge class="border-emerald-500/30 bg-emerald-500/15 font-mono text-[11px] text-emerald-700">
+                                    <span class="mr-1.5 inline-block size-1.5 animate-pulse rounded-full bg-emerald-500"></span>
                                     Active Shift
                                 </Badge>
                             </div>
-                            <p class="text-xs text-muted-foreground mt-0.5">
-                                <strong>{{ authUser?.name || 'Lead Cashier' }}</strong> • Terminal #01 • {{ currentBranch.name }} •
-                                Started {{ cashierShiftStats.shiftStartTime }} ({{ cashierShiftStats.shiftDuration }} elapsed)
+                            <p class="mt-0.5 text-xs text-muted-foreground">
+                                <strong>{{ authUser?.name || 'Lead Cashier' }}</strong> • Terminal #01 • {{ currentBranch.name }} • Started
+                                {{ cashierShiftStats.shiftStartTime }} ({{ cashierShiftStats.shiftDuration }} elapsed)
                             </p>
                         </div>
                     </div>
                     <!-- Quick Actions -->
-                    <div class="flex items-center gap-2 shrink-0 flex-wrap">
+                    <div class="flex shrink-0 flex-wrap items-center gap-2">
                         <Button
                             id="cashier-tour-guide-btn"
                             type="button"
                             variant="outline"
                             size="sm"
-                            class="h-9 px-3 gap-1.5 text-xs font-bold text-primary border-primary/40 bg-primary/10 hover:bg-primary/20 hover:border-primary/60 cursor-pointer shadow-2xs transition-all relative"
+                            class="shadow-2xs relative h-9 cursor-pointer gap-1.5 border-primary/40 bg-primary/10 px-3 text-xs font-bold text-primary transition-all hover:border-primary/60 hover:bg-primary/20"
                             @click="openGuide(0)"
                             title="Start Interactive Register Walkthrough"
                         >
@@ -672,13 +782,17 @@ onMounted(() => {
                             <span>Dashboard Guide</span>
                         </Button>
                         <Link href="/sales">
-                            <Button variant="outline" size="sm" class="gap-1.5 text-xs h-9">
+                            <Button variant="outline" size="sm" class="h-9 gap-1.5 text-xs">
                                 <Receipt class="size-3.5" />
                                 My Sales Log
                             </Button>
                         </Link>
                         <Link href="/pos">
-                            <Button id="cashier-step-pos-action" size="sm" class="gap-1.5 text-xs h-9 bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow">
+                            <Button
+                                id="cashier-step-pos-action"
+                                size="sm"
+                                class="h-9 gap-1.5 bg-emerald-600 text-xs font-bold text-white shadow hover:bg-emerald-700"
+                            >
                                 <Zap class="size-3.5" />
                                 Open POS Register
                             </Button>
@@ -687,12 +801,12 @@ onMounted(() => {
                 </div>
 
                 <!-- ── COMPACT SHIFT CALENDAR TOGGLE STRIP ────────────────── -->
-                <div id="cashier-step-calendar" class="rounded-xl border border-border/80 bg-card shadow-sm overflow-hidden">
+                <div id="cashier-step-calendar" class="overflow-hidden rounded-xl border border-border/80 bg-card shadow-sm">
                     <!-- Toggle trigger row -->
                     <button
                         type="button"
                         @click="showCalendar = !showCalendar"
-                        class="w-full flex items-center justify-between px-4 py-2.5 hover:bg-muted/30 transition-colors group"
+                        class="group flex w-full items-center justify-between px-4 py-2.5 transition-colors hover:bg-muted/30"
                     >
                         <div class="flex items-center gap-3 text-xs">
                             <div class="flex items-center gap-1.5">
@@ -709,14 +823,19 @@ onMounted(() => {
                                 <span class="size-2 rounded-full bg-muted-foreground/40"></span>
                                 <span class="font-medium text-muted-foreground">{{ calendarMonthSummary.scheduled }} upcoming</span>
                             </div>
-                            <span class="hidden sm:block text-border">|</span>
-                            <span class="hidden sm:block font-mono font-bold text-primary">{{ formatCurrency(calendarMonthSummary.totalSales) }} this month</span>
+                            <span class="hidden text-border sm:block">|</span>
+                            <span class="hidden font-mono font-bold text-primary sm:block"
+                                >{{ formatCurrency(calendarMonthSummary.totalSales) }} this month</span
+                            >
                         </div>
-                        <div class="flex items-center gap-2 shrink-0">
-                            <span class="text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                        <div class="flex shrink-0 items-center gap-2">
+                            <span class="text-[11px] font-medium text-muted-foreground transition-colors group-hover:text-foreground">
                                 {{ showCalendar ? 'Hide' : 'My Shift Calendar' }}
                             </span>
-                            <div class="size-5 rounded-md bg-muted/60 flex items-center justify-center transition-transform duration-200" :class="showCalendar ? 'rotate-180' : ''">
+                            <div
+                                class="flex size-5 items-center justify-center rounded-md bg-muted/60 transition-transform duration-200"
+                                :class="showCalendar ? 'rotate-180' : ''"
+                            >
                                 <ChevronRight class="size-3 rotate-90" />
                             </div>
                         </div>
@@ -726,21 +845,27 @@ onMounted(() => {
                     <transition name="collapse">
                         <div v-if="showCalendar" class="border-t border-border/60 px-4 pb-4 pt-3">
                             <!-- Month navigator + header -->
-                            <div class="flex items-center justify-between mb-3">
+                            <div class="mb-3 flex items-center justify-between">
                                 <span class="text-xs font-semibold text-foreground">{{ calendarMonthLabel }}</span>
                                 <div class="flex items-center gap-1.5">
-                                    <button @click="prevMonth" class="size-6 rounded-md border border-border/80 hover:bg-muted/50 flex items-center justify-center transition-colors">
+                                    <button
+                                        @click="prevMonth"
+                                        class="flex size-6 items-center justify-center rounded-md border border-border/80 transition-colors hover:bg-muted/50"
+                                    >
                                         <ChevronLeft class="size-3" />
                                     </button>
-                                    <button @click="nextMonth" class="size-6 rounded-md border border-border/80 hover:bg-muted/50 flex items-center justify-center transition-colors">
+                                    <button
+                                        @click="nextMonth"
+                                        class="flex size-6 items-center justify-center rounded-md border border-border/80 transition-colors hover:bg-muted/50"
+                                    >
                                         <ChevronRight class="size-3" />
                                     </button>
                                 </div>
                             </div>
 
                             <!-- Day-of-week headers -->
-                            <div class="grid grid-cols-7 text-center text-[10px] font-bold text-muted-foreground mb-1.5">
-                                <span v-for="d in ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']" :key="d">{{ d }}</span>
+                            <div class="mb-1.5 grid grid-cols-7 text-center text-[10px] font-bold text-muted-foreground">
+                                <span v-for="d in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']" :key="d">{{ d }}</span>
                             </div>
 
                             <!-- Calendar grid (compact) -->
@@ -750,7 +875,7 @@ onMounted(() => {
                                     :key="idx"
                                     @click="selectDay(cell.shift)"
                                     :class="[
-                                        'relative rounded-md p-1 min-h-[50px] transition-all duration-150 text-xs',
+                                        'relative min-h-[50px] rounded-md p-1 text-xs transition-all duration-150',
                                         cell.day === null ? '' : 'cursor-pointer hover:scale-[1.04]',
                                         cell.shift ? shiftStatusConfig[cell.shift.status].bg : '',
                                         cell.shift && selectedShiftDay?.date === cell.shift.date ? 'ring-2 ring-primary ring-offset-1' : '',
@@ -758,53 +883,93 @@ onMounted(() => {
                                 >
                                     <template v-if="cell.day !== null">
                                         <div class="flex items-start justify-between">
-                                            <span :class="['font-bold text-[10px] leading-none', cell.shift ? shiftStatusConfig[cell.shift.status].text : 'text-muted-foreground']">{{ cell.day }}</span>
-                                            <span v-if="cell.shift && cell.shift.status !== 'off'" :class="['size-1.5 rounded-full mt-0.5 shrink-0', shiftStatusConfig[cell.shift.status].dot]"></span>
+                                            <span
+                                                :class="[
+                                                    'text-[10px] font-bold leading-none',
+                                                    cell.shift ? shiftStatusConfig[cell.shift.status].text : 'text-muted-foreground',
+                                                ]"
+                                                >{{ cell.day }}</span
+                                            >
+                                            <span
+                                                v-if="cell.shift && cell.shift.status !== 'off'"
+                                                :class="['mt-0.5 size-1.5 shrink-0 rounded-full', shiftStatusConfig[cell.shift.status].dot]"
+                                            ></span>
                                         </div>
                                         <div v-if="cell.shift && cell.shift.status !== 'off'" class="mt-1">
-                                            <p :class="['text-[9px] font-semibold leading-tight truncate', shiftStatusConfig[cell.shift.status].text]">{{ cell.shift.shiftLabel }}</p>
-                                            <p v-if="cell.shift.clockIn" class="text-[9px] text-muted-foreground leading-tight">{{ cell.shift.clockIn }}</p>
+                                            <p
+                                                :class="[
+                                                    'truncate text-[9px] font-semibold leading-tight',
+                                                    shiftStatusConfig[cell.shift.status].text,
+                                                ]"
+                                            >
+                                                {{ cell.shift.shiftLabel }}
+                                            </p>
+                                            <p v-if="cell.shift.clockIn" class="text-[9px] leading-tight text-muted-foreground">
+                                                {{ cell.shift.clockIn }}
+                                            </p>
                                         </div>
-                                        <p v-else-if="cell.shift?.status === 'off'" class="text-[9px] text-muted-foreground/40 mt-1">Off</p>
+                                        <p v-else-if="cell.shift?.status === 'off'" class="mt-1 text-[9px] text-muted-foreground/40">Off</p>
                                     </template>
                                 </div>
                             </div>
 
                             <!-- Selected day detail panel -->
                             <transition name="fade-slide">
-                                <div v-if="selectedShiftDay" class="mt-3 rounded-lg border border-border/80 bg-muted/30 p-3 text-xs space-y-2">
+                                <div v-if="selectedShiftDay" class="mt-3 space-y-2 rounded-lg border border-border/80 bg-muted/30 p-3 text-xs">
                                     <div class="flex items-center justify-between">
-                                        <span class="font-bold text-foreground flex items-center gap-1.5">
+                                        <span class="flex items-center gap-1.5 font-bold text-foreground">
                                             <CalendarDays class="size-3.5 text-primary" />
                                             Day {{ selectedShiftDay.date }} — {{ selectedShiftDay.shiftLabel }}
-                                            <Badge :class="[
-                                                'text-[10px] ml-1',
-                                                selectedShiftDay.status === 'completed' ? 'bg-emerald-500/15 text-emerald-700 border-emerald-500/30' :
-                                                selectedShiftDay.status === 'active' ? 'bg-sky-500/15 text-sky-700 border-sky-500/30' :
-                                                'bg-rose-500/15 text-rose-700 border-rose-500/30'
-                                            ]">{{ shiftStatusConfig[selectedShiftDay.status].label }}</Badge>
+                                            <Badge
+                                                :class="[
+                                                    'ml-1 text-[10px]',
+                                                    selectedShiftDay.status === 'completed'
+                                                        ? 'border-emerald-500/30 bg-emerald-500/15 text-emerald-700'
+                                                        : selectedShiftDay.status === 'active'
+                                                          ? 'border-sky-500/30 bg-sky-500/15 text-sky-700'
+                                                          : 'border-rose-500/30 bg-rose-500/15 text-rose-700',
+                                                ]"
+                                                >{{ shiftStatusConfig[selectedShiftDay.status].label }}</Badge
+                                            >
                                         </span>
-                                        <button @click="selectedShiftDay = null" class="text-muted-foreground hover:text-foreground text-[10px] underline">✕</button>
+                                        <button
+                                            @click="selectedShiftDay = null"
+                                            class="text-[10px] text-muted-foreground underline hover:text-foreground"
+                                        >
+                                            ✕
+                                        </button>
                                     </div>
-                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                        <div class="rounded-md bg-card border border-border/60 p-2">
-                                            <div class="flex items-center gap-1 text-muted-foreground mb-0.5 text-[10px]"><LogIn class="size-2.5" /> Clock In</div>
-                                            <p class="font-bold font-mono text-foreground text-xs">{{ selectedShiftDay.clockIn ?? 'N/A' }}</p>
+                                    <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                                        <div class="rounded-md border border-border/60 bg-card p-2">
+                                            <div class="mb-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
+                                                <LogIn class="size-2.5" /> Clock In
+                                            </div>
+                                            <p class="font-mono text-xs font-bold text-foreground">{{ selectedShiftDay.clockIn ?? 'N/A' }}</p>
                                         </div>
-                                        <div class="rounded-md bg-card border border-border/60 p-2">
-                                            <div class="flex items-center gap-1 text-muted-foreground mb-0.5 text-[10px]"><LogOut class="size-2.5" /> Clock Out</div>
-                                            <p class="font-bold font-mono text-foreground text-xs">{{ selectedShiftDay.clockOut ?? (selectedShiftDay.status === 'active' ? 'Ongoing' : 'N/A') }}</p>
+                                        <div class="rounded-md border border-border/60 bg-card p-2">
+                                            <div class="mb-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
+                                                <LogOut class="size-2.5" /> Clock Out
+                                            </div>
+                                            <p class="font-mono text-xs font-bold text-foreground">
+                                                {{ selectedShiftDay.clockOut ?? (selectedShiftDay.status === 'active' ? 'Ongoing' : 'N/A') }}
+                                            </p>
                                         </div>
-                                        <div class="rounded-md bg-card border border-border/60 p-2">
-                                            <div class="flex items-center gap-1 text-muted-foreground mb-0.5 text-[10px]"><BarChart3 class="size-2.5" /> Shift Sales</div>
-                                            <p class="font-bold font-mono text-emerald-700 text-xs">{{ selectedShiftDay.shiftSales ? formatCurrency(selectedShiftDay.shiftSales) : '—' }}</p>
+                                        <div class="rounded-md border border-border/60 bg-card p-2">
+                                            <div class="mb-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
+                                                <BarChart3 class="size-2.5" /> Shift Sales
+                                            </div>
+                                            <p class="font-mono text-xs font-bold text-emerald-700">
+                                                {{ selectedShiftDay.shiftSales ? formatCurrency(selectedShiftDay.shiftSales) : '—' }}
+                                            </p>
                                         </div>
-                                        <div class="rounded-md bg-card border border-border/60 p-2">
-                                            <div class="flex items-center gap-1 text-muted-foreground mb-0.5 text-[10px]"><Receipt class="size-2.5" /> Orders</div>
-                                            <p class="font-bold font-mono text-foreground text-xs">{{ selectedShiftDay.orders ?? '—' }} receipts</p>
+                                        <div class="rounded-md border border-border/60 bg-card p-2">
+                                            <div class="mb-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
+                                                <Receipt class="size-2.5" /> Orders
+                                            </div>
+                                            <p class="font-mono text-xs font-bold text-foreground">{{ selectedShiftDay.orders ?? '—' }} receipts</p>
                                         </div>
                                     </div>
-                                    <p v-if="selectedShiftDay.note" class="text-rose-600 font-semibold flex items-center gap-1 text-[10px]">
+                                    <p v-if="selectedShiftDay.note" class="flex items-center gap-1 text-[10px] font-semibold text-rose-600">
                                         <AlertTriangle class="size-3" /> {{ selectedShiftDay.note }}
                                     </p>
                                 </div>
@@ -813,10 +978,14 @@ onMounted(() => {
                             <!-- Legend -->
                             <div class="mt-3 flex flex-wrap gap-2.5 text-[10px] text-muted-foreground">
                                 <span class="flex items-center gap-1"><span class="size-2 rounded-full bg-emerald-500"></span> Completed</span>
-                                <span class="flex items-center gap-1"><span class="size-2 rounded-full bg-sky-500 animate-pulse"></span> Active</span>
-                                <span class="flex items-center gap-1"><span class="size-2 rounded-full bg-muted-foreground/40"></span> Scheduled</span>
+                                <span class="flex items-center gap-1"><span class="size-2 animate-pulse rounded-full bg-sky-500"></span> Active</span>
+                                <span class="flex items-center gap-1"
+                                    ><span class="size-2 rounded-full bg-muted-foreground/40"></span> Scheduled</span
+                                >
                                 <span class="flex items-center gap-1"><span class="size-2 rounded-full bg-rose-500"></span> Absent</span>
-                                <span class="flex items-center gap-1"><span class="size-2 rounded-full bg-transparent border border-muted-foreground/30"></span> Day Off</span>
+                                <span class="flex items-center gap-1"
+                                    ><span class="size-2 rounded-full border border-muted-foreground/30 bg-transparent"></span> Day Off</span
+                                >
                             </div>
                         </div>
                     </transition>
@@ -824,23 +993,25 @@ onMounted(() => {
 
                 <!-- Shift Progress Bar -->
                 <div id="cashier-step-target" class="rounded-2xl border border-border/80 bg-card p-4 shadow-sm">
-                    <div class="flex items-center justify-between mb-2 text-xs">
-                        <span class="font-semibold text-foreground flex items-center gap-1.5">
+                    <div class="mb-2 flex items-center justify-between text-xs">
+                        <span class="flex items-center gap-1.5 font-semibold text-foreground">
                             <BarChart3 class="size-3.5 text-emerald-600" />
                             Today's Shift Target Progress
                         </span>
                         <span class="font-mono font-bold text-emerald-700">
                             {{ formatCurrency(cashierShiftStats.shiftSales) }} / {{ formatCurrency(cashierShiftStats.targetSales) }}
-                            <span class="text-muted-foreground font-normal ml-1">({{ cashierShiftStats.targetCompletion }}%)</span>
+                            <span class="ml-1 font-normal text-muted-foreground">({{ cashierShiftStats.targetCompletion }}%)</span>
                         </span>
                     </div>
-                    <div class="h-3 w-full rounded-full bg-muted/60 overflow-hidden">
+                    <div class="h-3 w-full overflow-hidden rounded-full bg-muted/60">
                         <div
-                            class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-700 shadow-sm"
+                            class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400 shadow-sm transition-all duration-700"
                             :style="{ width: `${cashierShiftStats.targetCompletion}%` }"
                         ></div>
                     </div>
-                    <p class="text-[11px] text-muted-foreground mt-1.5">{{ formatCurrency(cashierShiftStats.targetSales - cashierShiftStats.shiftSales) }} remaining to hit today's shift target</p>
+                    <p class="mt-1.5 text-[11px] text-muted-foreground">
+                        {{ formatCurrency(cashierShiftStats.targetSales - cashierShiftStats.shiftSales) }} remaining to hit today's shift target
+                    </p>
                 </div>
 
                 <!-- 4 Personal KPI Cards -->
@@ -883,79 +1054,81 @@ onMounted(() => {
                 </div>
 
                 <!-- Payment Breakdown: Cash / M-Pesa / Card / Credit -->
-                <div id="cashier-step-payments" class="grid grid-cols-2 gap-3 sm:grid-cols-4 text-xs">
+                <div id="cashier-step-payments" class="grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
                     <div class="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4 shadow-sm">
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="size-7 rounded-lg bg-emerald-500/15 flex items-center justify-center">
+                        <div class="mb-2 flex items-center gap-2">
+                            <div class="flex size-7 items-center justify-center rounded-lg bg-emerald-500/15">
                                 <Smartphone class="size-3.5 text-emerald-600" />
                             </div>
                             <span class="font-semibold text-muted-foreground">M-Pesa Collected</span>
                         </div>
-                        <div class="text-xl font-bold font-mono text-emerald-700">{{ formatCurrency(cashierShiftStats.mpesaCollected) }}</div>
-                        <p class="text-[11px] text-muted-foreground mt-0.5">58% of shift revenue</p>
+                        <div class="font-mono text-xl font-bold text-emerald-700">{{ formatCurrency(cashierShiftStats.mpesaCollected) }}</div>
+                        <p class="mt-0.5 text-[11px] text-muted-foreground">58% of shift revenue</p>
                     </div>
                     <div class="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 shadow-sm">
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="size-7 rounded-lg bg-amber-500/15 flex items-center justify-center">
+                        <div class="mb-2 flex items-center gap-2">
+                            <div class="flex size-7 items-center justify-center rounded-lg bg-amber-500/15">
                                 <Banknote class="size-3.5 text-amber-600" />
                             </div>
                             <span class="font-semibold text-muted-foreground">Cash in Drawer</span>
                         </div>
-                        <div class="text-xl font-bold font-mono text-amber-700">{{ formatCurrency(cashierShiftStats.cashInDrawer) }}</div>
-                        <p class="text-[11px] text-muted-foreground mt-0.5">22% of shift revenue</p>
+                        <div class="font-mono text-xl font-bold text-amber-700">{{ formatCurrency(cashierShiftStats.cashInDrawer) }}</div>
+                        <p class="mt-0.5 text-[11px] text-muted-foreground">22% of shift revenue</p>
                     </div>
                     <div class="rounded-2xl border border-sky-500/30 bg-sky-500/5 p-4 shadow-sm">
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="size-7 rounded-lg bg-sky-500/15 flex items-center justify-center">
+                        <div class="mb-2 flex items-center gap-2">
+                            <div class="flex size-7 items-center justify-center rounded-lg bg-sky-500/15">
                                 <CreditCard class="size-3.5 text-sky-600" />
                             </div>
                             <span class="font-semibold text-muted-foreground">Card Payments</span>
                         </div>
-                        <div class="text-xl font-bold font-mono text-sky-700">{{ formatCurrency(cashierShiftStats.cardCollected) }}</div>
-                        <p class="text-[11px] text-muted-foreground mt-0.5">15% of shift revenue</p>
+                        <div class="font-mono text-xl font-bold text-sky-700">{{ formatCurrency(cashierShiftStats.cardCollected) }}</div>
+                        <p class="mt-0.5 text-[11px] text-muted-foreground">15% of shift revenue</p>
                     </div>
                     <div class="rounded-2xl border border-purple-500/30 bg-purple-500/5 p-4 shadow-sm">
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="size-7 rounded-lg bg-purple-500/15 flex items-center justify-center">
+                        <div class="mb-2 flex items-center gap-2">
+                            <div class="flex size-7 items-center justify-center rounded-lg bg-purple-500/15">
                                 <Wallet class="size-3.5 text-purple-600" />
                             </div>
                             <span class="font-semibold text-muted-foreground">Credit Sales</span>
                         </div>
-                        <div class="text-xl font-bold font-mono text-purple-700">{{ formatCurrency(cashierShiftStats.creditSales) }}</div>
-                        <p class="text-[11px] text-muted-foreground mt-0.5">5% of shift revenue</p>
+                        <div class="font-mono text-xl font-bold text-purple-700">{{ formatCurrency(cashierShiftStats.creditSales) }}</div>
+                        <p class="mt-0.5 text-[11px] text-muted-foreground">5% of shift revenue</p>
                     </div>
                 </div>
 
                 <!-- Middle: Hourly Chart + Top Items Sold -->
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <!-- Hourly terminal chart -->
-                    <Card id="cashier-step-chart" class="lg:col-span-2 border-border/80">
+                    <Card id="cashier-step-chart" class="border-border/80 lg:col-span-2">
                         <CardHeader class="flex flex-row items-center justify-between pb-2">
                             <div>
                                 <CardTitle class="text-base font-bold">My Hourly Terminal Activity</CardTitle>
                                 <CardDescription class="text-xs">Sales rung up on this register by hour</CardDescription>
                             </div>
-                            <Badge variant="outline" class="text-xs text-emerald-600 bg-emerald-500/10 border-emerald-500/20 font-mono">
+                            <Badge variant="outline" class="border-emerald-500/20 bg-emerald-500/10 font-mono text-xs text-emerald-600">
                                 Peak: 10:00–11:00
                             </Badge>
                         </CardHeader>
                         <CardContent class="pt-2">
-                            <div class="h-52 w-full flex items-end justify-between gap-1.5 pt-6 pb-2 px-2 border-b border-border/60">
+                            <div class="flex h-52 w-full items-end justify-between gap-1.5 border-b border-border/60 px-2 pb-2 pt-6">
                                 <div
                                     v-for="(bar, idx) in cashierHourlyBars"
                                     :key="idx"
-                                    class="flex-1 flex flex-col items-center gap-1 group relative h-full justify-end"
+                                    class="group relative flex h-full flex-1 flex-col items-center justify-end gap-1"
                                 >
-                                    <div class="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-7 text-[10px] font-mono font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded shadow whitespace-nowrap z-10">
+                                    <div
+                                        class="absolute -top-7 z-10 whitespace-nowrap rounded bg-emerald-600 px-1.5 py-0.5 font-mono text-[10px] font-bold text-white opacity-0 shadow transition-opacity group-hover:opacity-100"
+                                    >
                                         {{ formatCurrency(bar.amount) }}
                                     </div>
                                     <div
-                                        class="w-full rounded-t-md bg-emerald-500/20 group-hover:bg-emerald-500 transition-all duration-300 relative overflow-hidden"
+                                        class="relative w-full overflow-hidden rounded-t-md bg-emerald-500/20 transition-all duration-300 group-hover:bg-emerald-500"
                                         :style="{ height: bar.h }"
                                     >
                                         <div class="absolute inset-0 bg-gradient-to-t from-transparent to-emerald-400/40"></div>
                                     </div>
-                                    <span class="text-[10px] font-mono text-muted-foreground mt-1">{{ bar.label }}</span>
+                                    <span class="mt-1 font-mono text-[10px] text-muted-foreground">{{ bar.label }}</span>
                                 </div>
                             </div>
                             <div class="mt-3 flex items-center justify-between text-xs text-muted-foreground">
@@ -971,7 +1144,7 @@ onMounted(() => {
                     <!-- Top items I sold today -->
                     <Card id="cashier-step-top-items" class="border-border/80">
                         <CardHeader class="pb-3">
-                            <CardTitle class="text-base font-bold flex items-center gap-2">
+                            <CardTitle class="flex items-center gap-2 text-base font-bold">
                                 <Star class="size-4 text-amber-500" />
                                 My Top-Selling Items
                             </CardTitle>
@@ -979,15 +1152,22 @@ onMounted(() => {
                         </CardHeader>
                         <CardContent class="p-0">
                             <div class="divide-y divide-border/60 text-xs">
-                                <div v-for="(item, idx) in myCashierTopItems" :key="idx" class="flex items-center justify-between p-3.5 hover:bg-muted/20">
+                                <div
+                                    v-for="(item, idx) in myCashierTopItems"
+                                    :key="idx"
+                                    class="flex items-center justify-between p-3.5 hover:bg-muted/20"
+                                >
                                     <div class="flex items-center gap-3">
-                                        <span class="size-5 rounded-full bg-muted flex items-center justify-center font-bold text-[10px] text-muted-foreground shrink-0">{{ idx + 1 }}</span>
+                                        <span
+                                            class="flex size-5 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground"
+                                            >{{ idx + 1 }}</span
+                                        >
                                         <div>
-                                            <p class="font-semibold text-foreground truncate max-w-[130px]">{{ item.name }}</p>
+                                            <p class="max-w-[130px] truncate font-semibold text-foreground">{{ item.name }}</p>
                                             <p class="text-[11px] text-muted-foreground">{{ item.qty }} units sold</p>
                                         </div>
                                     </div>
-                                    <span class="font-bold font-mono text-foreground">{{ formatCurrency(item.amount) }}</span>
+                                    <span class="font-mono font-bold text-foreground">{{ formatCurrency(item.amount) }}</span>
                                 </div>
                             </div>
                         </CardContent>
@@ -997,37 +1177,41 @@ onMounted(() => {
                 <!-- Bottom: My Recent Receipts + Shift Summary -->
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <!-- My recent receipts (2 cols) -->
-                    <Card id="cashier-step-recent-receipts" class="lg:col-span-2 border-border/80">
-                        <CardHeader class="pb-3 flex flex-row items-center justify-between">
+                    <Card id="cashier-step-recent-receipts" class="border-border/80 lg:col-span-2">
+                        <CardHeader class="flex flex-row items-center justify-between pb-3">
                             <div>
                                 <CardTitle class="text-base font-bold">My Recent Receipts</CardTitle>
                                 <CardDescription class="text-xs">Transactions from this terminal only</CardDescription>
                             </div>
-                            <Link href="/sales" class="text-xs text-primary hover:underline font-semibold">Full Sales Log</Link>
+                            <Link href="/sales" class="text-xs font-semibold text-primary hover:underline">Full Sales Log</Link>
                         </CardHeader>
                         <CardContent class="p-0">
-                            <div class="max-h-[308px] overflow-y-auto divide-y divide-border/60 text-xs scrollbar-thin overscroll-contain">
-                                <div v-for="(sale, idx) in myRecentReceipts" :key="idx" class="flex items-center justify-between p-3.5 hover:bg-muted/20 transition-colors">
+                            <div class="scrollbar-thin max-h-[308px] divide-y divide-border/60 overflow-y-auto overscroll-contain text-xs">
+                                <div
+                                    v-for="(sale, idx) in myRecentReceipts"
+                                    :key="idx"
+                                    class="flex items-center justify-between p-3.5 transition-colors hover:bg-muted/20"
+                                >
                                     <div class="flex items-center gap-3">
-                                        <div class="size-8 rounded-lg bg-muted/60 flex items-center justify-center shrink-0">
+                                        <div class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
                                             <Receipt class="size-4 text-muted-foreground" />
                                         </div>
                                         <div>
                                             <div class="flex items-center gap-1.5">
-                                                <span class="font-mono font-bold text-primary text-[11px]">{{ sale.receipt }}</span>
-                                                <span class="text-muted-foreground text-[10px]">{{ sale.time }}</span>
+                                                <span class="font-mono text-[11px] font-bold text-primary">{{ sale.receipt }}</span>
+                                                <span class="text-[10px] text-muted-foreground">{{ sale.time }}</span>
                                             </div>
                                             <p class="text-muted-foreground">{{ sale.customer }} • {{ sale.items }} items • {{ sale.method }}</p>
                                         </div>
                                     </div>
                                     <div class="text-right">
-                                        <p class="font-bold font-mono text-foreground">{{ formatCurrency(sale.amount) }}</p>
-                                        <Badge :variant="sale.status === 'Completed' ? 'success' : 'destructive'" class="text-[10px] py-0">
+                                        <p class="font-mono font-bold text-foreground">{{ formatCurrency(sale.amount) }}</p>
+                                        <Badge :variant="sale.status === 'Completed' ? 'success' : 'destructive'" class="py-0 text-[10px]">
                                             {{ sale.status }}
                                         </Badge>
                                     </div>
                                 </div>
-                                <div v-if="myRecentReceipts.length === 0" class="p-6 text-center text-muted-foreground text-xs">
+                                <div v-if="myRecentReceipts.length === 0" class="p-6 text-center text-xs text-muted-foreground">
                                     No receipts issued yet this shift
                                 </div>
                             </div>
@@ -1037,67 +1221,70 @@ onMounted(() => {
                     <!-- Shift Summary Card -->
                     <Card id="cashier-step-shift-summary" class="border-border/80">
                         <CardHeader class="pb-3">
-                            <CardTitle class="text-base font-bold flex items-center gap-2">
+                            <CardTitle class="flex items-center gap-2 text-base font-bold">
                                 <ShieldCheck class="size-4 text-sky-500" />
                                 Shift Summary
                             </CardTitle>
                             <CardDescription class="text-xs">My cash register reconciliation</CardDescription>
                         </CardHeader>
                         <CardContent class="space-y-3 text-xs">
-                            <div class="flex justify-between py-2 border-b border-border/60">
-                                <span class="text-muted-foreground flex items-center gap-2"><Clock class="size-3" /> Shift Start</span>
-                                <span class="font-bold font-mono">{{ cashierShiftStats.shiftStartTime }}</span>
+                            <div class="flex justify-between border-b border-border/60 py-2">
+                                <span class="flex items-center gap-2 text-muted-foreground"><Clock class="size-3" /> Shift Start</span>
+                                <span class="font-mono font-bold">{{ cashierShiftStats.shiftStartTime }}</span>
                             </div>
-                            <div class="flex justify-between py-2 border-b border-border/60">
-                                <span class="text-muted-foreground flex items-center gap-2"><BarChart3 class="size-3" /> Total Orders</span>
-                                <span class="font-bold font-mono">{{ cashierShiftStats.shiftOrders }} receipts</span>
+                            <div class="flex justify-between border-b border-border/60 py-2">
+                                <span class="flex items-center gap-2 text-muted-foreground"><BarChart3 class="size-3" /> Total Orders</span>
+                                <span class="font-mono font-bold">{{ cashierShiftStats.shiftOrders }} receipts</span>
                             </div>
-                            <div class="flex justify-between py-2 border-b border-border/60">
-                                <span class="text-muted-foreground flex items-center gap-2"><Banknote class="size-3" /> Cash Drawer</span>
-                                <span class="font-bold font-mono text-amber-600">{{ formatCurrency(cashierShiftStats.cashInDrawer) }}</span>
+                            <div class="flex justify-between border-b border-border/60 py-2">
+                                <span class="flex items-center gap-2 text-muted-foreground"><Banknote class="size-3" /> Cash Drawer</span>
+                                <span class="font-mono font-bold text-amber-600">{{ formatCurrency(cashierShiftStats.cashInDrawer) }}</span>
                             </div>
-                            <div class="flex justify-between py-2 border-b border-border/60">
-                                <span class="text-muted-foreground flex items-center gap-2"><Smartphone class="size-3" /> M-Pesa Total</span>
-                                <span class="font-bold font-mono text-emerald-600">{{ formatCurrency(cashierShiftStats.mpesaCollected) }}</span>
+                            <div class="flex justify-between border-b border-border/60 py-2">
+                                <span class="flex items-center gap-2 text-muted-foreground"><Smartphone class="size-3" /> M-Pesa Total</span>
+                                <span class="font-mono font-bold text-emerald-600">{{ formatCurrency(cashierShiftStats.mpesaCollected) }}</span>
                             </div>
-                            <div class="flex justify-between py-2 border-b border-border/60">
-                                <span class="text-muted-foreground flex items-center gap-2"><RotateCcw class="size-3" /> Refunds</span>
-                                <span class="font-bold font-mono text-rose-600">-{{ formatCurrency(cashierShiftStats.refundsAmount) }}</span>
+                            <div class="flex justify-between border-b border-border/60 py-2">
+                                <span class="flex items-center gap-2 text-muted-foreground"><RotateCcw class="size-3" /> Refunds</span>
+                                <span class="font-mono font-bold text-rose-600">-{{ formatCurrency(cashierShiftStats.refundsAmount) }}</span>
                             </div>
-                            <div class="flex justify-between py-2 pt-3 mt-1 border-t-2 border-emerald-500/40">
+                            <div class="mt-1 flex justify-between border-t-2 border-emerald-500/40 py-2 pt-3">
                                 <span class="font-bold text-foreground">Net Shift Revenue</span>
-                                <span class="font-bold font-mono text-emerald-700">{{ formatCurrency(cashierShiftStats.shiftSales - cashierShiftStats.refundsAmount) }}</span>
+                                <span class="font-mono font-bold text-emerald-700">{{
+                                    formatCurrency(cashierShiftStats.shiftSales - cashierShiftStats.refundsAmount)
+                                }}</span>
                             </div>
                         </CardContent>
                     </Card>
                 </div>
-
             </div>
             <!-- ═══════════════════════════════════════════════════════ -->
             <!-- END CASHIER DASHBOARD                                   -->
             <!-- ═══════════════════════════════════════════════════════ -->
 
-
             <!-- ═══════════════════════════════════════════════════════ -->
             <!-- OWNER / MANAGEMENT DASHBOARD                            -->
             <!-- ═══════════════════════════════════════════════════════ -->
             <div v-else class="space-y-6">
-
                 <!-- Header & Time Filter -->
                 <div id="dashboard-step-header" class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div>
-                        <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                            <span class="truncate max-w-[220px] sm:max-w-none">{{ currentTenant.name }} Dashboard</span>
-                            <Badge variant="outline" class="font-mono text-xs shrink-0">{{ currentBranch.code }}</Badge>
+                        <h2 class="flex items-center gap-2 text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+                            <span class="max-w-[220px] truncate sm:max-w-none">{{ currentTenant.name }} Dashboard</span>
+                            <Badge variant="outline" class="shrink-0 font-mono text-xs">{{ currentBranch.code }}</Badge>
                         </h2>
-                        <p class="text-xs text-muted-foreground mt-0.5">
+                        <p class="mt-0.5 text-xs text-muted-foreground">
                             Real-time sales, inventory valuation, and multi-branch analytics for {{ currentBranch.name }}.
                         </p>
                     </div>
-                    <div class="flex items-center gap-2 flex-wrap">
+                    <div class="flex flex-wrap items-center gap-2">
                         <!-- Quick POS Launcher Button -->
                         <Link href="/pos">
-                            <Button id="dashboard-step-pos-action" size="sm" class="gap-1.5 text-xs h-9 bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-sm">
+                            <Button
+                                id="dashboard-step-pos-action"
+                                size="sm"
+                                class="h-9 gap-1.5 bg-emerald-600 text-xs font-bold text-white shadow-sm hover:bg-emerald-700"
+                            >
                                 <Zap class="size-3.5" />
                                 <span>Open POS Register</span>
                             </Button>
@@ -1109,7 +1296,7 @@ onMounted(() => {
                             type="button"
                             variant="outline"
                             size="sm"
-                            class="h-9 px-3 gap-1.5 text-xs font-bold text-primary border-primary/40 bg-primary/10 hover:bg-primary/20 hover:border-primary/60 cursor-pointer shadow-2xs transition-all relative"
+                            class="shadow-2xs relative h-9 cursor-pointer gap-1.5 border-primary/40 bg-primary/10 px-3 text-xs font-bold text-primary transition-all hover:border-primary/60 hover:bg-primary/20"
                             @click="openGuide(0)"
                             title="Start Interactive Dashboard Walkthrough"
                         >
@@ -1118,16 +1305,18 @@ onMounted(() => {
                         </Button>
 
                         <!-- Time Filter -->
-                        <div class="flex items-center gap-1 sm:gap-1.5 rounded-xl border border-border/80 bg-card p-1 shadow-sm text-xs overflow-x-auto scrollbar-none">
+                        <div
+                            class="scrollbar-none flex items-center gap-1 overflow-x-auto rounded-xl border border-border/80 bg-card p-1 text-xs shadow-sm sm:gap-1.5"
+                        >
                             <button
                                 v-for="t in ['Today', '7 Days', '30 Days', 'This Month', 'This Year']"
                                 :key="t"
                                 type="button"
                                 :class="[
-                                    'px-2.5 sm:px-3 py-1 sm:py-1.5 font-semibold rounded-lg transition-all whitespace-nowrap text-xs',
+                                    'whitespace-nowrap rounded-lg px-2.5 py-1 text-xs font-semibold transition-all sm:px-3 sm:py-1.5',
                                     ownerTimeFilter === t
                                         ? 'bg-primary text-primary-foreground shadow-sm'
-                                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/40',
+                                        : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground',
                                 ]"
                                 @click="ownerTimeFilter = t as any"
                             >
@@ -1138,16 +1327,16 @@ onMounted(() => {
                 </div>
 
                 <!-- ── OWNER COMPACT STAFF SHIFTS, CLOCK-IN & TARGETS STRIP ── -->
-                <div id="dashboard-step-shifts" class="rounded-xl border border-border/80 bg-card shadow-sm overflow-hidden">
+                <div id="dashboard-step-shifts" class="overflow-hidden rounded-xl border border-border/80 bg-card shadow-sm">
                     <!-- Toggle trigger row -->
                     <button
                         type="button"
                         @click="showOwnerSchedule = !showOwnerSchedule"
-                        class="w-full flex items-center justify-between px-4 py-2.5 hover:bg-muted/30 transition-colors group"
+                        class="group flex w-full items-center justify-between px-4 py-2.5 transition-colors hover:bg-muted/30"
                     >
-                        <div class="flex items-center gap-3 text-xs flex-wrap">
+                        <div class="flex flex-wrap items-center gap-3 text-xs">
                             <div class="flex items-center gap-1.5">
-                                <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span class="size-2 animate-pulse rounded-full bg-emerald-500"></span>
                                 <span class="font-semibold text-emerald-700 dark:text-emerald-400">
                                     {{ ownerScheduleSummary.active }} / {{ ownerScheduleSummary.totalStaff }} Staff Active Now
                                 </span>
@@ -1167,21 +1356,29 @@ onMounted(() => {
                                 <span class="size-2 rounded-full bg-sky-500"></span>
                                 <span class="font-medium text-sky-700 dark:text-sky-400">3 Branches Active</span>
                             </div>
-                            <span class="hidden md:inline text-border">|</span>
-                            <div class="hidden md:flex items-center gap-2">
+                            <span class="hidden text-border md:inline">|</span>
+                            <div class="hidden items-center gap-2 md:flex">
                                 <span class="text-muted-foreground">Combined Staff Target:</span>
-                                <span class="font-mono font-bold text-primary">{{ formatCurrency(ownerScheduleSummary.totalSales) }} / {{ formatCurrency(ownerScheduleSummary.totalTarget) }}</span>
-                                <Badge variant="outline" class="text-[10px] py-0 font-mono text-emerald-600 border-emerald-500/30">
+                                <span class="font-mono font-bold text-primary"
+                                    >{{ formatCurrency(ownerScheduleSummary.totalSales) }} /
+                                    {{ formatCurrency(ownerScheduleSummary.totalTarget) }}</span
+                                >
+                                <Badge variant="outline" class="border-emerald-500/30 py-0 font-mono text-[10px] text-emerald-600">
                                     {{ ownerScheduleSummary.targetPercent }}%
                                 </Badge>
                             </div>
                         </div>
-                        <div class="flex items-center gap-2 shrink-0">
-                            <span class="text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors flex items-center gap-1">
+                        <div class="flex shrink-0 items-center gap-2">
+                            <span
+                                class="flex items-center gap-1 text-[11px] font-medium text-muted-foreground transition-colors group-hover:text-foreground"
+                            >
                                 <Users class="size-3.5 text-primary" />
                                 <span>{{ showOwnerSchedule ? 'Hide Schedule' : 'Branch Staff & Clock-In Tracker' }}</span>
                             </span>
-                            <div class="size-5 rounded-md bg-muted/60 flex items-center justify-center transition-transform duration-200" :class="showOwnerSchedule ? 'rotate-180' : ''">
+                            <div
+                                class="flex size-5 items-center justify-center rounded-md bg-muted/60 transition-transform duration-200"
+                                :class="showOwnerSchedule ? 'rotate-180' : ''"
+                            >
                                 <ChevronRight class="size-3 rotate-90" />
                             </div>
                         </div>
@@ -1189,12 +1386,17 @@ onMounted(() => {
 
                     <!-- Collapsible owner schedule body -->
                     <transition name="collapse">
-                        <div v-if="showOwnerSchedule" class="border-t border-border/60 px-4 pb-4 pt-3 space-y-4">
+                        <div v-if="showOwnerSchedule" class="space-y-4 border-t border-border/60 px-4 pb-4 pt-3">
                             <!-- Filter & Search Controls Bar -->
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-muted/30 p-3 rounded-lg border border-border/60">
+                            <div
+                                class="flex flex-col gap-3 rounded-lg border border-border/60 bg-muted/30 p-3 sm:flex-row sm:items-center sm:justify-between"
+                            >
                                 <!-- Branch filter buttons (only shown in multi-branch mode) -->
-                                <div v-if="isMultiBranch && ownerBranchTabs.length > 2" class="flex items-center gap-1.5 overflow-x-auto scrollbar-none text-xs">
-                                    <span class="text-muted-foreground font-semibold flex items-center gap-1 shrink-0 mr-1">
+                                <div
+                                    v-if="isMultiBranch && ownerBranchTabs.length > 2"
+                                    class="scrollbar-none flex items-center gap-1.5 overflow-x-auto text-xs"
+                                >
+                                    <span class="mr-1 flex shrink-0 items-center gap-1 font-semibold text-muted-foreground">
                                         <Building2 class="size-3.5 text-primary" /> Branch:
                                     </span>
                                     <button
@@ -1203,10 +1405,10 @@ onMounted(() => {
                                         type="button"
                                         @click="ownerBranchFilter = b.id"
                                         :class="[
-                                            'px-2.5 py-1 rounded-md font-semibold text-xs whitespace-nowrap transition-colors',
+                                            'whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold transition-colors',
                                             ownerBranchFilter === b.id
                                                 ? 'bg-primary text-primary-foreground shadow-sm'
-                                                : 'bg-card border border-border/80 text-muted-foreground hover:text-foreground',
+                                                : 'border border-border/80 bg-card text-muted-foreground hover:text-foreground',
                                         ]"
                                     >
                                         {{ b.name }}
@@ -1215,106 +1417,110 @@ onMounted(() => {
 
                                 <!-- Search Input -->
                                 <div class="relative min-w-[200px] sm:w-64">
-                                    <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                                    <Search class="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
                                     <input
                                         v-model="ownerStaffSearch"
                                         type="text"
                                         placeholder="Search staff, role, terminal..."
-                                        class="w-full pl-8 pr-3 py-1 bg-card border border-border/80 rounded-md text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                                        class="w-full rounded-md border border-border/80 bg-card py-1 pl-8 pr-3 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                                     />
                                 </div>
                             </div>
 
                             <!-- Branch Attendance & Sales Summary Cards (only in multi-branch mode) -->
-                            <div v-if="isMultiBranch && props.branches && props.branches.length > 1" class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                            <div
+                                v-if="isMultiBranch && props.branches && props.branches.length > 1"
+                                class="grid grid-cols-1 gap-3 text-xs sm:grid-cols-3"
+                            >
                                 <div v-for="b in props.branches" :key="b.id" class="rounded-xl border border-border/80 bg-card p-3.5 shadow-sm">
                                     <div class="flex items-center justify-between">
-                                        <span class="text-muted-foreground font-medium flex items-center gap-1.5">
+                                        <span class="flex items-center gap-1.5 font-medium text-muted-foreground">
                                             <Building2 class="size-3.5 text-primary" /> {{ b.name }}
                                         </span>
-                                        <Badge variant="outline" class="text-[10px] py-0">{{ b.status || 'Active' }}</Badge>
+                                        <Badge variant="outline" class="py-0 text-[10px]">{{ b.status || 'Active' }}</Badge>
                                     </div>
                                     <div class="mt-2 flex items-baseline justify-between">
-                                        <div class="text-base font-bold font-mono text-foreground">{{ formatCurrency(b.today_sales ?? 0) }}</div>
+                                        <div class="font-mono text-base font-bold text-foreground">{{ formatCurrency(b.today_sales ?? 0) }}</div>
                                         <span class="text-[11px] text-muted-foreground">Today's Sales</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div v-else-if="isDemo && (!props.branches || props.branches.length === 0)" class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                            <div
+                                v-else-if="isDemo && (!props.branches || props.branches.length === 0)"
+                                class="grid grid-cols-1 gap-3 text-xs sm:grid-cols-3"
+                            >
                                 <div class="rounded-xl border border-border/80 bg-card p-3.5 shadow-sm">
                                     <div class="flex items-center justify-between">
-                                        <span class="text-muted-foreground font-medium flex items-center gap-1.5">
+                                        <span class="flex items-center gap-1.5 font-medium text-muted-foreground">
                                             <Building2 class="size-3.5 text-emerald-600" /> Nairobi Central (HQ)
                                         </span>
-                                        <Badge variant="success" class="text-[10px] py-0">2 / 3 Present</Badge>
+                                        <Badge variant="success" class="py-0 text-[10px]">2 / 3 Present</Badge>
                                     </div>
                                     <div class="mt-2 flex items-baseline justify-between">
-                                        <div class="text-base font-bold font-mono text-foreground">{{ formatCurrency(38450) }}</div>
+                                        <div class="font-mono text-base font-bold text-foreground">{{ formatCurrency(38450) }}</div>
                                         <span class="text-[11px] text-muted-foreground">Target: {{ formatCurrency(215000) }} (17.8%)</span>
                                     </div>
-                                    <div class="h-1.5 w-full rounded-full bg-muted/60 mt-1.5 overflow-hidden">
+                                    <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted/60">
                                         <div class="h-full rounded-full bg-emerald-500" style="width: 17.8%"></div>
                                     </div>
                                 </div>
 
                                 <div class="rounded-xl border border-border/80 bg-card p-3.5 shadow-sm">
                                     <div class="flex items-center justify-between">
-                                        <span class="text-muted-foreground font-medium flex items-center gap-1.5">
+                                        <span class="flex items-center gap-1.5 font-medium text-muted-foreground">
                                             <Building2 class="size-3.5 text-sky-600" /> Westlands Outlet
                                         </span>
-                                        <Badge variant="success" class="text-[10px] py-0">2 / 2 Present</Badge>
+                                        <Badge variant="success" class="py-0 text-[10px]">2 / 2 Present</Badge>
                                     </div>
                                     <div class="mt-2 flex items-baseline justify-between">
-                                        <div class="text-base font-bold font-mono text-foreground">{{ formatCurrency(62400) }}</div>
+                                        <div class="font-mono text-base font-bold text-foreground">{{ formatCurrency(62400) }}</div>
                                         <span class="text-[11px] text-muted-foreground">Target: {{ formatCurrency(115000) }} (54.2%)</span>
                                     </div>
-                                    <div class="h-1.5 w-full rounded-full bg-muted/60 mt-1.5 overflow-hidden">
+                                    <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted/60">
                                         <div class="h-full rounded-full bg-sky-500" style="width: 54.2%"></div>
                                     </div>
                                 </div>
 
                                 <div class="rounded-xl border border-border/80 bg-card p-3.5 shadow-sm">
                                     <div class="flex items-center justify-between">
-                                        <span class="text-muted-foreground font-medium flex items-center gap-1.5">
+                                        <span class="flex items-center gap-1.5 font-medium text-muted-foreground">
                                             <Building2 class="size-3.5 text-indigo-600" /> Mombasa Road
                                         </span>
-                                        <Badge variant="success" class="text-[10px] py-0">2 / 2 Present</Badge>
+                                        <Badge variant="success" class="py-0 text-[10px]">2 / 2 Present</Badge>
                                     </div>
                                     <div class="mt-2 flex items-baseline justify-between">
-                                        <div class="text-base font-bold font-mono text-foreground">{{ formatCurrency(38800) }}</div>
+                                        <div class="font-mono text-base font-bold text-foreground">{{ formatCurrency(38800) }}</div>
                                         <span class="text-[11px] text-muted-foreground">Target: {{ formatCurrency(85000) }} (45.6%)</span>
                                     </div>
-                                    <div class="h-1.5 w-full rounded-full bg-muted/60 mt-1.5 overflow-hidden">
+                                    <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted/60">
                                         <div class="h-full rounded-full bg-indigo-500" style="width: 45.6%"></div>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Staff Attendance & Target Table -->
-                            <div class="rounded-xl border border-border/80 bg-card overflow-hidden">
+                            <div class="overflow-hidden rounded-xl border border-border/80 bg-card">
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-left text-xs">
-                                        <thead class="bg-muted/40 text-muted-foreground font-semibold border-b border-border/60">
+                                        <thead class="border-b border-border/60 bg-muted/40 font-semibold text-muted-foreground">
                                             <tr>
-                                                <th class="py-2.5 px-3.5">Staff Member</th>
-                                                <th class="py-2.5 px-3">Branch & Terminal</th>
-                                                <th class="py-2.5 px-3">Scheduled Shift</th>
-                                                <th class="py-2.5 px-3">Clock-In Session</th>
-                                                <th class="py-2.5 px-3">Today's Sales vs Target</th>
-                                                <th class="py-2.5 px-3 text-right">Orders Processed</th>
+                                                <th class="px-3.5 py-2.5">Staff Member</th>
+                                                <th class="px-3 py-2.5">Branch & Terminal</th>
+                                                <th class="px-3 py-2.5">Scheduled Shift</th>
+                                                <th class="px-3 py-2.5">Clock-In Session</th>
+                                                <th class="px-3 py-2.5">Today's Sales vs Target</th>
+                                                <th class="px-3 py-2.5 text-right">Orders Processed</th>
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y divide-border/60">
-                                            <tr
-                                                v-for="staff in filteredOwnerStaff"
-                                                :key="staff.id"
-                                                class="hover:bg-muted/20 transition-colors"
-                                            >
+                                            <tr v-for="staff in filteredOwnerStaff" :key="staff.id" class="transition-colors hover:bg-muted/20">
                                                 <!-- Staff Member -->
-                                                <td class="py-3 px-3.5">
+                                                <td class="px-3.5 py-3">
                                                     <div class="flex items-center gap-2.5">
-                                                        <div class="size-8 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center shrink-0">
+                                                        <div
+                                                            class="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary"
+                                                        >
                                                             {{ staff.avatar }}
                                                         </div>
                                                         <div>
@@ -1325,37 +1531,50 @@ onMounted(() => {
                                                 </td>
 
                                                 <!-- Branch & Terminal -->
-                                                <td class="py-3 px-3">
+                                                <td class="px-3 py-3">
                                                     <p class="font-medium text-foreground">{{ staff.branchName }}</p>
-                                                    <Badge variant="outline" class="font-mono text-[10px] py-0 mt-0.5">{{ staff.terminal }}</Badge>
+                                                    <Badge variant="outline" class="mt-0.5 py-0 font-mono text-[10px]">{{ staff.terminal }}</Badge>
                                                 </td>
 
                                                 <!-- Scheduled Shift -->
-                                                <td class="py-3 px-3">
+                                                <td class="px-3 py-3">
                                                     <p class="font-medium text-foreground">{{ staff.shiftName }}</p>
-                                                    <p class="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                                                    <p class="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
                                                         <Clock class="size-3" /> {{ staff.shiftTime }}
                                                     </p>
                                                 </td>
 
                                                 <!-- Clock-In Session -->
-                                                <td class="py-3 px-3">
+                                                <td class="px-3 py-3">
                                                     <!-- Clocked In Active -->
                                                     <div v-if="staff.status === 'clocked_in'" class="space-y-0.5">
                                                         <div class="flex items-center gap-1.5">
-                                                            <Badge class="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-[10px] py-0">
-                                                                <span class="size-1.5 rounded-full bg-emerald-500 mr-1 animate-pulse inline-block"></span>
+                                                            <Badge
+                                                                class="border-emerald-500/30 bg-emerald-500/15 py-0 text-[10px] text-emerald-700 dark:text-emerald-400"
+                                                            >
+                                                                <span
+                                                                    class="mr-1 inline-block size-1.5 animate-pulse rounded-full bg-emerald-500"
+                                                                ></span>
                                                                 Active ({{ staff.clockInTime }})
                                                             </Badge>
                                                         </div>
-                                                        <span :class="['text-[10px]', staff.punctuality === 'Late' ? 'text-amber-600 font-semibold' : 'text-muted-foreground']">
+                                                        <span
+                                                            :class="[
+                                                                'text-[10px]',
+                                                                staff.punctuality === 'Late'
+                                                                    ? 'font-semibold text-amber-600'
+                                                                    : 'text-muted-foreground',
+                                                            ]"
+                                                        >
                                                             {{ staff.punctuality === 'Late' ? `Late +${staff.lateMinutes}m` : staff.punctuality }}
                                                         </span>
                                                     </div>
 
                                                     <!-- On Break -->
                                                     <div v-else-if="staff.status === 'on_break'" class="space-y-0.5">
-                                                        <Badge class="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 text-[10px] py-0 flex items-center gap-1 w-fit">
+                                                        <Badge
+                                                            class="flex w-fit items-center gap-1 border-amber-500/30 bg-amber-500/15 py-0 text-[10px] text-amber-700 dark:text-amber-400"
+                                                        >
                                                             <Coffee class="size-3" /> On Break
                                                         </Badge>
                                                         <p class="text-[10px] text-muted-foreground">Clocked: {{ staff.clockInTime }}</p>
@@ -1363,51 +1582,66 @@ onMounted(() => {
 
                                                     <!-- Scheduled (Upcoming) -->
                                                     <div v-else-if="staff.status === 'scheduled'" class="space-y-0.5">
-                                                        <Badge variant="outline" class="text-muted-foreground text-[10px] py-0">
-                                                            Scheduled
-                                                        </Badge>
+                                                        <Badge variant="outline" class="py-0 text-[10px] text-muted-foreground"> Scheduled </Badge>
                                                         <p class="text-[10px] text-muted-foreground">Starts 12:00 PM</p>
                                                     </div>
 
                                                     <!-- Absent -->
                                                     <div v-else-if="staff.status === 'absent'" class="space-y-0.5">
-                                                        <Badge class="bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30 text-[10px] py-0">
+                                                        <Badge
+                                                            class="border-rose-500/30 bg-rose-500/15 py-0 text-[10px] text-rose-700 dark:text-rose-400"
+                                                        >
                                                             Absent (No Clock-In)
                                                         </Badge>
-                                                        <p class="text-[10px] text-rose-600 font-medium">Shift unattended</p>
+                                                        <p class="text-[10px] font-medium text-rose-600">Shift unattended</p>
                                                     </div>
                                                 </td>
 
                                                 <!-- Today's Sales vs Target -->
-                                                <td class="py-3 px-3">
-                                                    <div class="space-y-1 max-w-[180px]">
+                                                <td class="px-3 py-3">
+                                                    <div class="max-w-[180px] space-y-1">
                                                         <div class="flex items-center justify-between text-xs">
-                                                            <span class="font-bold font-mono text-foreground">{{ formatCurrency(staff.salesToday) }}</span>
-                                                            <span class="text-[11px] text-muted-foreground">/ {{ formatCurrency(staff.salesTarget) }}</span>
+                                                            <span class="font-mono font-bold text-foreground">{{
+                                                                formatCurrency(staff.salesToday)
+                                                            }}</span>
+                                                            <span class="text-[11px] text-muted-foreground"
+                                                                >/ {{ formatCurrency(staff.salesTarget) }}</span
+                                                            >
                                                         </div>
-                                                        <div class="h-1.5 w-full rounded-full bg-muted/60 overflow-hidden">
+                                                        <div class="h-1.5 w-full overflow-hidden rounded-full bg-muted/60">
                                                             <div
                                                                 :class="[
                                                                     'h-full rounded-full transition-all duration-500',
-                                                                    staff.salesToday >= staff.salesTarget ? 'bg-emerald-500' :
-                                                                    staff.salesToday > 0 ? 'bg-primary' : 'bg-muted-foreground/30'
+                                                                    staff.salesToday >= staff.salesTarget
+                                                                        ? 'bg-emerald-500'
+                                                                        : staff.salesToday > 0
+                                                                          ? 'bg-primary'
+                                                                          : 'bg-muted-foreground/30',
                                                                 ]"
-                                                                :style="{ width: `${staff.salesTarget > 0 ? Math.min(100, Math.round((staff.salesToday / staff.salesTarget) * 100)) : 0}%` }"
+                                                                :style="{
+                                                                    width: `${staff.salesTarget > 0 ? Math.min(100, Math.round((staff.salesToday / staff.salesTarget) * 100)) : 0}%`,
+                                                                }"
                                                             ></div>
                                                         </div>
                                                         <div class="flex items-center justify-between text-[10px] text-muted-foreground">
-                                                            <span>{{ staff.salesTarget > 0 ? Math.round((staff.salesToday / staff.salesTarget) * 100) : 0 }}% completed</span>
-                                                            <span v-if="staff.salesToday < staff.salesTarget" class="text-amber-600 font-medium">
+                                                            <span
+                                                                >{{
+                                                                    staff.salesTarget > 0
+                                                                        ? Math.round((staff.salesToday / staff.salesTarget) * 100)
+                                                                        : 0
+                                                                }}% completed</span
+                                                            >
+                                                            <span v-if="staff.salesToday < staff.salesTarget" class="font-medium text-amber-600">
                                                                 {{ formatCurrency(staff.salesTarget - staff.salesToday) }} left
                                                             </span>
-                                                            <span v-else class="text-emerald-600 font-bold">Goal Met!</span>
+                                                            <span v-else class="font-bold text-emerald-600">Goal Met!</span>
                                                         </div>
                                                     </div>
                                                 </td>
 
                                                 <!-- Orders Processed -->
-                                                <td class="py-3 px-3 text-right">
-                                                    <p class="font-bold font-mono text-foreground">{{ staff.receiptsCount }} orders</p>
+                                                <td class="px-3 py-3 text-right">
+                                                    <p class="font-mono font-bold text-foreground">{{ staff.receiptsCount }} orders</p>
                                                     <p v-if="staff.receiptsCount > 0" class="text-[11px] text-muted-foreground">
                                                         Avg: {{ formatCurrency(staff.avgOrderValue) }}
                                                     </p>
@@ -1464,25 +1698,25 @@ onMounted(() => {
                 </div>
 
                 <!-- Secondary KPIs: Balance Sheet -->
-                <div id="dashboard-step-balances" class="grid grid-cols-2 gap-3 sm:grid-cols-4 text-xs">
+                <div id="dashboard-step-balances" class="grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
                     <div v-if="hasModule('customers')" class="rounded-xl border border-border/80 bg-card p-4 shadow-sm">
-                        <span class="text-muted-foreground font-medium">Customer Receivables</span>
-                        <div class="mt-1 text-lg font-bold font-mono text-amber-600">{{ formatCurrency(ownerKpis.custBalance) }}</div>
+                        <span class="font-medium text-muted-foreground">Customer Receivables</span>
+                        <div class="mt-1 font-mono text-lg font-bold text-amber-600">{{ formatCurrency(ownerKpis.custBalance) }}</div>
                         <p class="text-[11px] text-muted-foreground">outstanding credit accounts</p>
                     </div>
                     <div v-if="hasModule('suppliers') || hasModule('purchases')" class="rounded-xl border border-border/80 bg-card p-4 shadow-sm">
-                        <span class="text-muted-foreground font-medium">Supplier Payables</span>
-                        <div class="mt-1 text-lg font-bold font-mono text-rose-600">{{ formatCurrency(ownerKpis.suppBalance) }}</div>
+                        <span class="font-medium text-muted-foreground">Supplier Payables</span>
+                        <div class="mt-1 font-mono text-lg font-bold text-rose-600">{{ formatCurrency(ownerKpis.suppBalance) }}</div>
                         <p class="text-[11px] text-muted-foreground">due to suppliers</p>
                     </div>
                     <div class="rounded-xl border border-border/80 bg-card p-4 shadow-sm">
-                        <span class="text-muted-foreground font-medium">Stock Valuation</span>
-                        <div class="mt-1 text-lg font-bold font-mono text-foreground">{{ formatCurrency(ownerKpis.stockValue) }}</div>
+                        <span class="font-medium text-muted-foreground">Stock Valuation</span>
+                        <div class="mt-1 font-mono text-lg font-bold text-foreground">{{ formatCurrency(ownerKpis.stockValue) }}</div>
                         <p class="text-[11px] text-muted-foreground">at purchase cost</p>
                     </div>
                     <div v-if="hasModule('customers')" class="rounded-xl border border-border/80 bg-card p-4 shadow-sm">
-                        <span class="text-muted-foreground font-medium">Active Customers</span>
-                        <div class="mt-1 text-lg font-bold font-mono text-primary">{{ ownerKpis.customers.toLocaleString() }}</div>
+                        <span class="font-medium text-muted-foreground">Active Customers</span>
+                        <div class="mt-1 font-mono text-lg font-bold text-primary">{{ ownerKpis.customers.toLocaleString() }}</div>
                         <p class="text-[11px] text-muted-foreground">registered accounts</p>
                     </div>
                 </div>
@@ -1490,33 +1724,35 @@ onMounted(() => {
                 <!-- Chart + Payment Mix -->
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <!-- Sales Velocity Chart (2 cols) -->
-                    <Card id="dashboard-step-chart" class="lg:col-span-2 border-border/80">
+                    <Card id="dashboard-step-chart" class="border-border/80 lg:col-span-2">
                         <CardHeader class="flex flex-row items-center justify-between pb-2">
                             <div>
                                 <CardTitle class="text-base font-bold">Branch Sales Trajectory ({{ ownerTimeFilter }})</CardTitle>
                                 <CardDescription class="text-xs">All-cashier combined hourly volume across {{ currentBranch.name }}</CardDescription>
                             </div>
-                            <Badge variant="outline" class="font-mono text-xs text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
+                            <Badge variant="outline" class="border-emerald-500/20 bg-emerald-500/10 font-mono text-xs text-emerald-600">
                                 +12.8% Avg Basket
                             </Badge>
                         </CardHeader>
                         <CardContent class="pt-4">
-                            <div class="h-56 w-full flex items-end justify-between gap-2 pt-6 pb-2 px-2 border-b border-border/60">
+                            <div class="flex h-56 w-full items-end justify-between gap-2 border-b border-border/60 px-2 pb-2 pt-6">
                                 <div
                                     v-for="(bar, idx) in ownerHourlyBars"
                                     :key="idx"
-                                    class="flex-1 flex flex-col items-center gap-1 group relative h-full justify-end"
+                                    class="group relative flex h-full flex-1 flex-col items-center justify-end gap-1"
                                 >
-                                    <div class="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-7 text-[10px] font-mono font-bold bg-primary text-primary-foreground px-1.5 py-0.5 rounded shadow whitespace-nowrap z-10">
+                                    <div
+                                        class="absolute -top-7 z-10 whitespace-nowrap rounded bg-primary px-1.5 py-0.5 font-mono text-[10px] font-bold text-primary-foreground opacity-0 shadow transition-opacity group-hover:opacity-100"
+                                    >
                                         {{ bar.val }}
                                     </div>
                                     <div
-                                        class="w-full rounded-t-md bg-primary/20 group-hover:bg-primary transition-all duration-300 relative overflow-hidden"
+                                        class="relative w-full overflow-hidden rounded-t-md bg-primary/20 transition-all duration-300 group-hover:bg-primary"
                                         :style="{ height: bar.h }"
                                     >
                                         <div class="absolute inset-0 bg-gradient-to-t from-transparent to-primary/40"></div>
                                     </div>
-                                    <span class="text-[10px] font-mono text-muted-foreground mt-1">{{ bar.label }}</span>
+                                    <span class="mt-1 font-mono text-[10px] text-muted-foreground">{{ bar.label }}</span>
                                 </div>
                             </div>
                             <div class="mt-4 flex items-center justify-between text-xs text-muted-foreground">
@@ -1535,7 +1771,7 @@ onMounted(() => {
                             <CardTitle class="text-base font-bold">Payment Channels</CardTitle>
                             <CardDescription class="text-xs">M-Pesa, Cash, Card & Credit split</CardDescription>
                         </CardHeader>
-                        <CardContent class="pt-2 space-y-4">
+                        <CardContent class="space-y-4 pt-2">
                             <div v-for="(item, idx) in paymentMix" :key="idx" class="space-y-1.5 text-xs">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-2">
@@ -1544,11 +1780,14 @@ onMounted(() => {
                                     </div>
                                     <div class="text-right font-mono">
                                         <span class="font-bold">{{ formatCurrency(item.amount) }}</span>
-                                        <span class="text-muted-foreground ml-1">({{ item.percent }}%)</span>
+                                        <span class="ml-1 text-muted-foreground">({{ item.percent }}%)</span>
                                     </div>
                                 </div>
-                                <div class="h-2 w-full rounded-full bg-muted/60 overflow-hidden">
-                                    <div :class="['h-full rounded-full transition-all duration-500', item.color]" :style="{ width: `${item.percent}%` }"></div>
+                                <div class="h-2 w-full overflow-hidden rounded-full bg-muted/60">
+                                    <div
+                                        :class="['h-full rounded-full transition-all duration-500', item.color]"
+                                        :style="{ width: `${item.percent}%` }"
+                                    ></div>
                                 </div>
                             </div>
                         </CardContent>
@@ -1557,36 +1796,43 @@ onMounted(() => {
 
                 <!-- Multi-Branch Performance (Owner only, below management level) -->
                 <Card v-if="can('branches', 'view')" id="dashboard-step-branches" class="border-border/80">
-                    <CardHeader class="pb-3 flex flex-row items-center justify-between">
+                    <CardHeader class="flex flex-row items-center justify-between pb-3">
                         <div>
-                            <CardTitle class="text-base font-bold flex items-center gap-2">
+                            <CardTitle class="flex items-center gap-2 text-base font-bold">
                                 <Building2 class="size-4 text-sky-500" />
                                 Branch Performance Tracker
                             </CardTitle>
                             <CardDescription class="text-xs">Today's revenue vs targets across all branches</CardDescription>
                         </div>
-                        <Link href="/branches" class="text-xs text-primary hover:underline font-semibold">Manage Branches</Link>
+                        <Link href="/branches" class="text-xs font-semibold text-primary hover:underline">Manage Branches</Link>
                     </CardHeader>
                     <CardContent class="p-0">
                         <div class="divide-y divide-border/60 text-xs">
                             <div v-for="(branch, idx) in branchPerformance" :key="idx" class="p-4">
-                                <div class="flex items-center justify-between mb-2">
+                                <div class="mb-2 flex items-center justify-between">
                                     <div class="flex items-center gap-2">
                                         <span class="font-semibold text-foreground">{{ branch.name }}</span>
-                                        <Badge :variant="branch.status === 'On Track' ? 'success' : 'warning'" class="text-[10px]">{{ branch.status }}</Badge>
+                                        <Badge :variant="branch.status === 'On Track' ? 'success' : 'warning'" class="text-[10px]">{{
+                                            branch.status
+                                        }}</Badge>
                                     </div>
-                                    <div class="font-mono text-right">
+                                    <div class="text-right font-mono">
                                         <span class="font-bold">{{ formatCurrency(branch.revenue) }}</span>
                                         <span class="text-muted-foreground"> / {{ formatCurrency(branch.target) }}</span>
                                     </div>
                                 </div>
-                                <div class="h-1.5 w-full rounded-full bg-muted/60 overflow-hidden">
+                                <div class="h-1.5 w-full overflow-hidden rounded-full bg-muted/60">
                                     <div
-                                        :class="['h-full rounded-full transition-all duration-500', branch.status === 'On Track' ? 'bg-emerald-500' : 'bg-amber-500']"
+                                        :class="[
+                                            'h-full rounded-full transition-all duration-500',
+                                            branch.status === 'On Track' ? 'bg-emerald-500' : 'bg-amber-500',
+                                        ]"
                                         :style="{ width: `${Math.round((branch.revenue / branch.target) * 100)}%` }"
                                     ></div>
                                 </div>
-                                <p class="text-[11px] text-muted-foreground mt-1">{{ branch.staff }} active staff • {{ Math.round((branch.revenue / branch.target) * 100) }}% of target reached</p>
+                                <p class="mt-1 text-[11px] text-muted-foreground">
+                                    {{ branch.staff }} active staff • {{ Math.round((branch.revenue / branch.target) * 100) }}% of target reached
+                                </p>
                             </div>
                         </div>
                     </CardContent>
@@ -1596,23 +1842,25 @@ onMounted(() => {
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <!-- Top Products -->
                     <Card id="dashboard-step-top-products" class="border-border/80">
-                        <CardHeader class="pb-3 flex flex-row items-center justify-between">
+                        <CardHeader class="flex flex-row items-center justify-between pb-3">
                             <div>
                                 <CardTitle class="text-base font-bold">Top Selling Products</CardTitle>
                                 <CardDescription class="text-xs">By volume & revenue (all cashiers)</CardDescription>
                             </div>
-                            <Link v-if="can('products', 'view')" href="/products" class="text-xs text-primary hover:underline font-semibold">View Catalog</Link>
+                            <Link v-if="can('products', 'view')" href="/products" class="text-xs font-semibold text-primary hover:underline"
+                                >View Catalog</Link
+                            >
                         </CardHeader>
                         <CardContent class="p-0">
                             <div class="divide-y divide-border/60 text-xs">
                                 <div v-for="(p, idx) in topProducts" :key="idx" class="flex items-center justify-between p-3.5 hover:bg-muted/20">
                                     <div class="max-w-[170px] truncate">
-                                        <p class="font-semibold text-foreground truncate">{{ p.name }}</p>
+                                        <p class="truncate font-semibold text-foreground">{{ p.name }}</p>
                                         <p class="text-[11px] text-muted-foreground">{{ p.category }} • {{ p.sold }} sold</p>
                                     </div>
                                     <div class="text-right font-mono">
                                         <p class="font-bold text-foreground">{{ formatCurrency(p.revenue) }}</p>
-                                        <p class="text-[11px] text-emerald-600 font-semibold">+{{ formatCurrency(p.profit) }} ({{ p.margin }}%)</p>
+                                        <p class="text-[11px] font-semibold text-emerald-600">+{{ formatCurrency(p.profit) }} ({{ p.margin }}%)</p>
                                     </div>
                                 </div>
                             </div>
@@ -1621,19 +1869,25 @@ onMounted(() => {
 
                     <!-- Low Stock -->
                     <Card id="dashboard-step-low-stock" class="border-border/80">
-                        <CardHeader class="pb-3 flex flex-row items-center justify-between">
+                        <CardHeader class="flex flex-row items-center justify-between pb-3">
                             <div>
-                                <CardTitle class="text-base font-bold flex items-center gap-2">
+                                <CardTitle class="flex items-center gap-2 text-base font-bold">
                                     <AlertTriangle class="size-4 text-amber-500" />
                                     Low Stock Reorder
                                 </CardTitle>
                                 <CardDescription class="text-xs">Threshold alerts for {{ currentBranch.name }}</CardDescription>
                             </div>
-                            <Link v-if="can('inventory', 'view')" href="/inventory" class="text-xs text-primary hover:underline font-semibold">Stock Mgmt</Link>
+                            <Link v-if="can('inventory', 'view')" href="/inventory" class="text-xs font-semibold text-primary hover:underline"
+                                >Stock Mgmt</Link
+                            >
                         </CardHeader>
                         <CardContent class="p-0">
                             <div class="divide-y divide-border/60 text-xs">
-                                <div v-for="(item, idx) in lowStockItems" :key="idx" class="flex items-center justify-between p-3.5 hover:bg-muted/20">
+                                <div
+                                    v-for="(item, idx) in lowStockItems"
+                                    :key="idx"
+                                    class="flex items-center justify-between p-3.5 hover:bg-muted/20"
+                                >
                                     <div>
                                         <p class="font-semibold text-foreground">{{ item.name }}</p>
                                         <p class="text-[11px] text-muted-foreground">Min stock: {{ item.min }} units</p>
@@ -1648,43 +1902,45 @@ onMounted(() => {
 
                     <!-- Recent Transactions (All Cashiers) -->
                     <Card id="dashboard-step-recent-sales" class="border-border/80">
-                        <CardHeader class="pb-3 flex flex-row items-center justify-between">
+                        <CardHeader class="flex flex-row items-center justify-between pb-3">
                             <div>
                                 <CardTitle class="text-base font-bold">Recent Transactions</CardTitle>
                                 <CardDescription class="text-xs">All cashiers live feed</CardDescription>
                             </div>
-                            <Link href="/sales" class="text-xs text-primary hover:underline font-semibold">Sales Log</Link>
+                            <Link href="/sales" class="text-xs font-semibold text-primary hover:underline">Sales Log</Link>
                         </CardHeader>
                         <CardContent class="p-0">
-                            <div class="max-h-[308px] overflow-y-auto divide-y divide-border/60 text-xs scrollbar-thin overscroll-contain">
-                                <div v-for="(sale, idx) in recentSales" :key="idx" class="flex items-center justify-between p-3.5 hover:bg-muted/20 transition-colors">
+                            <div class="scrollbar-thin max-h-[308px] divide-y divide-border/60 overflow-y-auto overscroll-contain text-xs">
+                                <div
+                                    v-for="(sale, idx) in recentSales"
+                                    :key="idx"
+                                    class="flex items-center justify-between p-3.5 transition-colors hover:bg-muted/20"
+                                >
                                     <div>
                                         <div class="flex items-center gap-1.5">
-                                            <span class="font-mono font-bold text-primary text-[11px]">{{ sale.receipt }}</span>
-                                            <span class="text-muted-foreground text-[10px]">{{ sale.time }}</span>
+                                            <span class="font-mono text-[11px] font-bold text-primary">{{ sale.receipt }}</span>
+                                            <span class="text-[10px] text-muted-foreground">{{ sale.time }}</span>
                                         </div>
                                         <p class="text-muted-foreground">{{ sale.customer }} • {{ sale.cashier }} • {{ sale.method }}</p>
                                     </div>
                                     <div class="text-right">
-                                        <p class="font-bold font-mono text-foreground">{{ formatCurrency(sale.amount) }}</p>
-                                        <Badge :variant="sale.status === 'Completed' ? 'success' : 'destructive'" class="text-[10px] py-0">
+                                        <p class="font-mono font-bold text-foreground">{{ formatCurrency(sale.amount) }}</p>
+                                        <Badge :variant="sale.status === 'Completed' ? 'success' : 'destructive'" class="py-0 text-[10px]">
                                             {{ sale.status }}
                                         </Badge>
                                     </div>
                                 </div>
-                                <div v-if="recentSales.length === 0" class="p-6 text-center text-muted-foreground text-xs">
+                                <div v-if="recentSales.length === 0" class="p-6 text-center text-xs text-muted-foreground">
                                     No recent transactions found
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
                 </div>
-
             </div>
             <!-- ═══════════════════════════════════════════════════════ -->
             <!-- END OWNER / MANAGEMENT DASHBOARD                        -->
             <!-- ═══════════════════════════════════════════════════════ -->
-
         </div>
 
         <!-- Interactive Dashboard Guide Overlay with Text Bubbles -->
@@ -1700,7 +1956,9 @@ onMounted(() => {
 <style scoped>
 .fade-slide-enter-active,
 .fade-slide-leave-active {
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition:
+        opacity 0.2s ease,
+        transform 0.2s ease;
 }
 .fade-slide-enter-from,
 .fade-slide-leave-to {

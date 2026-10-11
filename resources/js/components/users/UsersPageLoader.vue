@@ -73,13 +73,8 @@ onUnmounted(() => {
         leave-from-class="opacity-100"
         leave-to-class="opacity-0"
     >
-        <div
-            v-if="open"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md p-4"
-        >
-            <div
-                class="relative w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl text-center space-y-4"
-            >
+        <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-md">
+            <div class="relative w-full max-w-md space-y-4 rounded-xl border border-border bg-card p-6 text-center shadow-xl">
                 <!-- Clean Users Icon -->
                 <div class="mx-auto flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <Users class="size-6" />
@@ -87,57 +82,51 @@ onUnmounted(() => {
 
                 <!-- Title -->
                 <div>
-                    <h3 class="text-base font-bold text-foreground">
-                        Staff & RBAC Access Control
-                    </h3>
-                    <p class="text-xs text-muted-foreground mt-0.5">
-                        {{ tenantName }} &bull; Role Hierarchy & Permissions
-                    </p>
+                    <h3 class="text-base font-bold text-foreground">Staff & RBAC Access Control</h3>
+                    <p class="mt-0.5 text-xs text-muted-foreground">{{ tenantName }} &bull; Role Hierarchy & Permissions</p>
                 </div>
 
                 <!-- Summary Info Grid -->
-                <div class="grid grid-cols-2 gap-2 text-left rounded-lg border border-border/80 bg-muted/40 p-3 text-xs">
+                <div class="grid grid-cols-2 gap-2 rounded-lg border border-border/80 bg-muted/40 p-3 text-left text-xs">
                     <div class="space-y-0.5">
-                        <span class="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
+                        <span class="flex items-center gap-1 text-[10px] font-medium text-muted-foreground">
                             <UserCheck class="size-3 text-primary" /> Active Staff
                         </span>
-                        <div class="font-bold text-foreground font-mono">{{ staffCount }} Members</div>
+                        <div class="font-mono font-bold text-foreground">{{ staffCount }} Members</div>
                     </div>
                     <div class="space-y-0.5">
-                        <span class="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
+                        <span class="flex items-center gap-1 text-[10px] font-medium text-muted-foreground">
                             <ShieldCheck class="size-3 text-primary" /> System Roles
                         </span>
-                        <div class="font-bold text-foreground font-mono">{{ rolesCount }} Roles Configured</div>
+                        <div class="font-mono font-bold text-foreground">{{ rolesCount }} Roles Configured</div>
                     </div>
                 </div>
 
                 <!-- Guidance / Policy Message Card -->
                 <div class="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3.5 text-left text-xs text-amber-950 dark:text-amber-200">
                     <div class="flex items-start gap-2.5">
-                        <Info class="size-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                        <Info class="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
                         <p class="leading-relaxed">
-                            Assign <strong>cashier POS PINs</strong>, branch access permissions, cashier shift management, and supervisor override privileges.
+                            Assign <strong>cashier POS PINs</strong>, branch access permissions, cashier shift management, and supervisor override
+                            privileges.
                         </p>
                     </div>
                 </div>
 
                 <!-- Clean Progress Bar -->
-                <div class="w-full bg-muted rounded-full h-1 overflow-hidden">
-                    <div
-                        class="bg-primary h-full rounded-full transition-all duration-150"
-                        :style="{ width: `${progress}%` }"
-                    ></div>
+                <div class="h-1 w-full overflow-hidden rounded-full bg-muted">
+                    <div class="h-full rounded-full bg-primary transition-all duration-150" :style="{ width: `${progress}%` }"></div>
                 </div>
 
                 <!-- Action Button: Done & Open Page Guide -->
                 <Button
                     type="button"
-                    class="w-full h-9 text-xs font-semibold gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
+                    class="h-9 w-full gap-1.5 bg-primary text-xs font-semibold text-primary-foreground hover:bg-primary/90"
                     @click="handleContinue"
                 >
                     <Compass class="size-3.5" />
                     <span>Done — Open Page Guide</span>
-                    <ArrowRight class="size-3.5 ml-auto" />
+                    <ArrowRight class="ml-auto size-3.5" />
                 </Button>
             </div>
         </div>

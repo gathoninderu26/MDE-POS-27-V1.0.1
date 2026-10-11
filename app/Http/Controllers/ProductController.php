@@ -24,10 +24,10 @@ class ProductController extends Controller
             ->with('branch')
             ->latest()
             ->get()
-            ->map(fn($p) => [
+            ->map(fn ($p) => [
                 'id' => $p->id,
                 'name' => $p->name,
-                'sku' => $p->sku ?? 'SKU-' . $p->id,
+                'sku' => $p->sku ?? 'SKU-'.$p->id,
                 'barcode' => $p->barcode,
                 'category' => $p->category ?? 'General',
                 'cost_price' => (float) $p->cost_price,
@@ -65,10 +65,10 @@ class ProductController extends Controller
             ->with('branch')
             ->latest()
             ->get()
-            ->map(fn($p) => [
+            ->map(fn ($p) => [
                 'id' => $p->id,
                 'name' => $p->name,
-                'sku' => $p->sku ?? 'SKU-' . $p->id,
+                'sku' => $p->sku ?? 'SKU-'.$p->id,
                 'barcode' => $p->barcode,
                 'category' => $p->category ?? 'General',
                 'cost_price' => (float) $p->cost_price,
@@ -92,12 +92,13 @@ class ProductController extends Controller
     public function barcodeLookup(Request $request, BarcodeLookupService $lookupService): JsonResponse
     {
         $barcode = $request->query('barcode');
-        if (!$barcode || strlen(trim($barcode)) < 3) {
+        if (! $barcode || strlen(trim($barcode)) < 3) {
             return response()->json(['found' => false, 'message' => 'Invalid barcode']);
         }
 
         $tenant = $this->currentTenant($request);
         $result = $lookupService->lookup(trim($barcode), $tenant?->id);
+
         return response()->json($result);
     }
 
@@ -124,7 +125,7 @@ class ProductController extends Controller
             'status' => 'Active',
         ]);
 
-        if (!empty($validated['barcode']) && !empty($validated['name'])) {
+        if (! empty($validated['barcode']) && ! empty($validated['name'])) {
             app(BarcodeLookupService::class)->remember($validated['barcode'], [
                 'name' => $validated['name'],
                 'category' => $validated['category'] ?? 'General',
@@ -158,7 +159,7 @@ class ProductController extends Controller
 
         $barcodeToRemember = $validated['barcode'] ?? $product->barcode;
         $nameToRemember = $validated['name'] ?? $product->name;
-        if (!empty($barcodeToRemember) && !empty($nameToRemember)) {
+        if (! empty($barcodeToRemember) && ! empty($nameToRemember)) {
             app(BarcodeLookupService::class)->remember($barcodeToRemember, [
                 'name' => $nameToRemember,
                 'category' => $validated['category'] ?? $product->category ?? 'General',
@@ -224,7 +225,7 @@ class ProductController extends Controller
             $destBranch = Branch::where('tenant_id', $tenant->id)
                 ->where(function ($q) use ($validated) {
                     $q->where('id', $validated['to_branch'])
-                      ->orWhere('name', $validated['to_branch']);
+                        ->orWhere('name', $validated['to_branch']);
                 })->first();
 
             if ($destBranch) {
@@ -232,9 +233,9 @@ class ProductController extends Controller
                 $destProduct = Product::where('tenant_id', $tenant->id)
                     ->where('branch_id', $destBranch->id)
                     ->where(function ($q) use ($product) {
-                        if (!empty($product->barcode)) {
+                        if (! empty($product->barcode)) {
                             $q->where('barcode', $product->barcode);
-                        } elseif (!empty($product->sku)) {
+                        } elseif (! empty($product->sku)) {
                             $q->where('sku', $product->sku);
                         } else {
                             $q->where('name', $product->name);
@@ -294,18 +295,18 @@ class ProductController extends Controller
                 continue;
             }
 
-            $sku = !empty($item['sku']) ? trim((string) $item['sku']) : null;
-            $barcode = !empty($item['barcode']) ? trim((string) $item['barcode']) : null;
+            $sku = ! empty($item['sku']) ? trim((string) $item['sku']) : null;
+            $barcode = ! empty($item['barcode']) ? trim((string) $item['barcode']) : null;
 
             // Search for existing product by SKU, Barcode, or case-insensitive Name
             $existing = null;
             if ($sku) {
                 $existing = Product::where('tenant_id', $tenant->id)->where('sku', $sku)->first();
             }
-            if (!$existing && $barcode) {
+            if (! $existing && $barcode) {
                 $existing = Product::where('tenant_id', $tenant->id)->where('barcode', $barcode)->first();
             }
-            if (!$existing) {
+            if (! $existing) {
                 $existing = Product::where('tenant_id', $tenant->id)->whereRaw('LOWER(name) = ?', [strtolower($name)])->first();
             }
 
@@ -313,8 +314,8 @@ class ProductController extends Controller
             $sellingPrice = isset($item['selling_price']) && is_numeric($item['selling_price']) ? (float) $item['selling_price'] : 0;
             $stockQty = isset($item['stock_quantity']) && is_numeric($item['stock_quantity']) ? (int) $item['stock_quantity'] : 0;
             $reorderLevel = isset($item['reorder_level']) && is_numeric($item['reorder_level']) ? (int) $item['reorder_level'] : 5;
-            $category = !empty($item['category']) ? trim((string) $item['category']) : 'General';
-            $unit = !empty($item['unit']) ? trim((string) $item['unit']) : 'Piece';
+            $category = ! empty($item['category']) ? trim((string) $item['category']) : 'General';
+            $unit = ! empty($item['unit']) ? trim((string) $item['unit']) : 'Piece';
 
             if ($existing) {
                 if ($updateExisting) {
@@ -332,13 +333,13 @@ class ProductController extends Controller
                     $updatedCount++;
                 }
             } else {
-                if (!$sku) {
+                if (! $sku) {
                     $prefix = strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', $category ?: 'GEN'), 0, 3));
                     if (strlen($prefix) < 3) {
                         $prefix = 'PRD';
                     }
                     $count = Product::where('tenant_id', $tenant->id)->count() + 1;
-                    $sku = $prefix . '-' . str_pad((string) $count, 4, '0', STR_PAD_LEFT);
+                    $sku = $prefix.'-'.str_pad((string) $count, 4, '0', STR_PAD_LEFT);
                 }
 
                 Product::create([
@@ -358,7 +359,8 @@ class ProductController extends Controller
             }
         }
 
-        $msg = "Imported {$importedCount} new products" . ($updatedCount > 0 ? " and updated {$updatedCount} existing products." : ".");
+        $msg = "Imported {$importedCount} new products".($updatedCount > 0 ? " and updated {$updatedCount} existing products." : '.');
+
         return back()->with('success', $msg);
     }
 }

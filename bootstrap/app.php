@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Middleware\EnsureModuleEnabled;
 use App\Http\Middleware\EnsureTenantUser;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\IdentifyTenantFromSubdomain;
 use App\Http\Middleware\SuperAdminMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -19,7 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(append: [
-            \App\Http\Middleware\IdentifyTenantFromSubdomain::class,
+            IdentifyTenantFromSubdomain::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
@@ -31,13 +33,13 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Register named middleware aliases
         $middleware->alias([
-            'super_admin'  => SuperAdminMiddleware::class,
-            'tenant_user'  => EnsureTenantUser::class,
-            'module'       => \App\Http\Middleware\EnsureModuleEnabled::class,
+            'super_admin' => SuperAdminMiddleware::class,
+            'tenant_user' => EnsureTenantUser::class,
+            'module' => EnsureModuleEnabled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        $exceptions->respond(function (Response $response, \Throwable $e, Request $request) {
+        $exceptions->respond(function (Response $response, Throwable $e, Request $request) {
             $status = $response->getStatusCode();
 
             // When a CSRF session expires (419), redirect back with a fresh session/token

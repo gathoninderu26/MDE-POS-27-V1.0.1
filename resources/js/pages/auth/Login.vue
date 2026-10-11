@@ -6,35 +6,28 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useDemoCountdown } from '@/composables/useDemoCountdown';
 import { useTenant } from '@/composables/useTenant';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import {
     AlertTriangle,
-    ArrowRight,
     Boxes,
     Building2,
     Check,
     CircleDollarSign,
     Clock,
-    Compass,
-    CreditCard,
     Crown,
+    ExternalLink,
     Eye,
     EyeOff,
-    ExternalLink,
     KeyRound,
     LoaderCircle,
     Lock,
     MapPin,
-    Monitor,
     Phone,
     Pill,
-    Receipt,
     RefreshCcw,
-    ShieldAlert,
     ShieldCheck,
     ShoppingCart,
     Smartphone,
@@ -46,10 +39,9 @@ import {
     Utensils,
     Wrench,
 } from 'lucide-vue-next';
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 const showPassword = ref(false);
-
 
 const props = defineProps<{
     status?: string;
@@ -232,8 +224,6 @@ const submit = () => {
     executeFormPost();
 };
 
-
-
 const getBusinessIcon = (type?: string) => {
     switch (type) {
         case 'Pharmacy':
@@ -269,14 +259,28 @@ const getVerticalBadgeColor = (type?: string) => {
             return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30';
     }
 };
-
-
 </script>
 
 <template>
     <AuthBase
-        :title="currentTenant?.id ? currentTenant.name : (isDemo ? (isSubdomain ? 'Demo Terminal Sandbox' : 'Demo Store Terminal') : (isSubdomain ? 'Operator Authentication' : 'Store Terminal Sign In'))"
-        :description="currentTenant?.id ? `${currentTenant.businessType} • Authorized Staff Portal` : (isDemo ? 'Explore POS, Inventory & Back-Office with simulated personas' : 'Enter authorized employee credentials to open terminal register')"
+        :title="
+            currentTenant?.id
+                ? currentTenant.name
+                : isDemo
+                  ? isSubdomain
+                      ? 'Demo Terminal Sandbox'
+                      : 'Demo Store Terminal'
+                  : isSubdomain
+                    ? 'Operator Authentication'
+                    : 'Store Terminal Sign In'
+        "
+        :description="
+            currentTenant?.id
+                ? `${currentTenant.businessType} • Authorized Staff Portal`
+                : isDemo
+                  ? 'Explore POS, Inventory & Back-Office with simulated personas'
+                  : 'Enter authorized employee credentials to open terminal register'
+        "
     >
         <Head :title="`Log in - ${currentTenant.name}`" />
 
@@ -290,51 +294,45 @@ const getVerticalBadgeColor = (type?: string) => {
         <!-- DEMO SANDBOX BANNER -->
         <div
             v-if="isDemo"
-            class="mb-4 rounded-xl border border-amber-500/35 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-primary/10 p-3 shadow-xs"
+            class="shadow-xs mb-4 rounded-xl border border-amber-500/35 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-primary/10 p-3"
         >
             <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-2.5 min-w-0">
-                    <div class="flex size-7 items-center justify-center rounded-lg bg-amber-500/20 text-amber-700 dark:text-amber-300 shrink-0">
+                <div class="flex min-w-0 items-center gap-2.5">
+                    <div class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-500/20 text-amber-700 dark:text-amber-300">
                         <Sparkles class="size-4" />
                     </div>
                     <div class="min-w-0">
-                        <p class="text-xs font-black uppercase tracking-wider text-amber-900 dark:text-amber-200 truncate">
-                            Demo Sandbox Mode
-                        </p>
-                        <p class="text-[11px] text-muted-foreground truncate">
-                            Sample store catalog & transactions • 1-Click persona switching
-                        </p>
+                        <p class="truncate text-xs font-black uppercase tracking-wider text-amber-900 dark:text-amber-200">Demo Sandbox Mode</p>
+                        <p class="truncate text-[11px] text-muted-foreground">Sample store catalog & transactions • 1-Click persona switching</p>
                     </div>
                 </div>
-                <Badge variant="outline" class="border-amber-500/40 bg-amber-500/15 text-amber-800 dark:text-amber-200 text-[10px] font-mono font-bold uppercase shrink-0">
+                <Badge
+                    variant="outline"
+                    class="shrink-0 border-amber-500/40 bg-amber-500/15 font-mono text-[10px] font-bold uppercase text-amber-800 dark:text-amber-200"
+                >
                     Sandbox
                 </Badge>
             </div>
         </div>
 
         <!-- REAL PRODUCTION BANNER -->
-        <div
-            v-else
-            class="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 shadow-xs"
-        >
+        <div v-else class="shadow-xs mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3">
             <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-2.5 min-w-0">
-                    <div class="flex size-7 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0">
+                <div class="flex min-w-0 items-center gap-2.5">
+                    <div class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
                         <ShieldCheck class="size-4" />
                     </div>
                     <div class="min-w-0">
                         <div class="flex items-center gap-1.5">
-                            <span class="size-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
-                            <p class="text-xs font-black uppercase tracking-wider text-emerald-950 dark:text-emerald-100 truncate">
+                            <span class="size-2 shrink-0 animate-pulse rounded-full bg-emerald-500"></span>
+                            <p class="truncate text-xs font-black uppercase tracking-wider text-emerald-950 dark:text-emerald-100">
                                 Live Production Portal
                             </p>
                         </div>
-                        <p class="text-[11px] text-muted-foreground truncate">
-                            Secure dedicated tenant partition • Encrypted session
-                        </p>
+                        <p class="truncate text-[11px] text-muted-foreground">Secure dedicated tenant partition • Encrypted session</p>
                     </div>
                 </div>
-                <Badge class="bg-emerald-600 hover:bg-emerald-600 text-white text-[10px] font-mono font-bold uppercase shrink-0 tracking-wide">
+                <Badge class="shrink-0 bg-emerald-600 font-mono text-[10px] font-bold uppercase tracking-wide text-white hover:bg-emerald-600">
                     Live
                 </Badge>
             </div>
@@ -345,44 +343,46 @@ const getVerticalBadgeColor = (type?: string) => {
         <!-- ══════════════════════════════════════════════════════════════════ -->
         <div
             v-if="isDemo && (accountExpiredError || isExpired)"
-            class="mb-5 rounded-2xl border border-destructive/40 bg-destructive/5 overflow-hidden shadow-md"
+            class="mb-5 overflow-hidden rounded-2xl border border-destructive/40 bg-destructive/5 shadow-md"
         >
             <!-- Header strip -->
-            <div class="flex items-center gap-3 px-4 py-3 bg-destructive/10 border-b border-destructive/25">
-                <div class="flex size-8 items-center justify-center rounded-xl bg-destructive/20 text-destructive shrink-0">
+            <div class="flex items-center gap-3 border-b border-destructive/25 bg-destructive/10 px-4 py-3">
+                <div class="flex size-8 shrink-0 items-center justify-center rounded-xl bg-destructive/20 text-destructive">
                     <AlertTriangle class="size-4" />
                 </div>
                 <div class="min-w-0 flex-1">
-                    <p class="text-sm font-extrabold text-destructive leading-tight">Demo Account Expired</p>
-                    <p class="text-[11px] text-destructive/70 font-medium mt-0.5">
+                    <p class="text-sm font-extrabold leading-tight text-destructive">Demo Account Expired</p>
+                    <p class="mt-0.5 text-[11px] font-medium text-destructive/70">
                         Your trial period for <strong>{{ currentTenant.name }}</strong> has ended.
                     </p>
                 </div>
-                <span class="px-2 py-0.5 rounded-md bg-destructive text-destructive-foreground text-[10px] font-bold font-mono uppercase tracking-wide shrink-0">
+                <span
+                    class="shrink-0 rounded-md bg-destructive px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-destructive-foreground"
+                >
                     EXPIRED
                 </span>
             </div>
 
             <!-- Body -->
-            <div class="px-4 py-4 space-y-4">
-                <p class="text-xs text-muted-foreground leading-relaxed">
+            <div class="space-y-4 px-4 py-4">
+                <p class="text-xs leading-relaxed text-muted-foreground">
                     Your demo access window has closed and login has been disabled. You have two options:
                 </p>
 
                 <!-- Option 1: Resubscribe for another demo -->
-                <div class="p-3 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-2">
+                <div class="space-y-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
                     <div class="flex items-center gap-2">
-                        <RefreshCcw class="size-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                        <RefreshCcw class="size-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
                         <span class="text-xs font-bold text-amber-900 dark:text-amber-200">Extend Your Demo</span>
                     </div>
-                    <p class="text-[11px] text-muted-foreground leading-relaxed">
+                    <p class="text-[11px] leading-relaxed text-muted-foreground">
                         Need more time to explore the system? Request a fresh demo session and we'll set you up with another trial period.
                     </p>
                     <a
                         href="https://mdepos.co.ke/demo"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition-colors shadow-sm"
+                        class="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-amber-600"
                     >
                         <RefreshCcw class="size-3" />
                         Request Another Demo
@@ -391,19 +391,20 @@ const getVerticalBadgeColor = (type?: string) => {
                 </div>
 
                 <!-- Option 2: Join waitlist -->
-                <div class="p-3 rounded-xl border border-primary/25 bg-primary/5 space-y-2">
+                <div class="space-y-2 rounded-xl border border-primary/25 bg-primary/5 p-3">
                     <div class="flex items-center gap-2">
-                        <TrendingUp class="size-3.5 text-primary shrink-0" />
+                        <TrendingUp class="size-3.5 shrink-0 text-primary" />
                         <span class="text-xs font-bold text-foreground">Happy with the Demo? Go Live!</span>
                     </div>
-                    <p class="text-[11px] text-muted-foreground leading-relaxed">
-                        If MDE POS met your expectations, join our early-access waitlist and be among the first merchants to get a fully-activated account.
+                    <p class="text-[11px] leading-relaxed text-muted-foreground">
+                        If MDE POS met your expectations, join our early-access waitlist and be among the first merchants to get a fully-activated
+                        account.
                     </p>
                     <a
                         href="https://mdepos.co.ke/waitlist"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-colors shadow-sm"
+                        class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
                     >
                         <TrendingUp class="size-3" />
                         Join the Waitlist
@@ -419,42 +420,40 @@ const getVerticalBadgeColor = (type?: string) => {
         <div class="mb-5 space-y-3">
             <div
                 :class="[
-                    'p-4 rounded-xl border shadow-sm space-y-3 transition-all',
-                    isDemo
-                        ? 'border-primary/20 bg-primary/5'
-                        : 'border-border/80 bg-card/60'
+                    'space-y-3 rounded-xl border p-4 shadow-sm transition-all',
+                    isDemo ? 'border-primary/20 bg-primary/5' : 'border-border/80 bg-card/60',
                 ]"
             >
                 <div class="flex items-center justify-between">
                     <span
                         :class="[
-                            'text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5',
-                            isDemo ? 'text-primary' : 'text-emerald-600 dark:text-emerald-400'
+                            'flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider',
+                            isDemo ? 'text-primary' : 'text-emerald-600 dark:text-emerald-400',
                         ]"
                     >
                         <component :is="isDemo ? Sparkles : ShieldCheck" class="size-3.5" />
                         {{ isDemo ? 'Dedicated Demo Portal' : 'Official Store Gateway' }}
                     </span>
-                    <Badge variant="outline" :class="['text-[9px] font-bold uppercase shrink-0', getVerticalBadgeColor(currentTenant.businessType)]">
+                    <Badge variant="outline" :class="['shrink-0 text-[9px] font-bold uppercase', getVerticalBadgeColor(currentTenant.businessType)]">
                         {{ currentTenant.businessType }}
                     </Badge>
                 </div>
 
-                <div class="flex items-center gap-3 min-w-0">
+                <div class="flex min-w-0 items-center gap-3">
                     <div
                         :class="[
-                            'flex size-11 items-center justify-center rounded-xl font-black shrink-0 shadow-sm',
-                            isDemo ? 'bg-primary text-primary-foreground' : 'bg-emerald-600 text-white'
+                            'flex size-11 shrink-0 items-center justify-center rounded-xl font-black shadow-sm',
+                            isDemo ? 'bg-primary text-primary-foreground' : 'bg-emerald-600 text-white',
                         ]"
                     >
                         <component :is="getBusinessIcon(currentTenant.businessType)" class="size-6" />
                     </div>
                     <div class="min-w-0 flex-1">
-                        <h2 class="font-extrabold text-sm sm:text-base truncate text-foreground">
+                        <h2 class="truncate text-sm font-extrabold text-foreground sm:text-base">
                             {{ currentTenant.name }}
                         </h2>
-                        <div class="flex items-center gap-2 text-[11px] text-muted-foreground font-mono">
-                            <span :class="isDemo ? 'text-primary font-semibold' : 'text-emerald-600 dark:text-emerald-400 font-semibold'">
+                        <div class="flex items-center gap-2 font-mono text-[11px] text-muted-foreground">
+                            <span :class="isDemo ? 'font-semibold text-primary' : 'font-semibold text-emerald-600 dark:text-emerald-400'">
                                 {{ currentTenant.slug }}
                             </span>
                             <span>•</span>
@@ -464,26 +463,26 @@ const getVerticalBadgeColor = (type?: string) => {
                 </div>
 
                 <!-- REAL ACCOUNT METADATA ROW (Tax PIN, Contact, Verified Status) -->
-                <div v-if="!isDemo" class="pt-2.5 border-t border-border/60 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                <div v-if="!isDemo" class="grid grid-cols-1 gap-2 border-t border-border/60 pt-2.5 text-[11px] sm:grid-cols-2">
                     <div v-if="currentTenant.kraPin" class="flex items-center gap-1.5 text-muted-foreground">
-                        <ShieldCheck class="size-3.5 text-emerald-600 shrink-0" />
+                        <ShieldCheck class="size-3.5 shrink-0 text-emerald-600" />
                         <span class="font-mono font-medium">PIN: {{ currentTenant.kraPin }}</span>
                     </div>
                     <div v-else class="flex items-center gap-1.5 text-muted-foreground">
-                        <Check class="size-3.5 text-emerald-600 shrink-0" />
+                        <Check class="size-3.5 shrink-0 text-emerald-600" />
                         <span>KRA eTIMS Compliant</span>
                     </div>
 
-                    <div v-if="currentTenant.phone" class="flex items-center gap-1.5 text-muted-foreground truncate">
-                        <Phone class="size-3.5 text-primary shrink-0" />
+                    <div v-if="currentTenant.phone" class="flex items-center gap-1.5 truncate text-muted-foreground">
+                        <Phone class="size-3.5 shrink-0 text-primary" />
                         <span class="truncate">{{ currentTenant.phone }}</span>
                     </div>
-                    <div v-else-if="currentTenant.address" class="flex items-center gap-1.5 text-muted-foreground truncate">
-                        <MapPin class="size-3.5 text-primary shrink-0" />
+                    <div v-else-if="currentTenant.address" class="flex items-center gap-1.5 truncate text-muted-foreground">
+                        <MapPin class="size-3.5 shrink-0 text-primary" />
                         <span class="truncate">{{ currentTenant.address }}</span>
                     </div>
                     <div v-else class="flex items-center gap-1.5 text-muted-foreground">
-                        <Building2 class="size-3.5 text-primary shrink-0" />
+                        <Building2 class="size-3.5 shrink-0 text-primary" />
                         <span>Live Tenant Isolated</span>
                     </div>
                 </div>
@@ -492,23 +491,23 @@ const getVerticalBadgeColor = (type?: string) => {
                 <div
                     v-if="isDemo"
                     :class="[
-                        'p-2.5 rounded-xl border flex items-center justify-between gap-2 transition-all shadow-xs',
+                        'shadow-xs flex items-center justify-between gap-2 rounded-xl border p-2.5 transition-all',
                         isExpired
-                            ? 'bg-destructive/10 border-destructive/30 text-destructive'
+                            ? 'border-destructive/30 bg-destructive/10 text-destructive'
                             : isUrgent
-                                ? 'bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-200'
-                                : 'bg-emerald-500/10 border-emerald-500/25 text-emerald-950 dark:text-emerald-100'
+                              ? 'border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-200'
+                              : 'border-emerald-500/25 bg-emerald-500/10 text-emerald-950 dark:text-emerald-100',
                     ]"
                 >
-                    <div class="flex items-center gap-2 min-w-0">
+                    <div class="flex min-w-0 items-center gap-2">
                         <div
                             :class="[
-                                'size-7 rounded-lg flex items-center justify-center shrink-0 shadow-xs',
+                                'shadow-xs flex size-7 shrink-0 items-center justify-center rounded-lg',
                                 isExpired
                                     ? 'bg-destructive/20 text-destructive'
                                     : isUrgent
-                                        ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
-                                        : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                                      ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
+                                      : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400',
                             ]"
                         >
                             <Clock
@@ -517,21 +516,21 @@ const getVerticalBadgeColor = (type?: string) => {
                                 :style="{ animationDuration: !isExpired && !isUrgent ? '12s' : undefined }"
                             />
                         </div>
-                        <div class="flex flex-col min-w-0">
-                            <span class="text-[10px] font-bold uppercase tracking-wider opacity-70 leading-none">
+                        <div class="flex min-w-0 flex-col">
+                            <span class="text-[10px] font-bold uppercase leading-none tracking-wider opacity-70">
                                 {{ isExpired ? 'Status' : 'Trial Validity' }}
                             </span>
-                            <span class="text-xs font-black truncate mt-0.5">
+                            <span class="mt-0.5 truncate text-xs font-black">
                                 {{ isExpired ? 'Account Expired' : 'Expires In:' }}
                             </span>
                         </div>
                     </div>
 
                     <!-- Live Ticking Countdown -->
-                    <div v-if="!isExpired" class="flex items-center gap-1 font-mono font-bold text-xs shrink-0">
+                    <div v-if="!isExpired" class="flex shrink-0 items-center gap-1 font-mono text-xs font-bold">
                         <span
                             :class="[
-                                'px-1.5 py-0.5 rounded-md border text-center min-w-[28px] shadow-xs bg-background/90',
+                                'shadow-xs min-w-[28px] rounded-md border bg-background/90 px-1.5 py-0.5 text-center',
                                 isUrgent
                                     ? 'border-amber-500/40 text-amber-600 dark:text-amber-400'
                                     : 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400',
@@ -543,7 +542,7 @@ const getVerticalBadgeColor = (type?: string) => {
                         <span class="font-bold opacity-40">:</span>
                         <span
                             :class="[
-                                'px-1.5 py-0.5 rounded-md border text-center min-w-[28px] shadow-xs bg-background/90',
+                                'shadow-xs min-w-[28px] rounded-md border bg-background/90 px-1.5 py-0.5 text-center',
                                 isUrgent
                                     ? 'border-amber-500/40 text-amber-600 dark:text-amber-400'
                                     : 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400',
@@ -555,7 +554,7 @@ const getVerticalBadgeColor = (type?: string) => {
                         <span class="font-bold opacity-40">:</span>
                         <span
                             :class="[
-                                'px-1.5 py-0.5 rounded-md border text-center min-w-[28px] shadow-xs bg-background/90',
+                                'shadow-xs min-w-[28px] rounded-md border bg-background/90 px-1.5 py-0.5 text-center',
                                 isUrgent
                                     ? 'border-amber-500/40 text-amber-600 dark:text-amber-400'
                                     : 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400',
@@ -567,7 +566,7 @@ const getVerticalBadgeColor = (type?: string) => {
                         <span class="font-bold opacity-40">:</span>
                         <span
                             :class="[
-                                'px-1.5 py-0.5 rounded-md border text-center min-w-[28px] shadow-xs bg-background/90',
+                                'shadow-xs min-w-[28px] rounded-md border bg-background/90 px-1.5 py-0.5 text-center',
                                 isUrgent
                                     ? 'border-amber-500/40 text-amber-600 dark:text-amber-400'
                                     : 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400',
@@ -579,7 +578,7 @@ const getVerticalBadgeColor = (type?: string) => {
                     </div>
                     <div
                         v-else
-                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-destructive text-destructive-foreground font-bold text-xs font-mono shrink-0 shadow-sm"
+                        class="inline-flex shrink-0 items-center gap-1 rounded-md bg-destructive px-2.5 py-1 font-mono text-xs font-bold text-destructive-foreground shadow-sm"
                     >
                         Expired
                     </div>
@@ -587,29 +586,31 @@ const getVerticalBadgeColor = (type?: string) => {
             </div>
 
             <!-- Quick Staff Role Selector Presets (DEMO ONLY) -->
-            <div v-if="isDemo" class="p-3.5 rounded-xl border border-border/70 bg-muted/30 space-y-2.5">
+            <div v-if="isDemo" class="space-y-2.5 rounded-xl border border-border/70 bg-muted/30 p-3.5">
                 <div class="flex items-center justify-between text-[11px]">
-                    <span class="font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                    <span class="flex items-center gap-1 font-bold uppercase tracking-wider text-muted-foreground">
                         <KeyRound class="size-3" />
                         Fill Credentials for Role
                     </span>
-                    <span class="text-[10px] text-muted-foreground font-mono">password: password</span>
+                    <span class="font-mono text-[10px] text-muted-foreground">password: password</span>
                 </div>
 
-                <div :class="[
-                    'grid gap-1.5',
-                    availablePresets.length === 1 ? 'grid-cols-1' : availablePresets.length === 2 ? 'grid-cols-2' : 'grid-cols-3'
-                ]">
+                <div
+                    :class="[
+                        'grid gap-1.5',
+                        availablePresets.length === 1 ? 'grid-cols-1' : availablePresets.length === 2 ? 'grid-cols-2' : 'grid-cols-3',
+                    ]"
+                >
                     <button
                         v-for="preset in availablePresets"
                         :key="preset.prefix"
                         type="button"
                         @click="applyPreset(preset.prefix)"
                         :class="[
-                            'px-2.5 py-2 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer',
+                            'flex cursor-pointer items-center justify-center gap-2 rounded-lg border px-2.5 py-2 text-xs font-semibold transition-all',
                             selectedRole === preset.prefix
-                                ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                                : 'bg-background/80 hover:bg-background border-border text-foreground hover:border-primary/40',
+                                ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                                : 'border-border bg-background/80 text-foreground hover:border-primary/40 hover:bg-background',
                         ]"
                         :title="preset.description"
                     >
@@ -622,18 +623,20 @@ const getVerticalBadgeColor = (type?: string) => {
                 </div>
 
                 <!-- Active Role Chosen & Description Banner -->
-                <div class="p-2.5 rounded-lg border border-primary/25 bg-primary/5 flex items-start gap-2.5 text-xs transition-all">
-                    <div class="size-6 rounded-md bg-primary/10 border border-primary/25 flex items-center justify-center shrink-0 text-primary mt-0.5">
+                <div class="flex items-start gap-2.5 rounded-lg border border-primary/25 bg-primary/5 p-2.5 text-xs transition-all">
+                    <div
+                        class="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md border border-primary/25 bg-primary/10 text-primary"
+                    >
                         <component :is="activePreset.icon" class="size-3.5" />
                     </div>
                     <div class="min-w-0 flex-1">
                         <div class="flex items-center gap-2">
-                            <span class="font-bold text-foreground text-xs">{{ activePreset.role }}</span>
-                            <span class="text-[9px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-bold font-mono uppercase tracking-wide">
+                            <span class="text-xs font-bold text-foreground">{{ activePreset.role }}</span>
+                            <span class="rounded bg-primary/15 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wide text-primary">
                                 Active Role
                             </span>
                         </div>
-                        <p class="text-[11px] text-muted-foreground leading-relaxed mt-0.5">
+                        <p class="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
                             {{ activePreset.description }}
                         </p>
                     </div>
@@ -641,10 +644,11 @@ const getVerticalBadgeColor = (type?: string) => {
             </div>
 
             <!-- Real Account Secure Operator Notice (REAL ONLY) -->
-            <div v-else class="p-3 rounded-xl border border-border/80 bg-muted/20 flex items-start gap-2.5 text-xs text-muted-foreground">
-                <Lock class="size-4 text-emerald-600 shrink-0 mt-0.5" />
+            <div v-else class="flex items-start gap-2.5 rounded-xl border border-border/80 bg-muted/20 p-3 text-xs text-muted-foreground">
+                <Lock class="mt-0.5 size-4 shrink-0 text-emerald-600" />
                 <p class="text-[11px] leading-relaxed">
-                    Please sign in with your registered employee work email and terminal password. Access is audited and restricted to authorized personnel.
+                    Please sign in with your registered employee work email and terminal password. Access is audited and restricted to authorized
+                    personnel.
                 </p>
             </div>
         </div>
@@ -664,7 +668,7 @@ const getVerticalBadgeColor = (type?: string) => {
                         autocomplete="email"
                         v-model="form.email"
                         :placeholder="isDemo ? `owner@${currentTenant.slug}.mdepos.co.ke` : 'employee@business.com'"
-                        class="h-10 text-xs font-mono"
+                        class="h-10 font-mono text-xs"
                     />
                     <InputError :message="form.errors.email" />
                 </div>
@@ -672,9 +676,7 @@ const getVerticalBadgeColor = (type?: string) => {
                 <div class="grid gap-1.5">
                     <div class="flex items-center justify-between">
                         <Label for="password" class="text-xs font-semibold">Terminal Password</Label>
-                        <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-xs" tabindex="5">
-                            Forgot password?
-                        </TextLink>
+                        <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-xs" tabindex="5"> Forgot password? </TextLink>
                     </div>
                     <div class="relative">
                         <Input
@@ -685,13 +687,13 @@ const getVerticalBadgeColor = (type?: string) => {
                             autocomplete="current-password"
                             v-model="form.password"
                             placeholder="••••••••"
-                            class="h-10 text-xs pr-10"
+                            class="h-10 pr-10 text-xs"
                         />
                         <button
                             type="button"
                             tabindex="-1"
                             @click="showPassword = !showPassword"
-                            class="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground transition-colors"
+                            class="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground transition-colors hover:text-foreground"
                             :aria-label="showPassword ? 'Hide password' : 'Show password'"
                         >
                             <EyeOff v-if="showPassword" class="size-4" />
@@ -710,33 +712,30 @@ const getVerticalBadgeColor = (type?: string) => {
 
                 <Button
                     type="submit"
-                    :class="[
-                        'mt-1 w-full h-10 font-bold transition-all',
-                        !isDemo && 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                    ]"
+                    :class="['mt-1 h-10 w-full font-bold transition-all', !isDemo && 'bg-emerald-600 text-white hover:bg-emerald-700']"
                     tabindex="4"
                     :disabled="form.processing || (isDemo && (isExpired || !!accountExpiredError))"
                 >
-                    <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin mr-2" />
+                    <LoaderCircle v-if="form.processing" class="mr-2 h-4 w-4 animate-spin" />
                     <template v-else-if="isDemo">
-                        <Sparkles class="size-4 mr-2" />
+                        <Sparkles class="mr-2 size-4" />
                         <span>Launch Demo as {{ activePreset.role }}</span>
                     </template>
                     <template v-else>
-                        <Lock class="size-4 mr-2" />
+                        <Lock class="mr-2 size-4" />
                         <span>Sign In to {{ currentTenant.name }}</span>
                     </template>
                 </Button>
             </div>
 
             <!-- Multi-Tenant Isolation Footer -->
-            <div class="pt-2 border-t border-border/60">
+            <div class="border-t border-border/60 pt-2">
                 <div
                     :class="[
-                        'flex items-center justify-center gap-2 p-2 rounded-xl text-[11px]',
+                        'flex items-center justify-center gap-2 rounded-xl p-2 text-[11px]',
                         isDemo
-                            ? 'bg-amber-500/5 border border-amber-500/20 text-amber-900 dark:text-amber-200'
-                            : 'bg-emerald-500/5 border border-emerald-500/20 text-emerald-950 dark:text-emerald-100'
+                            ? 'border border-amber-500/20 bg-amber-500/5 text-amber-900 dark:text-amber-200'
+                            : 'border border-emerald-500/20 bg-emerald-500/5 text-emerald-950 dark:text-emerald-100',
                     ]"
                 >
                     <component
@@ -752,7 +751,7 @@ const getVerticalBadgeColor = (type?: string) => {
             <div class="pt-3 text-center">
                 <Link
                     href="/super-admin/login"
-                    class="text-[11px] font-mono text-muted-foreground/60 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors inline-flex items-center gap-1.5"
+                    class="inline-flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground/60 transition-colors hover:text-emerald-600 dark:hover:text-emerald-400"
                 >
                     <ShieldCheck class="size-3 text-emerald-500/70" />
                     <span>Platform Super Admin Gateway &rarr;</span>

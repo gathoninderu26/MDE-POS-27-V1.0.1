@@ -1,35 +1,26 @@
 <script setup lang="ts">
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import ToastContainer from '@/components/ui/ToastContainer.vue';
 import { useBranch } from '@/composables/useBranch';
 import { useCart } from '@/composables/useCart';
 import { useDemoCountdown } from '@/composables/useDemoCountdown';
+import { isInputFocused } from '@/composables/useKeyboardNavigation';
 import { useTenant } from '@/composables/useTenant';
 import { useToast } from '@/composables/useToast';
-import { isInputFocused } from '@/composables/useKeyboardNavigation';
 import { Link, usePage } from '@inertiajs/vue3';
 import {
     ArrowLeft,
     Clock,
     Compass,
     Delete,
-    HelpCircle,
     Keyboard,
     KeyRound,
     Lock,
     Maximize2,
     Minimize2,
-    PauseCircle,
     Store,
     Unlock,
     UserCheck,
@@ -168,16 +159,19 @@ const toggleFullscreen = () => {
 </script>
 
 <template>
-    <div class="flex h-[100dvh] w-screen flex-col overflow-hidden bg-background text-foreground select-none">
+    <div class="flex h-[100dvh] w-screen select-none flex-col overflow-hidden bg-background text-foreground">
         <!-- Top POS Bar -->
-        <header id="pos-tour-header" class="flex h-14 shrink-0 items-center justify-between border-b border-border/80 bg-card px-2.5 sm:px-4 shadow-sm z-20 relative">
+        <header
+            id="pos-tour-header"
+            class="relative z-20 flex h-14 shrink-0 items-center justify-between border-b border-border/80 bg-card px-2.5 shadow-sm sm:px-4"
+        >
             <!-- Left Brand & Branch -->
-            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div class="flex min-w-0 items-center gap-2 sm:gap-3">
                 <!-- When UNLOCKED: Exit POS link + Lock button -->
-                <div v-if="!isLocked" class="flex items-center gap-1.5 shrink-0">
+                <div v-if="!isLocked" class="flex shrink-0 items-center gap-1.5">
                     <Link
                         href="/dashboard"
-                        class="flex items-center gap-1.5 rounded-lg border border-border/80 bg-background px-2 sm:px-2.5 py-1.5 text-xs font-semibold hover:bg-muted transition-colors text-muted-foreground hover:text-foreground shrink-0"
+                        class="flex shrink-0 items-center gap-1.5 rounded-lg border border-border/80 bg-background px-2 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:px-2.5"
                         title="Exit to main dashboard"
                     >
                         <ArrowLeft class="size-3.5" />
@@ -188,7 +182,7 @@ const toggleFullscreen = () => {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        class="size-8 rounded-lg border border-border/70 hover:border-primary/50 text-muted-foreground hover:text-foreground cursor-pointer"
+                        class="size-8 cursor-pointer rounded-lg border border-border/70 text-muted-foreground hover:border-primary/50 hover:text-foreground"
                         @click="lockTerminal"
                         title="Lock POS Terminal (Hides Exit POS & requires passcode to unlock)"
                     >
@@ -197,11 +191,11 @@ const toggleFullscreen = () => {
                 </div>
 
                 <!-- When LOCKED: Exit POS and back arrow are hidden; Locked button shown -->
-                <div v-else class="flex items-center gap-1.5 shrink-0">
+                <div v-else class="flex shrink-0 items-center gap-1.5">
                     <button
                         type="button"
                         @click="openUnlockModal"
-                        class="flex items-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-2 sm:px-2.5 py-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-all cursor-pointer shadow-xs"
+                        class="shadow-xs flex cursor-pointer items-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-2 py-1.5 text-xs font-bold text-amber-600 transition-all hover:bg-amber-500/20 dark:text-amber-400 sm:px-2.5"
                         title="Terminal Locked — Click to enter passcode to unlock"
                     >
                         <Lock class="size-3.5 text-amber-600 dark:text-amber-400" />
@@ -209,23 +203,21 @@ const toggleFullscreen = () => {
                     </button>
                 </div>
 
-                <div class="h-4 w-px bg-border/80 shrink-0"></div>
+                <div class="h-4 w-px shrink-0 bg-border/80"></div>
 
-                <div class="flex items-center gap-2 min-w-0">
-                    <div class="flex size-7 items-center justify-center rounded-lg bg-emerald-600 font-bold text-xs text-white shrink-0">
-                        POS
-                    </div>
+                <div class="flex min-w-0 items-center gap-2">
+                    <div class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-xs font-bold text-white">POS</div>
                     <div class="min-w-0">
-                        <h1 class="text-xs font-bold leading-tight flex items-center gap-1.5 truncate">
-                            <span class="truncate max-w-[110px] sm:max-w-[180px] md:max-w-[240px]">{{ currentTenant.name }}</span>
-                            <Badge variant="outline" class="text-[9px] py-0 px-1 font-mono shrink-0 hidden md:inline-flex">Reg #01</Badge>
+                        <h1 class="flex items-center gap-1.5 truncate text-xs font-bold leading-tight">
+                            <span class="max-w-[110px] truncate sm:max-w-[180px] md:max-w-[240px]">{{ currentTenant.name }}</span>
+                            <Badge variant="outline" class="hidden shrink-0 px-1 py-0 font-mono text-[9px] md:inline-flex">Reg #01</Badge>
                             <span
                                 v-if="isDemo"
                                 :class="[
-                                    'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[9px] font-mono font-bold uppercase tracking-wider shrink-0 shadow-2xs',
+                                    'shadow-2xs inline-flex shrink-0 items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider',
                                     isUrgent
-                                        ? 'bg-destructive/20 border-destructive/40 text-destructive animate-pulse'
-                                        : 'bg-amber-500/20 border-amber-500/40 text-amber-600 dark:text-amber-400',
+                                        ? 'animate-pulse border-destructive/40 bg-destructive/20 text-destructive'
+                                        : 'border-amber-500/40 bg-amber-500/20 text-amber-600 dark:text-amber-400',
                                 ]"
                                 title="Active Sandbox Demo Remaining Time"
                             >
@@ -234,46 +226,46 @@ const toggleFullscreen = () => {
                             </span>
                             <span
                                 v-else
-                                class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-mono font-bold uppercase tracking-wider shrink-0"
+                                class="inline-flex shrink-0 items-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400"
                                 title="Live Production Terminal"
                             >
-                                <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span class="size-1.5 animate-pulse rounded-full bg-emerald-500"></span>
                                 <span>LIVE</span>
                             </span>
                         </h1>
-                        <p class="text-[10px] sm:text-[11px] text-muted-foreground flex items-center gap-1 truncate">
-                            <Store class="size-3 text-emerald-600 shrink-0" />
-                            <span class="truncate max-w-[100px] sm:max-w-[160px]">{{ currentBranch.name }}</span>
+                        <p class="flex items-center gap-1 truncate text-[10px] text-muted-foreground sm:text-[11px]">
+                            <Store class="size-3 shrink-0 text-emerald-600" />
+                            <span class="max-w-[100px] truncate sm:max-w-[160px]">{{ currentBranch.name }}</span>
                         </p>
                     </div>
                 </div>
             </div>
 
             <!-- Center Clock & Network Status -->
-            <div class="hidden lg:flex items-center gap-4 text-xs font-mono text-muted-foreground shrink-0">
-                <div class="flex items-center gap-1.5 bg-muted/40 px-3 py-1 rounded-full border border-border/60">
+            <div class="hidden shrink-0 items-center gap-4 font-mono text-xs text-muted-foreground lg:flex">
+                <div class="flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/40 px-3 py-1">
                     <Clock class="size-3.5 text-primary" />
                     <span>{{ currentTime }}</span>
                 </div>
-                <div class="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold font-sans text-xs">
+                <div class="flex items-center gap-1.5 font-sans text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                     <Wifi class="size-3.5 animate-pulse" />
                     <span>Online / Sync OK</span>
                 </div>
             </div>
 
             <!-- Right Controls: Guide, Cashier, Hotkeys, Fullscreen -->
-            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
                 <!-- Visual Marker for Part ⑤: Header & Security -->
                 <button
                     v-if="isDemo"
                     type="button"
                     @click="$emit('open-tour-step', 5)"
-                    class="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 text-[10px] font-mono font-bold cursor-pointer transition-all shadow-2xs"
+                    class="shadow-2xs hidden cursor-pointer items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 font-mono text-[10px] font-bold text-primary transition-all hover:bg-primary/20 xl:flex"
                     title="Part 5: Header Controls & Security (Click to inspect)"
                 >
                     <span class="relative flex size-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                        <span class="relative inline-flex rounded-full size-2 bg-primary"></span>
+                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
+                        <span class="relative inline-flex size-2 rounded-full bg-primary"></span>
                     </span>
                     <span>⑤ Till Security</span>
                 </button>
@@ -285,7 +277,7 @@ const toggleFullscreen = () => {
                     type="button"
                     variant="outline"
                     size="sm"
-                    class="h-8 px-2.5 gap-1.5 text-xs font-bold text-primary border-primary/40 bg-primary/10 hover:bg-primary/20 hover:border-primary/60 cursor-pointer shadow-2xs transition-all relative"
+                    class="shadow-2xs relative h-8 cursor-pointer gap-1.5 border-primary/40 bg-primary/10 px-2.5 text-xs font-bold text-primary transition-all hover:border-primary/60 hover:bg-primary/20"
                     @click="$emit('open-tour')"
                     title="Start Interactive POS Screen Walkthrough"
                 >
@@ -293,23 +285,23 @@ const toggleFullscreen = () => {
                     <span class="hidden sm:inline">Page Guide</span>
                 </Button>
 
-                <div class="hidden sm:flex items-center gap-1.5 bg-muted/40 px-2.5 py-1 rounded-lg border border-border/60 text-xs">
+                <div class="hidden items-center gap-1.5 rounded-lg border border-border/60 bg-muted/40 px-2.5 py-1 text-xs sm:flex">
                     <UserCheck class="size-3.5 text-primary" />
-                    <span class="text-muted-foreground hidden md:inline">Cashier:</span>
-                    <span class="font-bold text-foreground truncate max-w-[100px]">{{ authUserName }}</span>
+                    <span class="hidden text-muted-foreground md:inline">Cashier:</span>
+                    <span class="max-w-[100px] truncate font-bold text-foreground">{{ authUserName }}</span>
                 </div>
 
                 <Button
                     variant="ghost"
                     size="sm"
-                    class="h-8 gap-1 text-xs text-muted-foreground hover:text-foreground hidden sm:flex"
+                    class="hidden h-8 gap-1 text-xs text-muted-foreground hover:text-foreground sm:flex"
                     @click="hotkeysOpen = true"
                 >
                     <Keyboard class="size-3.5" />
                     <span class="hidden xl:inline">Shortcuts</span>
                 </Button>
 
-                <Button variant="ghost" size="icon" class="size-8 hidden sm:inline-flex" @click="toggleFullscreen" title="Toggle Fullscreen">
+                <Button variant="ghost" size="icon" class="hidden size-8 sm:inline-flex" @click="toggleFullscreen" title="Toggle Fullscreen">
                     <Minimize2 v-if="isFullscreen" class="size-4" />
                     <Maximize2 v-else class="size-4" />
                 </Button>
@@ -319,15 +311,15 @@ const toggleFullscreen = () => {
         <!-- Demo Mode Banner -->
         <div
             v-if="isDemo"
-            class="flex items-center justify-center gap-2 px-4 py-1 bg-amber-500/10 border-b border-amber-500/25 text-amber-700 dark:text-amber-300 text-[10px] font-bold tracking-wider shrink-0"
+            class="flex shrink-0 items-center justify-center gap-2 border-b border-amber-500/25 bg-amber-500/10 px-4 py-1 text-[10px] font-bold tracking-wider text-amber-700 dark:text-amber-300"
         >
-            <Zap class="size-3 animate-pulse shrink-0" />
+            <Zap class="size-3 shrink-0 animate-pulse" />
             <span>DEMO MODE ACTIVE — All data is simulated and resets periodically</span>
-            <Zap class="size-3 animate-pulse shrink-0" />
+            <Zap class="size-3 shrink-0 animate-pulse" />
         </div>
 
         <!-- POS Workspace -->
-        <main class="flex flex-1 overflow-hidden relative">
+        <main class="relative flex flex-1 overflow-hidden">
             <slot />
         </main>
 
@@ -335,43 +327,43 @@ const toggleFullscreen = () => {
         <Dialog :open="hotkeysOpen" spinnerText="Loading Keyboard Shortcuts..." @update:open="(v) => (hotkeysOpen = v)">
             <DialogContent class="w-[95vw] sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle class="text-base font-bold flex items-center gap-2">
+                    <DialogTitle class="flex items-center gap-2 text-base font-bold">
                         <Keyboard class="size-5 text-primary" />
                         POS Keyboard Shortcuts
                     </DialogTitle>
                 </DialogHeader>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs py-2">
-                    <div class="p-2 bg-muted/40 rounded-lg flex justify-between items-center">
+                <div class="grid grid-cols-1 gap-2 py-2 text-xs sm:grid-cols-2">
+                    <div class="flex items-center justify-between rounded-lg bg-muted/40 p-2">
                         <span class="text-muted-foreground">Scan / Focus Barcode</span>
-                        <kbd class="px-2 py-0.5 bg-background border rounded font-mono font-bold">F2</kbd>
+                        <kbd class="rounded border bg-background px-2 py-0.5 font-mono font-bold">F2</kbd>
                     </div>
-                    <div class="p-2 bg-muted/40 rounded-lg flex justify-between items-center">
+                    <div class="flex items-center justify-between rounded-lg bg-muted/40 p-2">
                         <span class="text-muted-foreground">Pay & Checkout</span>
-                        <kbd class="px-2 py-0.5 bg-background border rounded font-mono font-bold">F12 / Space</kbd>
+                        <kbd class="rounded border bg-background px-2 py-0.5 font-mono font-bold">F12 / Space</kbd>
                     </div>
-                    <div class="p-2 bg-muted/40 rounded-lg flex justify-between items-center">
+                    <div class="flex items-center justify-between rounded-lg bg-muted/40 p-2">
                         <span class="text-muted-foreground">Hold Active Sale</span>
-                        <kbd class="px-2 py-0.5 bg-background border rounded font-mono font-bold">F4</kbd>
+                        <kbd class="rounded border bg-background px-2 py-0.5 font-mono font-bold">F4</kbd>
                     </div>
-                    <div class="p-2 bg-muted/40 rounded-lg flex justify-between items-center">
+                    <div class="flex items-center justify-between rounded-lg bg-muted/40 p-2">
                         <span class="text-muted-foreground">Clear / Cancel Cart</span>
-                        <kbd class="px-2 py-0.5 bg-background border rounded font-mono font-bold">F8</kbd>
+                        <kbd class="rounded border bg-background px-2 py-0.5 font-mono font-bold">F8</kbd>
                     </div>
-                    <div class="p-2 bg-muted/40 rounded-lg flex justify-between items-center">
+                    <div class="flex items-center justify-between rounded-lg bg-muted/40 p-2">
                         <span class="text-muted-foreground">Toggle Retail/Wholesale</span>
-                        <kbd class="px-2 py-0.5 bg-background border rounded font-mono font-bold">Alt + W</kbd>
+                        <kbd class="rounded border bg-background px-2 py-0.5 font-mono font-bold">Alt + W</kbd>
                     </div>
-                    <div class="p-2 bg-muted/40 rounded-lg flex justify-between items-center">
+                    <div class="flex items-center justify-between rounded-lg bg-muted/40 p-2">
                         <span class="text-muted-foreground">Select Customer</span>
-                        <kbd class="px-2 py-0.5 bg-background border rounded font-mono font-bold">Alt + C</kbd>
+                        <kbd class="rounded border bg-background px-2 py-0.5 font-mono font-bold">Alt + C</kbd>
                     </div>
-                    <div class="p-2 bg-muted/40 rounded-lg flex justify-between items-center">
+                    <div class="flex items-center justify-between rounded-lg bg-muted/40 p-2">
                         <span class="text-muted-foreground">Apply Cart Discount</span>
-                        <kbd class="px-2 py-0.5 bg-background border rounded font-mono font-bold">Alt + D</kbd>
+                        <kbd class="rounded border bg-background px-2 py-0.5 font-mono font-bold">Alt + D</kbd>
                     </div>
-                    <div class="p-2 bg-muted/40 rounded-lg flex justify-between items-center">
+                    <div class="flex items-center justify-between rounded-lg bg-muted/40 p-2">
                         <span class="text-muted-foreground">Payment Method Select</span>
-                        <kbd class="px-2 py-0.5 bg-background border rounded font-mono font-bold">1 - 5</kbd>
+                        <kbd class="rounded border bg-background px-2 py-0.5 font-mono font-bold">1 - 5</kbd>
                     </div>
                 </div>
             </DialogContent>
@@ -381,11 +373,13 @@ const toggleFullscreen = () => {
         <Dialog :open="unlockModalOpen" spinnerText="Opening Terminal Security..." @update:open="(v) => (unlockModalOpen = v)">
             <DialogContent class="w-[95vw] sm:max-w-xs">
                 <DialogHeader class="text-center sm:text-center">
-                    <div class="mx-auto flex size-12 items-center justify-center rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-600 dark:text-amber-400 mb-1">
+                    <div
+                        class="mx-auto mb-1 flex size-12 items-center justify-center rounded-2xl border border-amber-500/25 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                    >
                         <KeyRound class="size-6" />
                     </div>
-                    <DialogTitle class="text-base font-bold text-center">Unlock POS Terminal</DialogTitle>
-                    <DialogDescription class="text-xs text-center text-muted-foreground">
+                    <DialogTitle class="text-center text-base font-bold">Unlock POS Terminal</DialogTitle>
+                    <DialogDescription class="text-center text-xs text-muted-foreground">
                         Enter supervisor passcode to restore the Exit POS button and navigation.
                     </DialogDescription>
                 </DialogHeader>
@@ -401,13 +395,13 @@ const toggleFullscreen = () => {
                                 maxlength="6"
                                 placeholder="••••"
                                 autofocus
-                                class="text-center font-mono text-xl tracking-[0.3em] font-bold h-11"
+                                class="h-11 text-center font-mono text-xl font-bold tracking-[0.3em]"
                             />
                         </form>
-                        <p v-if="passcodeError" class="text-xs text-destructive font-medium text-center">
+                        <p v-if="passcodeError" class="text-center text-xs font-medium text-destructive">
                             {{ passcodeError }}
                         </p>
-                        <p v-else class="text-[11px] text-muted-foreground text-center">
+                        <p v-else class="text-center text-[11px] text-muted-foreground">
                             Default supervisor PIN: <span class="font-mono font-bold text-foreground">1234</span>
                         </p>
                     </div>
@@ -419,7 +413,7 @@ const toggleFullscreen = () => {
                             :key="digit"
                             type="button"
                             variant="outline"
-                            class="h-10 text-base font-bold font-mono hover:bg-primary/10 hover:border-primary/40 cursor-pointer"
+                            class="h-10 cursor-pointer font-mono text-base font-bold hover:border-primary/40 hover:bg-primary/10"
                             @click="appendPinDigit(digit)"
                         >
                             {{ digit }}
@@ -427,7 +421,7 @@ const toggleFullscreen = () => {
                         <Button
                             type="button"
                             variant="outline"
-                            class="h-10 text-xs font-bold text-destructive hover:bg-destructive/10 cursor-pointer"
+                            class="h-10 cursor-pointer text-xs font-bold text-destructive hover:bg-destructive/10"
                             @click="clearPin"
                         >
                             CLR
@@ -435,7 +429,7 @@ const toggleFullscreen = () => {
                         <Button
                             type="button"
                             variant="outline"
-                            class="h-10 text-base font-bold font-mono hover:bg-primary/10 hover:border-primary/40 cursor-pointer"
+                            class="h-10 cursor-pointer font-mono text-base font-bold hover:border-primary/40 hover:bg-primary/10"
                             @click="appendPinDigit('0')"
                         >
                             0
@@ -443,7 +437,7 @@ const toggleFullscreen = () => {
                         <Button
                             type="button"
                             variant="outline"
-                            class="h-10 text-xs font-bold text-muted-foreground hover:bg-muted cursor-pointer"
+                            class="h-10 cursor-pointer text-xs font-bold text-muted-foreground hover:bg-muted"
                             @click="backspacePin"
                         >
                             <Delete class="size-4" />
@@ -451,21 +445,10 @@ const toggleFullscreen = () => {
                     </div>
                 </div>
 
-                <DialogFooter class="flex flex-col sm:flex-row gap-2">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        class="w-full sm:w-1/2 text-xs"
-                        @click="unlockModalOpen = false"
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        type="button"
-                        class="w-full sm:w-1/2 text-xs font-bold bg-primary hover:bg-primary/90"
-                        @click="handleUnlock"
-                    >
-                        <Unlock class="size-3.5 mr-1" />
+                <DialogFooter class="flex flex-col gap-2 sm:flex-row">
+                    <Button type="button" variant="outline" class="w-full text-xs sm:w-1/2" @click="unlockModalOpen = false"> Cancel </Button>
+                    <Button type="button" class="w-full bg-primary text-xs font-bold hover:bg-primary/90 sm:w-1/2" @click="handleUnlock">
+                        <Unlock class="mr-1 size-3.5" />
                         Unlock
                     </Button>
                 </DialogFooter>

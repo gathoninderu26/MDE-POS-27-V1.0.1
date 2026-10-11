@@ -2,7 +2,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-    AlertCircle,
     ArrowLeft,
     ArrowRight,
     BarChart3,
@@ -10,17 +9,12 @@ import {
     Check,
     CircleDollarSign,
     Compass,
-    Download,
     FileSpreadsheet,
-    FileText,
-    HelpCircle,
     Info,
     Keyboard,
     PieChart,
     Printer,
-    Sparkles,
     TrendingUp,
-    Users,
     X,
     Zap,
 } from 'lucide-vue-next';
@@ -71,7 +65,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 10,
         icon: Compass,
-        usedFor: 'Welcome to the Financial & Operational Reports Control Center! This comprehensive analytics suite delivers real-time Profit & Loss (P&L) statements, cost of goods sold (COGS) tracking, gross & net margins (EBITDA), departmental profitability audits, cashier accountability metrics, and multi-format exports for tax compliance.',
+        usedFor:
+            'Welcome to the Financial & Operational Reports Control Center! This comprehensive analytics suite delivers real-time Profit & Loss (P&L) statements, cost of goods sold (COGS) tracking, gross & net margins (EBITDA), departmental profitability audits, cashier accountability metrics, and multi-format exports for tax compliance.',
         capabilities: [
             'Real-Time P&L Generation',
             'COGS & Margin Calculations',
@@ -101,10 +96,11 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 10,
         icon: Calendar,
-        usedFor: 'Instant multi-interval reporting filter: switch seamlessly between Today (daily drawer balancing), 7 Days (weekly trade velocity), This Month (monthly P&L & VAT return period), and This Year (annual fiscal performance and shareholder returns).',
+        usedFor:
+            'Instant multi-interval reporting filter: switch seamlessly between Today (daily drawer balancing), 7 Days (weekly trade velocity), This Month (monthly P&L & VAT return period), and This Year (annual fiscal performance and shareholder returns).',
         capabilities: [
             'Single-Click Range Filtering',
-            'Today\'s Live Sales Reconciliation',
+            "Today's Live Sales Reconciliation",
             'Weekly Trading Velocity Audits',
             'Monthly Accounting & Tax Cycles',
             'Full Fiscal Year Performance',
@@ -130,7 +126,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 10,
         icon: FileSpreadsheet,
-        usedFor: 'Generates structured CSV and Excel ledger spreadsheets containing raw sales totals, product departmental categories, and profit margins. Ready for direct ingestion into QuickBooks, Sage, Xero, or custom spreadsheet modeling.',
+        usedFor:
+            'Generates structured CSV and Excel ledger spreadsheets containing raw sales totals, product departmental categories, and profit margins. Ready for direct ingestion into QuickBooks, Sage, Xero, or custom spreadsheet modeling.',
         capabilities: [
             '1-Click Instant Spreadsheet Generation',
             'Raw Departmental Sales Ledger',
@@ -156,7 +153,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 10,
         icon: Printer,
-        usedFor: 'Generates beautifully styled, formal Profit & Loss statements ready for physical thermal or A4 printing, bank loan applications, investor presentations, and Kenya Revenue Authority (KRA) tax documentation.',
+        usedFor:
+            'Generates beautifully styled, formal Profit & Loss statements ready for physical thermal or A4 printing, bank loan applications, investor presentations, and Kenya Revenue Authority (KRA) tax documentation.',
         capabilities: [
             'Official P&L Executive Format',
             'Corporate Tenant Header & Timestamping',
@@ -183,7 +181,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 14,
         icon: TrendingUp,
-        usedFor: 'High-level financial scorecard displaying 5 essential business vitals: Gross Sales Revenue (top-line receipts), Cost of Goods Sold (COGS procurement), Gross Profit (and overall gross margin %), Operating Expenses (store overheads), and Net Profit (EBITDA).',
+        usedFor:
+            'High-level financial scorecard displaying 5 essential business vitals: Gross Sales Revenue (top-line receipts), Cost of Goods Sold (COGS procurement), Gross Profit (and overall gross margin %), Operating Expenses (store overheads), and Net Profit (EBITDA).',
         capabilities: [
             'Real-Time Gross Sales Totals',
             'Automated Cost of Goods Sold (COGS)',
@@ -208,7 +207,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 14,
         icon: CircleDollarSign,
-        usedFor: 'Standard multi-step financial income ledger: Step 1 (Revenue / Gross Sales) − Less COGS = Step 2 (Gross Profit) − Less Operating Overheads = Step 3 (Net Profit). Clearly visualizes where money is earned and spent.',
+        usedFor:
+            'Standard multi-step financial income ledger: Step 1 (Revenue / Gross Sales) − Less COGS = Step 2 (Gross Profit) − Less Operating Overheads = Step 3 (Net Profit). Clearly visualizes where money is earned and spent.',
         capabilities: [
             'Standard Multi-Step Accounting Ledger',
             'Automated COGS Inventory Cost Deduction',
@@ -233,7 +233,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 14,
         icon: PieChart,
-        usedFor: 'Departmental sales and margin analysis: ranks product categories by total sales volume, reveals individual gross profit margins per category, and calculates each department\'s percentage share of overall company revenue.',
+        usedFor:
+            "Departmental sales and margin analysis: ranks product categories by total sales volume, reveals individual gross profit margins per category, and calculates each department's percentage share of overall company revenue.",
         capabilities: [
             'Department-Level Sales Contribution',
             'Individual Category Margin Auditing',
@@ -257,7 +258,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 14,
         icon: BarChart3,
-        usedFor: 'Operator productivity scorecard: monitors each staff member\'s sales volume, number of customer receipts issued, assigned shift timing, and average basket ticket size to identify top performers and operational bottlenecks.',
+        usedFor:
+            "Operator productivity scorecard: monitors each staff member's sales volume, number of customer receipts issued, assigned shift timing, and average basket ticket size to identify top performers and operational bottlenecks.",
         capabilities: [
             'Operator Sales Volume Tracking',
             'Customer Receipt Count Telemetry',
@@ -581,15 +583,9 @@ onUnmounted(() => {
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
         >
-            <div
-                v-if="open"
-                class="fixed inset-0 z-50 pointer-events-none select-none font-sans"
-            >
+            <div v-if="open" class="pointer-events-none fixed inset-0 z-50 select-none font-sans">
                 <!-- SVG Dimming Backdrop with EnjoyHint Cutout Hole -->
-                <svg
-                    class="absolute inset-0 w-full h-full pointer-events-none transition-all duration-300"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
+                <svg class="pointer-events-none absolute inset-0 h-full w-full transition-all duration-300" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <!-- EnjoyHint SVG Mask Hole -->
                         <mask id="reports-enjoyhint-mask">
@@ -625,7 +621,7 @@ onUnmounted(() => {
                 <!-- Clickable Spotlight Hole: clicking highlighted element triggers action or advances step -->
                 <div
                     v-if="targetRect"
-                    class="absolute pointer-events-auto cursor-pointer z-40"
+                    class="pointer-events-auto absolute z-40 cursor-pointer"
                     :style="{
                         top: `${targetRect.top - 4}px`,
                         left: `${targetRect.left - 4}px`,
@@ -639,7 +635,7 @@ onUnmounted(() => {
                 <!-- EnjoyHint Glowing Target Boundary Ring -->
                 <div
                     v-if="targetRect"
-                    class="absolute pointer-events-none transition-all duration-300 ease-out border-2 border-primary shadow-[0_0_35px_rgba(16,185,129,0.5)] ring-4 ring-primary/30"
+                    class="pointer-events-none absolute border-2 border-primary shadow-[0_0_35px_rgba(16,185,129,0.5)] ring-4 ring-primary/30 transition-all duration-300 ease-out"
                     :style="{
                         top: `${targetRect.top - 8}px`,
                         left: `${targetRect.left - 8}px`,
@@ -650,25 +646,15 @@ onUnmounted(() => {
                 ></div>
 
                 <!-- Guided Callout Text Bubble (Speech bubble dialog pointing directly to target) -->
-                <div
-                    ref="cardRef"
-                    class="absolute z-50 pointer-events-auto transition-all duration-300 ease-out"
-                    :style="cardStyle"
-                    @click.stop
-                >
+                <div ref="cardRef" class="pointer-events-auto absolute z-50 transition-all duration-300 ease-out" :style="cardStyle" @click.stop>
                     <!-- Speech Bubble Tail: Top (points UP to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'top'"
-                        class="absolute -top-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -top-3.5 z-30"
                         :style="{ left: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="24" height="15" viewBox="0 0 24 15" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,15 L 12,0 L 24,15"
-                                class="fill-muted/95 stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,15 L 12,0 L 24,15" class="fill-muted/95 stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="1" y="14" width="22" height="3" class="fill-muted/95" />
                         </svg>
                     </div>
@@ -676,16 +662,11 @@ onUnmounted(() => {
                     <!-- Speech Bubble Tail: Bottom (points DOWN to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'bottom'"
-                        class="absolute -bottom-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -bottom-3.5 z-30"
                         :style="{ left: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="24" height="15" viewBox="0 0 24 15" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,0 L 12,15 L 24,0"
-                                class="fill-muted/80 stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,0 L 12,15 L 24,0" class="fill-muted/80 stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="1" y="-2" width="22" height="3" class="fill-muted/80" />
                         </svg>
                     </div>
@@ -693,16 +674,11 @@ onUnmounted(() => {
                     <!-- Speech Bubble Tail: Left (points LEFT to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'left'"
-                        class="absolute -left-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -left-3.5 z-30"
                         :style="{ top: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="15" height="24" viewBox="0 0 15 24" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 15,0 L 0,12 L 15,24"
-                                class="fill-card stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 15,0 L 0,12 L 15,24" class="fill-card stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="14" y="1" width="3" height="22" class="fill-card" />
                         </svg>
                     </div>
@@ -710,37 +686,43 @@ onUnmounted(() => {
                     <!-- Speech Bubble Tail: Right (points RIGHT to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'right'"
-                        class="absolute -right-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -right-3.5 z-30"
                         :style="{ top: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="15" height="24" viewBox="0 0 15 24" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,0 L 15,12 L 0,24"
-                                class="fill-card stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,0 L 15,12 L 0,24" class="fill-card stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="-2" y="1" width="3" height="22" class="fill-card" />
                         </svg>
                     </div>
 
-                    <div class="rounded-2xl border-2 border-border bg-card shadow-2xl overflow-hidden text-card-foreground flex flex-col max-h-[calc(100vh-90px)] ring-1 ring-black/10 dark:ring-white/15">
+                    <div
+                        class="flex max-h-[calc(100vh-90px)] flex-col overflow-hidden rounded-2xl border-2 border-border bg-card text-card-foreground shadow-2xl ring-1 ring-black/10 dark:ring-white/15"
+                    >
                         <!-- Card Header with Visible Background -->
-                        <div class="px-3.5 py-2.5 sm:px-4 sm:py-3 bg-muted/80 border-b border-border flex items-center justify-between shrink-0">
-                            <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                                <div class="size-7.5 rounded-lg bg-primary/15 text-primary border border-primary/25 flex items-center justify-center font-bold text-xs shadow-2xs shrink-0">
+                        <div class="flex shrink-0 items-center justify-between border-b border-border bg-muted/80 px-3.5 py-2.5 sm:px-4 sm:py-3">
+                            <div class="flex min-w-0 flex-1 items-center gap-2.5">
+                                <div
+                                    class="size-7.5 shadow-2xs flex shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/15 text-xs font-bold text-primary"
+                                >
                                     <component :is="currentSection.icon" class="size-4" />
                                 </div>
                                 <div class="min-w-0 flex-1">
-                                    <div class="flex items-center gap-1.5 flex-wrap">
-                                        <Badge variant="outline" class="text-[9px] px-1.5 py-0 h-4 border-primary/40 bg-primary/10 text-primary uppercase font-mono font-bold shrink-0">
-                                            {{ currentSection.id === 'start' ? 'ORIENTATION' : `Part ${currentSection.stepNumber}/${sections.length - 1}` }}
+                                    <div class="flex flex-wrap items-center gap-1.5">
+                                        <Badge
+                                            variant="outline"
+                                            class="h-4 shrink-0 border-primary/40 bg-primary/10 px-1.5 py-0 font-mono text-[9px] font-bold uppercase text-primary"
+                                        >
+                                            {{
+                                                currentSection.id === 'start'
+                                                    ? 'ORIENTATION'
+                                                    : `Part ${currentSection.stepNumber}/${sections.length - 1}`
+                                            }}
                                         </Badge>
-                                        <span class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                                             {{ currentSection.tag }}
                                         </span>
                                     </div>
-                                    <h3 class="text-xs sm:text-sm font-bold text-foreground leading-snug mt-0.5">
+                                    <h3 class="mt-0.5 text-xs font-bold leading-snug text-foreground sm:text-sm">
                                         {{ currentSection.title }}
                                     </h3>
                                 </div>
@@ -752,7 +734,7 @@ onUnmounted(() => {
                                 variant="ghost"
                                 size="sm"
                                 @click="close"
-                                class="h-6 px-2 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/80 shrink-0 gap-1 rounded-md ml-1"
+                                class="ml-1 h-6 shrink-0 gap-1 rounded-md px-2 text-[11px] font-semibold text-muted-foreground hover:bg-muted/80 hover:text-foreground"
                                 title="Exit Tour (Esc)"
                             >
                                 <span>Exit</span>
@@ -761,14 +743,14 @@ onUnmounted(() => {
                         </div>
 
                         <!-- Card Body (Scrollable if needed) -->
-                        <div class="p-3.5 sm:p-4 space-y-3 overflow-y-auto max-h-[calc(100vh-280px)] text-xs">
+                        <div class="max-h-[calc(100vh-280px)] space-y-3 overflow-y-auto p-3.5 text-xs sm:p-4">
                             <!-- 1. What is this section used for -->
                             <div class="space-y-1">
                                 <div class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-primary">
                                     <Info class="size-3.5" />
                                     <span>Purpose & Function:</span>
                                 </div>
-                                <p class="text-xs text-foreground/90 font-normal leading-relaxed">
+                                <p class="text-xs font-normal leading-relaxed text-foreground/90">
                                     {{ currentSection.usedFor }}
                                 </p>
 
@@ -777,21 +759,23 @@ onUnmounted(() => {
                                     <span
                                         v-for="cap in currentSection.capabilities"
                                         :key="cap"
-                                        class="inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-md font-medium bg-muted/80 border border-border/80 text-foreground shadow-2xs"
+                                        class="shadow-2xs inline-flex items-center gap-1.5 rounded-md border border-border/80 bg-muted/80 px-2 py-0.5 text-[10px] font-medium text-foreground"
                                     >
-                                        <span class="size-1.5 rounded-full bg-primary/80 shrink-0"></span>
+                                        <span class="size-1.5 shrink-0 rounded-full bg-primary/80"></span>
                                         <span>{{ cap }}</span>
                                     </span>
                                 </div>
                             </div>
 
                             <!-- 2. Step-by-step guidance on how to use it -->
-                            <div class="p-3 rounded-lg bg-muted/30 border border-border/80 space-y-2">
+                            <div class="space-y-2 rounded-lg border border-border/80 bg-muted/30 p-3">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-[11px] font-bold uppercase tracking-wider text-foreground flex items-center gap-1">
+                                    <span class="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-foreground">
                                         <span>How to use on reports:</span>
                                     </span>
-                                    <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border/50">
+                                    <span
+                                        class="rounded border border-border/50 bg-muted/60 px-1.5 py-0.5 font-mono text-[10px] font-bold text-muted-foreground"
+                                    >
                                         {{ currentSection.howToUse.length }} steps
                                     </span>
                                 </div>
@@ -801,10 +785,12 @@ onUnmounted(() => {
                                         :key="idx"
                                         class="flex items-start gap-2.5 text-xs text-foreground"
                                     >
-                                        <div class="size-4.5 rounded-full bg-primary text-primary-foreground font-mono font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                                        <div
+                                            class="size-4.5 shadow-2xs mt-0.5 flex shrink-0 items-center justify-center rounded-full bg-primary font-mono text-[10px] font-bold text-primary-foreground"
+                                        >
                                             {{ idx + 1 }}
                                         </div>
-                                        <span class="leading-relaxed font-normal text-foreground/95 flex-1 text-xs break-words">
+                                        <span class="flex-1 break-words text-xs font-normal leading-relaxed text-foreground/95">
                                             {{ step }}
                                         </span>
                                     </div>
@@ -812,14 +798,17 @@ onUnmounted(() => {
                             </div>
 
                             <!-- Keyboard Hotkeys Strip with styled key badges -->
-                            <div v-if="currentSection.shortcuts" class="px-3 py-2 rounded-lg bg-muted/40 border border-border/80 flex flex-wrap items-center justify-between gap-1.5 text-xs">
-                                <span class="font-bold text-muted-foreground flex items-center gap-1.5 text-[11px] shrink-0">
+                            <div
+                                v-if="currentSection.shortcuts"
+                                class="flex flex-wrap items-center justify-between gap-1.5 rounded-lg border border-border/80 bg-muted/40 px-3 py-2 text-xs"
+                            >
+                                <span class="flex shrink-0 items-center gap-1.5 text-[11px] font-bold text-muted-foreground">
                                     <Keyboard class="size-3.5 text-primary" />
                                     <span>Hotkeys:</span>
                                 </span>
                                 <div class="flex flex-wrap items-center gap-1.5 font-mono text-[10px]">
                                     <template v-for="(item, sIdx) in currentSection.shortcuts.split(' • ')" :key="sIdx">
-                                        <kbd class="px-1.5 py-0.5 rounded bg-background border border-border text-foreground font-bold shadow-2xs">
+                                        <kbd class="shadow-2xs rounded border border-border bg-background px-1.5 py-0.5 font-bold text-foreground">
                                             {{ item }}
                                         </kbd>
                                     </template>
@@ -827,12 +816,16 @@ onUnmounted(() => {
                             </div>
 
                             <!-- 3. Store Manager Pro Tip -->
-                            <div class="p-2.5 sm:p-3 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-950 dark:text-amber-100 space-y-1">
-                                <span class="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-300 text-[10px] uppercase tracking-wide">
-                                    <Zap class="size-3.5 text-amber-600 dark:text-amber-400 fill-amber-500/30 shrink-0" />
+                            <div
+                                class="space-y-1 rounded-lg border border-amber-500/25 bg-amber-500/10 p-2.5 text-amber-950 dark:text-amber-100 sm:p-3"
+                            >
+                                <span
+                                    class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-amber-900 dark:text-amber-300"
+                                >
+                                    <Zap class="size-3.5 shrink-0 fill-amber-500/30 text-amber-600 dark:text-amber-400" />
                                     <span>Store Manager Tip</span>
                                 </span>
-                                <p class="text-[11px] leading-relaxed font-medium">
+                                <p class="text-[11px] font-medium leading-relaxed">
                                     {{ currentSection.proTip }}
                                 </p>
                             </div>
@@ -842,7 +835,7 @@ onUnmounted(() => {
                                 <button
                                     type="button"
                                     @click="handleAction"
-                                    class="w-full py-2 px-3 rounded-lg bg-primary/15 hover:bg-primary/25 text-primary text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer border border-primary/30 shadow-2xs active:scale-[0.99]"
+                                    class="shadow-2xs flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/15 px-3 py-2 text-xs font-bold text-primary transition-colors hover:bg-primary/25 active:scale-[0.99]"
                                 >
                                     <span>{{ currentSection.actionLabel }}</span>
                                     <ArrowRight class="size-3.5 shrink-0" />
@@ -851,13 +844,13 @@ onUnmounted(() => {
                         </div>
 
                         <!-- EnjoyHint Navigation Footer -->
-                        <div class="px-3.5 py-2.5 bg-muted/70 border-t border-border flex items-center justify-between shrink-0">
+                        <div class="flex shrink-0 items-center justify-between border-t border-border bg-muted/70 px-3.5 py-2.5">
                             <!-- Previous Button -->
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                class="h-7 text-xs px-2.5 gap-1 text-muted-foreground hover:text-foreground font-semibold"
+                                class="h-7 gap-1 px-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground"
                                 :disabled="internalStep === 0"
                                 @click="prevStep"
                             >
@@ -872,8 +865,8 @@ onUnmounted(() => {
                                     :key="idx"
                                     type="button"
                                     @click="goToStep(idx)"
-                                    class="size-2 rounded-full transition-all cursor-pointer"
-                                    :class="idx === internalStep ? 'bg-primary w-4' : 'bg-muted-foreground/30 hover:bg-muted-foreground/60'"
+                                    class="size-2 cursor-pointer rounded-full transition-all"
+                                    :class="idx === internalStep ? 'w-4 bg-primary' : 'bg-muted-foreground/30 hover:bg-muted-foreground/60'"
                                     :title="idx === 0 ? 'Start: Page Guide' : `Part ${idx}`"
                                 ></button>
                             </div>
@@ -882,10 +875,12 @@ onUnmounted(() => {
                             <Button
                                 type="button"
                                 size="sm"
-                                class="h-7 text-xs px-3 gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-xs cursor-pointer"
+                                class="shadow-xs h-7 cursor-pointer gap-1.5 bg-primary px-3 text-xs font-bold text-primary-foreground hover:bg-primary/90"
                                 @click="nextStep"
                             >
-                                <span>{{ currentSection.id === 'start' ? 'Start Tour' : internalStep === sections.length - 1 ? 'Done' : 'Next' }}</span>
+                                <span>{{
+                                    currentSection.id === 'start' ? 'Start Tour' : internalStep === sections.length - 1 ? 'Done' : 'Next'
+                                }}</span>
                                 <ArrowRight v-if="internalStep < sections.length - 1" class="size-3" />
                                 <Check v-else class="size-3" />
                             </Button>

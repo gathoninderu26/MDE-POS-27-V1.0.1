@@ -18,7 +18,7 @@ class SupplierController extends Controller
         $suppliers = Supplier::where('tenant_id', $tenantId)
             ->latest()
             ->get()
-            ->map(fn($s) => [
+            ->map(fn ($s) => [
                 'id' => $s->id,
                 'name' => $s->name,
                 'contactPerson' => $s->contact_person ?? 'N/A',

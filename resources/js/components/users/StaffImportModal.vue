@@ -2,35 +2,23 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/composables/useToast';
 import { router } from '@inertiajs/vue3';
 import JSZip from 'jszip';
 import {
-    AlertCircle,
-    ArrowRight,
-    Check,
     CheckCircle2,
-    Crown,
     Download,
     FileSpreadsheet,
     FileText,
     FileType2,
-    Filter,
-    HelpCircle,
     Layers,
     Loader2,
-    Plus,
     RefreshCw,
-    Shield,
-    ShieldCheck,
     Sparkles,
     Trash2,
     Upload,
-    UserCheck,
     Users,
-    X,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import * as XLSX from 'xlsx';
@@ -98,17 +86,7 @@ const SYSTEM_FIELDS: StaffField[] = [
         key: 'email',
         label: 'Email Address',
         required: true,
-        synonyms: [
-            'email',
-            'mail',
-            'email_address',
-            'e-mail',
-            'contact_email',
-            'work_email',
-            'emailaddress',
-            'user_email',
-            'login_email',
-        ],
+        synonyms: ['email', 'mail', 'email_address', 'e-mail', 'contact_email', 'work_email', 'emailaddress', 'user_email', 'login_email'],
     },
     {
         key: 'role',
@@ -153,33 +131,13 @@ const SYSTEM_FIELDS: StaffField[] = [
         key: 'branch',
         label: 'Assigned Branch',
         required: false,
-        synonyms: [
-            'branch',
-            'store',
-            'location',
-            'outlet',
-            'shop',
-            'station',
-            'branch_name',
-            'store_location',
-            'site',
-            'facility',
-            'branchname',
-        ],
+        synonyms: ['branch', 'store', 'location', 'outlet', 'shop', 'station', 'branch_name', 'store_location', 'site', 'facility', 'branchname'],
     },
     {
         key: 'status',
         label: 'Account Status',
         required: false,
-        synonyms: [
-            'status',
-            'state',
-            'active',
-            'employment_status',
-            'account_status',
-            'condition',
-            'status_name',
-        ],
+        synonyms: ['status', 'state', 'active', 'employment_status', 'account_status', 'condition', 'status_name'],
     },
 ];
 
@@ -319,9 +277,7 @@ const arrangedStaff = computed<ArrangedStaffPreview[]>(() => {
 
         const role = normalizeRole(rawRole);
         const branch = rawBranch || (props.branches && props.branches[0]?.name) || 'Main Branch';
-        const status = rawStatus.toLowerCase().includes('inact') || rawStatus.toLowerCase().includes('susp')
-            ? 'Suspended'
-            : 'Active';
+        const status = rawStatus.toLowerCase().includes('inact') || rawStatus.toLowerCase().includes('susp') ? 'Suspended' : 'Active';
 
         const hasValidEmail = isValidEmail(email);
         const hasValidName = rawName.length > 0;
@@ -347,9 +303,7 @@ const arrangedStaff = computed<ArrangedStaffPreview[]>(() => {
 
 // Summary Metrics
 const validStaffCount = computed(() => arrangedStaff.value.filter((s) => s.isValid).length);
-const selectedValidCount = computed(() =>
-    arrangedStaff.value.filter((s) => s.isValid && selectedRowIndexes.value.includes(s.index)).length,
-);
+const selectedValidCount = computed(() => arrangedStaff.value.filter((s) => s.isValid && selectedRowIndexes.value.includes(s.index)).length);
 const uniqueRolesCount = computed(() => {
     const set = new Set(arrangedStaff.value.map((s) => s.role).filter(Boolean));
     return set.size;
@@ -379,9 +333,7 @@ const extractPdfText = async (file: File): Promise<string[]> => {
         // Look for literal text in parentheses (text) Tj or TJ
         const textMatches = streamData.match(/\((.*?)\)\s*(?:Tj|TJ|'|")/g);
         if (textMatches) {
-            const chunk = textMatches
-                .map((m) => m.replace(/^\(|\)\s*(?:Tj|TJ|'|")$/g, ''))
-                .join(' ');
+            const chunk = textMatches.map((m) => m.replace(/^\(|\)\s*(?:Tj|TJ|'|")$/g, '')).join(' ');
             combinedText += chunk + '\n';
         }
     }
@@ -398,7 +350,9 @@ const extractPdfText = async (file: File): Promise<string[]> => {
         return combinedText.split(/\r?\n/).filter((l) => l.trim().length > 0);
     }
 
-    throw new Error('Could not extract text lines from PDF. If the PDF contains scanned images, please copy-paste the text table using the Paste Table Text tab.');
+    throw new Error(
+        'Could not extract text lines from PDF. If the PDF contains scanned images, please copy-paste the text table using the Paste Table Text tab.',
+    );
 };
 
 // File processing handlers
@@ -591,9 +545,7 @@ const toggleSelectRow = (index: number) => {
 
 const removeRow = (index: number) => {
     rawRows.value.splice(index, 1);
-    selectedRowIndexes.value = selectedRowIndexes.value
-        .filter((i) => i !== index)
-        .map((i) => (i > index ? i - 1 : i));
+    selectedRowIndexes.value = selectedRowIndexes.value.filter((i) => i !== index).map((i) => (i > index ? i - 1 : i));
 };
 
 const resetImportState = () => {
@@ -654,7 +606,7 @@ const executeImport = () => {
                 resetImportState();
             },
             onError: (errs) => {
-                error('Import Failed', Object.values(errs)[0] as string || 'An error occurred during import.');
+                error('Import Failed', (Object.values(errs)[0] as string) || 'An error occurred during import.');
             },
             onFinish: () => {
                 isSubmitting.value = false;
@@ -676,22 +628,24 @@ watch(
 
 <template>
     <Dialog :open="open" @update:open="(val) => emit('update:open', val)">
-        <DialogContent class="w-[94vw] max-w-3xl max-h-[85vh] flex flex-col p-0 overflow-hidden border-border/90 shadow-2xl">
+        <DialogContent class="flex max-h-[85vh] w-[94vw] max-w-3xl flex-col overflow-hidden border-border/90 p-0 shadow-2xl">
             <!-- Modal Header -->
-            <DialogHeader class="p-3.5 sm:p-4 border-b border-border/80 bg-muted/20 shrink-0">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <DialogHeader class="shrink-0 border-b border-border/80 bg-muted/20 p-3.5 sm:p-4">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20 shadow-xs">
+                        <div
+                            class="shadow-xs flex size-9 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary"
+                        >
                             <Users class="size-4.5" />
                         </div>
                         <div>
-                            <DialogTitle class="text-sm sm:text-base font-bold text-foreground flex items-center gap-2">
+                            <DialogTitle class="flex items-center gap-2 text-sm font-bold text-foreground sm:text-base">
                                 <span>Import Staff Directory</span>
-                                <Badge variant="outline" class="text-[10px] font-mono border-primary/30 text-primary">
+                                <Badge variant="outline" class="border-primary/30 font-mono text-[10px] text-primary">
                                     Excel · Word · PDF · CSV
                                 </Badge>
                             </DialogTitle>
-                            <p class="text-xs text-muted-foreground mt-0.5">
+                            <p class="mt-0.5 text-xs text-muted-foreground">
                                 Upload a spreadsheet or document, or paste table text. The system auto-arranges staff into roles & credentials.
                             </p>
                         </div>
@@ -702,7 +656,7 @@ watch(
                         type="button"
                         size="sm"
                         variant="outline"
-                        class="h-7 text-xs gap-1.5 border-border shadow-xs self-start sm:self-auto"
+                        class="shadow-xs h-7 gap-1.5 self-start border-border text-xs sm:self-auto"
                         @click="downloadStaffTemplate"
                     >
                         <Download class="size-3 text-muted-foreground" />
@@ -711,13 +665,13 @@ watch(
                 </div>
 
                 <!-- Input Method Switcher Tabs -->
-                <div class="flex items-center gap-2 mt-2.5 pt-2 border-t border-border/60">
+                <div class="mt-2.5 flex items-center gap-2 border-t border-border/60 pt-2">
                     <button
                         type="button"
                         :class="[
-                            'px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all',
+                            'flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all',
                             importMethod === 'file'
-                                ? 'bg-primary text-primary-foreground shadow-xs'
+                                ? 'shadow-xs bg-primary text-primary-foreground'
                                 : 'bg-muted/50 text-muted-foreground hover:text-foreground',
                         ]"
                         @click="importMethod = 'file'"
@@ -729,9 +683,9 @@ watch(
                     <button
                         type="button"
                         :class="[
-                            'px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all',
+                            'flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all',
                             importMethod === 'paste'
-                                ? 'bg-primary text-primary-foreground shadow-xs'
+                                ? 'shadow-xs bg-primary text-primary-foreground'
                                 : 'bg-muted/50 text-muted-foreground hover:text-foreground',
                         ]"
                         @click="importMethod = 'paste'"
@@ -743,16 +697,16 @@ watch(
             </DialogHeader>
 
             <!-- Modal Body (Scrollable) -->
-            <div class="flex-1 overflow-y-auto p-3.5 sm:p-4 space-y-4">
+            <div class="flex-1 space-y-4 overflow-y-auto p-3.5 sm:p-4">
                 <!-- 1. Upload or Paste Area (Visible when no rows parsed yet) -->
                 <div v-if="rawRows.length === 0" class="space-y-4">
                     <!-- File Drag & Drop -->
                     <div v-if="importMethod === 'file'">
                         <div
                             :class="[
-                                'border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer relative bg-card',
+                                'relative cursor-pointer rounded-2xl border-2 border-dashed bg-card p-8 text-center transition-all',
                                 isDragging
-                                    ? 'border-primary bg-primary/5 scale-[0.99]'
+                                    ? 'scale-[0.99] border-primary bg-primary/5'
                                     : 'border-border/90 hover:border-primary/50 hover:bg-muted/20',
                             ]"
                             @dragover.prevent="isDragging = true"
@@ -768,28 +722,31 @@ watch(
                                 @change="handleFileSelect"
                             />
 
-                            <div class="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3 border border-primary/20 shadow-xs">
+                            <div
+                                class="shadow-xs mx-auto mb-3 flex size-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary"
+                            >
                                 <Upload class="size-6" />
                             </div>
 
                             <p class="text-sm font-bold text-foreground">
                                 Drag & drop your staff roster file here, or <span class="text-primary underline">browse</span>
                             </p>
-                            <p class="text-xs text-muted-foreground mt-1">
-                                Supported formats: <strong>Excel (.xlsx, .xls)</strong>, <strong>Word (.docx tables)</strong>, <strong>PDF (.pdf)</strong>, <strong>CSV</strong>, <strong>TXT</strong>
+                            <p class="mt-1 text-xs text-muted-foreground">
+                                Supported formats: <strong>Excel (.xlsx, .xls)</strong>, <strong>Word (.docx tables)</strong>,
+                                <strong>PDF (.pdf)</strong>, <strong>CSV</strong>, <strong>TXT</strong>
                             </p>
 
-                            <div class="flex items-center justify-center gap-2 mt-4 flex-wrap">
-                                <Badge variant="outline" class="text-[10px] gap-1 bg-background">
+                            <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+                                <Badge variant="outline" class="gap-1 bg-background text-[10px]">
                                     <FileSpreadsheet class="size-3 text-emerald-500" /> Excel Spreadsheet
                                 </Badge>
-                                <Badge variant="outline" class="text-[10px] gap-1 bg-background">
+                                <Badge variant="outline" class="gap-1 bg-background text-[10px]">
                                     <FileText class="size-3 text-blue-500" /> Word Document (.docx)
                                 </Badge>
-                                <Badge variant="outline" class="text-[10px] gap-1 bg-background">
+                                <Badge variant="outline" class="gap-1 bg-background text-[10px]">
                                     <FileType2 class="size-3 text-rose-500" /> PDF Document (.pdf)
                                 </Badge>
-                                <Badge variant="outline" class="text-[10px] gap-1 bg-background">
+                                <Badge variant="outline" class="gap-1 bg-background text-[10px]">
                                     <FileText class="size-3 text-amber-500" /> CSV / TSV Text
                                 </Badge>
                             </div>
@@ -809,13 +766,13 @@ watch(
 Grace Wanjiku	grace@metropos.local	Cashier	+254712345678	Westlands Mega Store
 David Mwangi	david@metropos.local	Manager	+254722987654	Westlands Mega Store
 Kevin Otieno	kevin@metropos.local	Inventory Manager	+254733112233	Westlands Mega Store"
-                                class="w-full font-mono text-xs p-3 rounded-xl border border-input bg-background resize-y focus:ring-1 focus:ring-primary focus:outline-none"
+                                class="w-full resize-y rounded-xl border border-input bg-background p-3 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                             ></textarea>
                         </div>
                         <Button
                             type="button"
                             size="sm"
-                            class="text-xs gap-1.5 bg-primary"
+                            class="gap-1.5 bg-primary text-xs"
                             :disabled="!pastedText.trim() || isProcessing"
                             @click="handleParsePasted"
                         >
@@ -825,13 +782,15 @@ Kevin Otieno	kevin@metropos.local	Inventory Manager	+254733112233	Westlands Mega
                     </div>
 
                     <!-- Format Guidelines Box -->
-                    <div class="p-3.5 rounded-xl border border-border/80 bg-muted/20 text-xs space-y-1.5 text-muted-foreground">
-                        <div class="font-bold text-foreground flex items-center gap-1.5">
+                    <div class="space-y-1.5 rounded-xl border border-border/80 bg-muted/20 p-3.5 text-xs text-muted-foreground">
+                        <div class="flex items-center gap-1.5 font-bold text-foreground">
                             <Sparkles class="size-3.5 text-primary" />
                             How the Auto-Arranger Engine Works
                         </div>
                         <p class="leading-relaxed">
-                            You don't need to rename your columns! The system automatically scans header synonyms (e.g. <em>Staff, Employee, Full Name</em> &rarr; <strong>Name</strong>; <em>Mail, E-mail</em> &rarr; <strong>Email</strong>; <em>Position, Title, Designation</em> &rarr; <strong>Role</strong>).
+                            You don't need to rename your columns! The system automatically scans header synonyms (e.g.
+                            <em>Staff, Employee, Full Name</em> &rarr; <strong>Name</strong>; <em>Mail, E-mail</em> &rarr; <strong>Email</strong>;
+                            <em>Position, Title, Designation</em> &rarr; <strong>Role</strong>).
                         </p>
                     </div>
                 </div>
@@ -839,12 +798,14 @@ Kevin Otieno	kevin@metropos.local	Inventory Manager	+254733112233	Westlands Mega
                 <!-- 2. Parsed & Arranged Preview Section (Visible once document is parsed) -->
                 <div v-else class="space-y-4">
                     <!-- File Metadata Bar -->
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-muted/30 rounded-xl border border-border/80 text-xs">
+                    <div
+                        class="flex flex-col gap-3 rounded-xl border border-border/80 bg-muted/30 p-3 text-xs sm:flex-row sm:items-center sm:justify-between"
+                    >
                         <div class="flex items-center gap-2">
-                            <Badge variant="outline" class="font-mono text-[10px] bg-background">
+                            <Badge variant="outline" class="bg-background font-mono text-[10px]">
                                 {{ uploadedFileType }}
                             </Badge>
-                            <span class="font-bold text-foreground truncate max-w-xs">{{ uploadedFileName }}</span>
+                            <span class="max-w-xs truncate font-bold text-foreground">{{ uploadedFileName }}</span>
                             <span class="text-muted-foreground">({{ uploadedFileSize }})</span>
                             <span class="text-muted-foreground">•</span>
                             <span class="font-semibold text-foreground">{{ rawRows.length }} rows extracted</span>
@@ -854,7 +815,7 @@ Kevin Otieno	kevin@metropos.local	Inventory Manager	+254733112233	Westlands Mega
                             type="button"
                             size="sm"
                             variant="ghost"
-                            class="h-7 text-xs gap-1 text-muted-foreground hover:text-foreground self-start sm:self-auto"
+                            class="h-7 gap-1 self-start text-xs text-muted-foreground hover:text-foreground sm:self-auto"
                             @click="resetImportState"
                         >
                             <RefreshCw class="size-3" />
@@ -863,60 +824,48 @@ Kevin Otieno	kevin@metropos.local	Inventory Manager	+254733112233	Westlands Mega
                     </div>
 
                     <!-- Summary Telemetry Cards -->
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
-                        <div class="p-3 bg-card rounded-xl border border-border/80">
-                            <span class="text-muted-foreground text-[11px]">Total Staff Extracted</span>
-                            <p class="text-base font-bold font-mono text-foreground mt-0.5">
-                                {{ arrangedStaff.length }} Members
-                            </p>
+                    <div class="grid grid-cols-2 gap-2.5 text-xs sm:grid-cols-4">
+                        <div class="rounded-xl border border-border/80 bg-card p-3">
+                            <span class="text-[11px] text-muted-foreground">Total Staff Extracted</span>
+                            <p class="mt-0.5 font-mono text-base font-bold text-foreground">{{ arrangedStaff.length }} Members</p>
                         </div>
-                        <div class="p-3 bg-card rounded-xl border border-border/80">
-                            <span class="text-muted-foreground text-[11px]">Valid & Ready</span>
-                            <p class="text-base font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">
-                                {{ validStaffCount }} Ready
-                            </p>
+                        <div class="rounded-xl border border-border/80 bg-card p-3">
+                            <span class="text-[11px] text-muted-foreground">Valid & Ready</span>
+                            <p class="mt-0.5 font-mono text-base font-bold text-emerald-600 dark:text-emerald-400">{{ validStaffCount }} Ready</p>
                         </div>
-                        <div class="p-3 bg-card rounded-xl border border-border/80">
-                            <span class="text-muted-foreground text-[11px]">Roles Detected</span>
-                            <p class="text-base font-bold font-mono text-primary mt-0.5">
-                                {{ uniqueRolesCount }} Roles
-                            </p>
+                        <div class="rounded-xl border border-border/80 bg-card p-3">
+                            <span class="text-[11px] text-muted-foreground">Roles Detected</span>
+                            <p class="mt-0.5 font-mono text-base font-bold text-primary">{{ uniqueRolesCount }} Roles</p>
                         </div>
-                        <div class="p-3 bg-card rounded-xl border border-border/80">
-                            <span class="text-muted-foreground text-[11px]">Branches Assigned</span>
-                            <p class="text-base font-bold font-mono text-foreground mt-0.5">
-                                {{ uniqueBranchesCount }} Stores
-                            </p>
+                        <div class="rounded-xl border border-border/80 bg-card p-3">
+                            <span class="text-[11px] text-muted-foreground">Branches Assigned</span>
+                            <p class="mt-0.5 font-mono text-base font-bold text-foreground">{{ uniqueBranchesCount }} Stores</p>
                         </div>
                     </div>
 
                     <!-- Column Mapping Adjuster Accordion -->
-                    <details class="group border border-border/80 rounded-xl bg-card overflow-hidden">
-                        <summary class="p-3 text-xs font-bold text-foreground cursor-pointer flex items-center justify-between hover:bg-muted/20 transition-colors list-none">
+                    <details class="group overflow-hidden rounded-xl border border-border/80 bg-card">
+                        <summary
+                            class="flex cursor-pointer list-none items-center justify-between p-3 text-xs font-bold text-foreground transition-colors hover:bg-muted/20"
+                        >
                             <span class="flex items-center gap-1.5">
                                 <Layers class="size-3.5 text-primary" />
                                 Inspect / Adjust Auto-Detected Column Mappings
                             </span>
-                            <span class="text-[11px] text-muted-foreground font-normal group-open:rotate-180 transition-transform">
-                                ▼
-                            </span>
+                            <span class="text-[11px] font-normal text-muted-foreground transition-transform group-open:rotate-180"> ▼ </span>
                         </summary>
-                        <div class="p-3 pt-1 border-t border-border/70 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs">
+                        <div class="grid grid-cols-2 gap-2 border-t border-border/70 p-3 pt-1 text-xs sm:grid-cols-3 md:grid-cols-6">
                             <div v-for="field in SYSTEM_FIELDS" :key="field.key" class="space-y-1">
-                                <label class="text-[10px] font-bold text-muted-foreground flex items-center gap-0.5">
+                                <label class="flex items-center gap-0.5 text-[10px] font-bold text-muted-foreground">
                                     <span>{{ field.label }}</span>
                                     <span v-if="field.required" class="text-rose-500">*</span>
                                 </label>
                                 <select
                                     v-model="columnMapping[field.key]"
-                                    class="w-full text-xs p-1.5 rounded-lg border border-input bg-background font-mono"
+                                    class="w-full rounded-lg border border-input bg-background p-1.5 font-mono text-xs"
                                 >
                                     <option :value="-1">— Skip / Default —</option>
-                                    <option
-                                        v-for="(h, idx) in rawHeaders"
-                                        :key="idx"
-                                        :value="idx"
-                                    >
+                                    <option v-for="(h, idx) in rawHeaders" :key="idx" :value="idx">
                                         {{ h || `Column ${idx + 1}` }}
                                     </option>
                                 </select>
@@ -925,14 +874,10 @@ Kevin Otieno	kevin@metropos.local	Inventory Manager	+254733112233	Westlands Mega
                     </details>
 
                     <!-- Auto-Arranged Staff Preview Table -->
-                    <div class="border border-border/80 rounded-xl overflow-hidden bg-card">
-                        <div class="p-2.5 bg-muted/30 border-b border-border/80 flex items-center justify-between text-xs">
+                    <div class="overflow-hidden rounded-xl border border-border/80 bg-card">
+                        <div class="flex items-center justify-between border-b border-border/80 bg-muted/30 p-2.5 text-xs">
                             <div class="flex items-center gap-2">
-                                <button
-                                    type="button"
-                                    class="text-xs font-bold text-primary hover:underline"
-                                    @click="toggleSelectAll"
-                                >
+                                <button type="button" class="text-xs font-bold text-primary hover:underline" @click="toggleSelectAll">
                                     {{ selectedRowIndexes.length === arrangedStaff.length ? 'Deselect All' : 'Select All' }}
                                 </button>
                                 <span class="text-muted-foreground">·</span>
@@ -942,19 +887,20 @@ Kevin Otieno	kevin@metropos.local	Inventory Manager	+254733112233	Westlands Mega
                             </div>
 
                             <span class="text-[11px] text-muted-foreground">
-                                Default temporary password: <code class="bg-muted px-1.5 py-0.5 rounded font-mono text-foreground font-bold">Password@2026!</code>
+                                Default temporary password:
+                                <code class="rounded bg-muted px-1.5 py-0.5 font-mono font-bold text-foreground">Password@2026!</code>
                             </span>
                         </div>
 
-                        <div class="overflow-x-auto max-h-[380px]">
+                        <div class="max-h-[380px] overflow-x-auto">
                             <table class="w-full text-left text-xs">
-                                <thead class="bg-muted/40 text-muted-foreground border-b border-border/80 sticky top-0 z-10 backdrop-blur-xs">
+                                <thead class="backdrop-blur-xs sticky top-0 z-10 border-b border-border/80 bg-muted/40 text-muted-foreground">
                                     <tr>
-                                        <th class="px-3 py-2 w-8 text-center">
+                                        <th class="w-8 px-3 py-2 text-center">
                                             <input
                                                 type="checkbox"
                                                 :checked="selectedRowIndexes.length > 0 && selectedRowIndexes.length === arrangedStaff.length"
-                                                class="rounded border-input text-primary focus:ring-primary size-3.5"
+                                                class="size-3.5 rounded border-input text-primary focus:ring-primary"
                                                 @change="toggleSelectAll"
                                             />
                                         </th>
@@ -963,8 +909,8 @@ Kevin Otieno	kevin@metropos.local	Inventory Manager	+254733112233	Westlands Mega
                                         <th class="px-3 py-2 font-semibold uppercase">Role</th>
                                         <th class="px-3 py-2 font-semibold uppercase">Phone Number</th>
                                         <th class="px-3 py-2 font-semibold uppercase">Branch</th>
-                                        <th class="px-3 py-2 font-semibold uppercase text-center">Status</th>
-                                        <th class="px-3 py-2 font-semibold uppercase text-right">Actions</th>
+                                        <th class="px-3 py-2 text-center font-semibold uppercase">Status</th>
+                                        <th class="px-3 py-2 text-right font-semibold uppercase">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-border/60 font-sans">
@@ -972,7 +918,7 @@ Kevin Otieno	kevin@metropos.local	Inventory Manager	+254733112233	Westlands Mega
                                         v-for="staff in arrangedStaff"
                                         :key="staff.index"
                                         :class="[
-                                            'hover:bg-muted/20 transition-colors',
+                                            'transition-colors hover:bg-muted/20',
                                             !staff.isValid ? 'bg-rose-500/5' : '',
                                             selectedRowIndexes.includes(staff.index) ? 'bg-primary/5' : '',
                                         ]"
@@ -982,18 +928,14 @@ Kevin Otieno	kevin@metropos.local	Inventory Manager	+254733112233	Westlands Mega
                                                 type="checkbox"
                                                 :checked="selectedRowIndexes.includes(staff.index)"
                                                 :disabled="!staff.isValid"
-                                                class="rounded border-input text-primary focus:ring-primary size-3.5"
+                                                class="size-3.5 rounded border-input text-primary focus:ring-primary"
                                                 @change="toggleSelectRow(staff.index)"
                                             />
                                         </td>
                                         <td class="px-3 py-2">
                                             <div class="flex items-center gap-2">
                                                 <span class="font-bold text-foreground">{{ staff.name }}</span>
-                                                <Badge
-                                                    v-if="!staff.isValid"
-                                                    variant="destructive"
-                                                    class="text-[9px] px-1 py-0"
-                                                >
+                                                <Badge v-if="!staff.isValid" variant="destructive" class="px-1 py-0 text-[9px]">
                                                     {{ staff.validationMessage }}
                                                 </Badge>
                                             </div>
@@ -1004,15 +946,15 @@ Kevin Otieno	kevin@metropos.local	Inventory Manager	+254733112233	Westlands Mega
                                         <td class="px-3 py-2">
                                             <Badge
                                                 :variant="staff.role === 'Owner' ? 'default' : staff.role === 'Manager' ? 'info' : 'outline'"
-                                                class="font-bold text-[10px] font-mono"
+                                                class="font-mono text-[10px] font-bold"
                                             >
                                                 {{ staff.role }}
                                             </Badge>
                                         </td>
-                                        <td class="px-3 py-2 font-mono text-muted-foreground text-[11px]">
+                                        <td class="px-3 py-2 font-mono text-[11px] text-muted-foreground">
                                             {{ staff.phone }}
                                         </td>
-                                        <td class="px-3 py-2 text-muted-foreground text-[11px]">
+                                        <td class="px-3 py-2 text-[11px] text-muted-foreground">
                                             {{ staff.branch }}
                                         </td>
                                         <td class="px-3 py-2 text-center">
@@ -1041,33 +983,23 @@ Kevin Otieno	kevin@metropos.local	Inventory Manager	+254733112233	Westlands Mega
             </div>
 
             <!-- Modal Footer -->
-            <DialogFooter class="p-3 border-t border-border/80 bg-muted/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 shrink-0">
+            <DialogFooter
+                class="flex shrink-0 flex-col gap-2.5 border-t border-border/80 bg-muted/20 p-3 sm:flex-row sm:items-center sm:justify-between"
+            >
                 <div class="flex items-center gap-2 text-xs">
-                    <label class="flex items-center gap-2 cursor-pointer select-none">
-                        <input
-                            v-model="updateExisting"
-                            type="checkbox"
-                            class="rounded border-input text-primary focus:ring-primary size-3.5"
-                        />
-                        <span class="text-muted-foreground text-[11px]">Update existing staff if email already exists</span>
+                    <label class="flex cursor-pointer select-none items-center gap-2">
+                        <input v-model="updateExisting" type="checkbox" class="size-3.5 rounded border-input text-primary focus:ring-primary" />
+                        <span class="text-[11px] text-muted-foreground">Update existing staff if email already exists</span>
                     </label>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        class="h-8 text-xs"
-                        @click="emit('update:open', false)"
-                    >
-                        Cancel
-                    </Button>
+                    <Button type="button" variant="outline" size="sm" class="h-8 text-xs" @click="emit('update:open', false)"> Cancel </Button>
 
                     <Button
                         type="button"
                         size="sm"
-                        class="h-8 text-xs gap-1.5 bg-primary px-3.5 shadow-sm"
+                        class="h-8 gap-1.5 bg-primary px-3.5 text-xs shadow-sm"
                         :disabled="isSubmitting || selectedValidCount === 0"
                         @click="executeImport"
                     >

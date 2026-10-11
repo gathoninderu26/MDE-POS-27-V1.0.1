@@ -6,6 +6,7 @@ use App\Models\Branch;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
+use App\Services\CloudSyncService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +25,7 @@ class SaleController extends Controller
             ->with(['branch', 'user', 'items.product'])
             ->latest()
             ->get()
-            ->map(fn($s) => [
+            ->map(fn ($s) => [
                 'id' => $s->id,
                 'receipt_number' => $s->receipt_number,
                 'subtotal' => (float) $s->subtotal,
@@ -42,7 +43,7 @@ class SaleController extends Controller
                 'branch' => $s->branch?->name ?? 'Main Store',
                 'created_at' => $s->created_at->format('Y-m-d H:i'),
                 'items_count' => $s->items->count(),
-                'items' => $s->items->map(fn($item) => [
+                'items' => $s->items->map(fn ($item) => [
                     'id' => $item->id,
                     'product_name' => $item->product_name,
                     'quantity' => $item->quantity,
@@ -64,7 +65,7 @@ class SaleController extends Controller
         $products = Product::where('tenant_id', $tenantId)
             ->where('status', 'Active')
             ->get()
-            ->map(fn($p) => [
+            ->map(fn ($p) => [
                 'id' => $p->id,
                 'name' => $p->name,
                 'sku' => $p->sku,
@@ -121,7 +122,7 @@ class SaleController extends Controller
 
             $profit = max(0, (float) $validated['total'] - $totalCost);
             $dailyCount = Sale::where('tenant_id', $tenant->id)->whereDate('created_at', today())->count() + 1;
-            $receiptNumber = 'REC-' . date('ymd') . '-' . str_pad((string) $dailyCount, 4, '0', STR_PAD_LEFT) . '-' . strtoupper(Str::random(3));
+            $receiptNumber = 'REC-'.date('ymd').'-'.str_pad((string) $dailyCount, 4, '0', STR_PAD_LEFT).'-'.strtoupper(Str::random(3));
 
             $sale = Sale::create([
                 'tenant_id' => $tenant->id,
@@ -159,7 +160,7 @@ class SaleController extends Controller
                 ]);
 
                 // Decrement stock if product exists (scoped strictly to current tenant)
-                if (!empty($item['product_id'])) {
+                if (! empty($item['product_id'])) {
                     Product::where('tenant_id', $tenant->id)
                         ->where('id', $item['product_id'])
                         ->decrement('stock_quantity', $qty);
@@ -167,28 +168,28 @@ class SaleController extends Controller
             }
 
             // Enqueue store-and-forward cloud sync outbox record (MySQL -> Supabase)
-            app(\App\Services\CloudSyncService::class)->recordChange(
+            app(CloudSyncService::class)->recordChange(
                 $tenant->id,
                 'sale',
                 (string) $sale->id,
                 'create',
                 [
-                    'id'              => $sale->id,
-                    'tenant_id'       => $tenant->id,
-                    'branch_id'       => $sale->branch_id,
-                    'user_id'         => $sale->user_id,
-                    'receipt_number'  => $sale->receipt_number,
-                    'subtotal'        => (float) $sale->subtotal,
-                    'tax_amount'      => (float) $sale->tax_amount,
+                    'id' => $sale->id,
+                    'tenant_id' => $tenant->id,
+                    'branch_id' => $sale->branch_id,
+                    'user_id' => $sale->user_id,
+                    'receipt_number' => $sale->receipt_number,
+                    'subtotal' => (float) $sale->subtotal,
+                    'tax_amount' => (float) $sale->tax_amount,
                     'discount_amount' => (float) $sale->discount_amount,
-                    'total'           => (float) $sale->total,
-                    'profit'          => (float) $sale->profit,
-                    'payment_method'  => $sale->payment_method,
-                    'payment_status'  => $sale->payment_status,
-                    'mpesa_code'      => $sale->mpesa_code,
-                    'customer_name'   => $sale->customer_name,
-                    'items'           => $validated['items'],
-                    'created_at'      => $sale->created_at?->toIso8601String(),
+                    'total' => (float) $sale->total,
+                    'profit' => (float) $sale->profit,
+                    'payment_method' => $sale->payment_method,
+                    'payment_status' => $sale->payment_status,
+                    'mpesa_code' => $sale->mpesa_code,
+                    'customer_name' => $sale->customer_name,
+                    'items' => $validated['items'],
+                    'created_at' => $sale->created_at?->toIso8601String(),
                 ]
             );
         });

@@ -6,6 +6,8 @@ import DataTable from '@/components/ui/DataTable.vue';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import StaffImportModal from '@/components/users/StaffImportModal.vue';
+import UsersGuideOverlay from '@/components/users/UsersGuideOverlay.vue';
 import { useBranch } from '@/composables/useBranch';
 import { useFeatures } from '@/composables/useFeatures';
 import type { UserRole } from '@/composables/usePermissions';
@@ -15,8 +17,6 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import {
-    Activity,
-    AlertCircle,
     ArrowUpRight,
     Ban,
     Calendar,
@@ -28,14 +28,9 @@ import {
     Compass,
     CreditCard,
     Crown,
-    DollarSign,
-    Edit,
     Eye,
-    EyeOff,
-    Globe,
     History,
     Key,
-    Laptop,
     Layers,
     Lock,
     Monitor,
@@ -45,9 +40,7 @@ import {
     Receipt,
     Router,
     Send,
-    Shield,
     ShieldAlert,
-    ShieldBan,
     ShieldCheck,
     ShoppingBag,
     Signal,
@@ -55,19 +48,13 @@ import {
     Store,
     Tablet,
     TrendingUp,
-    Unlock,
     Upload,
     UserCheck,
     Users,
-    UserX,
     Wifi,
-    WifiOff,
     X,
     XCircle,
-    Zap,
 } from 'lucide-vue-next';
-import StaffImportModal from '@/components/users/StaffImportModal.vue';
-import UsersGuideOverlay from '@/components/users/UsersGuideOverlay.vue';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const props = defineProps<{
@@ -290,7 +277,6 @@ const demoUserDevices: UserDeviceSession[] = [
 // Connected & registered devices state: clean for real accounts, demo data only if isDemo
 const userDevices = ref<UserDeviceSession[]>(isDemo.value ? demoUserDevices : []);
 
-
 // Network & security restriction toggles
 const networkPolicies = ref({
     blockVpn: true,
@@ -302,10 +288,28 @@ const networkPolicies = ref({
 });
 
 // Whitelisted Store Wi-Fi SSIDs: clean for real accounts, demo data only if isDemo
-const whitelistedWifi = ref(isDemo.value ? [
-    { id: 'W-1', ssid: 'NairobiFresh-POS-5GHz', bssid: 'F4:8C:50:A1:3B:90', subnet: '192.168.10.0/24', branch: 'Westlands Mega Store', status: 'Active' },
-    { id: 'W-2', ssid: 'CBD-Terminal-Private', bssid: '78:45:C4:B2:1A:10', subnet: '192.168.20.0/24', branch: 'CBD City Square Branch', status: 'Active' },
-] : []);
+const whitelistedWifi = ref(
+    isDemo.value
+        ? [
+              {
+                  id: 'W-1',
+                  ssid: 'NairobiFresh-POS-5GHz',
+                  bssid: 'F4:8C:50:A1:3B:90',
+                  subnet: '192.168.10.0/24',
+                  branch: 'Westlands Mega Store',
+                  status: 'Active',
+              },
+              {
+                  id: 'W-2',
+                  ssid: 'CBD-Terminal-Private',
+                  bssid: '78:45:C4:B2:1A:10',
+                  subnet: '192.168.20.0/24',
+                  branch: 'CBD City Square Branch',
+                  status: 'Active',
+              },
+          ]
+        : [],
+);
 
 const newWifiModal = ref(false);
 const newWifiForm = ref({
@@ -355,8 +359,8 @@ const handleRevokeDevice = (device: UserDeviceSession) => {
 const deviceIconMap: Record<DeviceCategory, any> = {
     'POS Terminal': Smartphone,
     'Desktop PC': Monitor,
-    'Tablet': Tablet,
-    'Smartphone': Smartphone,
+    Tablet: Tablet,
+    Smartphone: Smartphone,
 };
 
 export interface StaffUserItem {
@@ -403,7 +407,7 @@ export interface StaffUserItem {
 // Staff List
 const usersList = computed<StaffUserItem[]>(() => {
     if (props.users && props.users.length > 0) {
-        return props.users.map(u => {
+        return props.users.map((u) => {
             const lastSession = u.sessions && u.sessions.length > 0 ? u.sessions[0].last_active : null;
             return {
                 id: u.id.toString(),
@@ -445,17 +449,68 @@ const usersList = computed<StaffUserItem[]>(() => {
                 sales_profit: 68400,
                 avg_ticket: 5387.93,
                 recent_sales: [
-                    { id: 101, receipt_number: 'REC-260908-T1-0182', total: 14500, profit: 3200, payment_method: 'M-Pesa Buy Goods Till', payment_status: 'Completed', customer_name: 'David Karanja', created_at: '08 Sep 2026, 17:42' },
-                    { id: 102, receipt_number: 'REC-260908-T1-0179', total: 4200, profit: 950, payment_method: 'Cash', payment_status: 'Completed', customer_name: 'Mercy Achieng', created_at: '08 Sep 2026, 16:15' },
-                    { id: 103, receipt_number: 'REC-260908-T1-0165', total: 8900, profit: 1850, payment_method: 'Visa / Mastercard', payment_status: 'Completed', customer_name: 'Apex Supplies Ltd', created_at: '08 Sep 2026, 14:05' },
+                    {
+                        id: 101,
+                        receipt_number: 'REC-260908-T1-0182',
+                        total: 14500,
+                        profit: 3200,
+                        payment_method: 'M-Pesa Buy Goods Till',
+                        payment_status: 'Completed',
+                        customer_name: 'David Karanja',
+                        created_at: '08 Sep 2026, 17:42',
+                    },
+                    {
+                        id: 102,
+                        receipt_number: 'REC-260908-T1-0179',
+                        total: 4200,
+                        profit: 950,
+                        payment_method: 'Cash',
+                        payment_status: 'Completed',
+                        customer_name: 'Mercy Achieng',
+                        created_at: '08 Sep 2026, 16:15',
+                    },
+                    {
+                        id: 103,
+                        receipt_number: 'REC-260908-T1-0165',
+                        total: 8900,
+                        profit: 1850,
+                        payment_method: 'Visa / Mastercard',
+                        payment_status: 'Completed',
+                        customer_name: 'Apex Supplies Ltd',
+                        created_at: '08 Sep 2026, 14:05',
+                    },
                 ],
                 clock_sessions: [
-                    { id: 1, branch_name: 'Westlands Mega Store', clocked_in_at: '08 Sep 2026, 06:30', clocked_out_at: null, duration: 'Active Shift', status: 'Active' },
-                    { id: 2, branch_name: 'Westlands Mega Store', clocked_in_at: '07 Sep 2026, 06:30', clocked_out_at: '07 Sep 2026, 15:00', duration: '8.5 hrs', status: 'Completed' },
+                    {
+                        id: 1,
+                        branch_name: 'Westlands Mega Store',
+                        clocked_in_at: '08 Sep 2026, 06:30',
+                        clocked_out_at: null,
+                        duration: 'Active Shift',
+                        status: 'Active',
+                    },
+                    {
+                        id: 2,
+                        branch_name: 'Westlands Mega Store',
+                        clocked_in_at: '07 Sep 2026, 06:30',
+                        clocked_out_at: '07 Sep 2026, 15:00',
+                        duration: '8.5 hrs',
+                        status: 'Completed',
+                    },
                 ],
                 sessions: [
-                    { id: 's1', ip_address: '192.168.10.2 (HQ Secure LAN)', user_agent: 'MacBook Pro M3 Max / Chrome 128', last_active: 'Active right now' },
-                    { id: 's2', ip_address: '105.161.44.12 (Safaricom Fiber)', user_agent: 'iPhone 15 Pro / Safari Mobile', last_active: '07 Sep 2026, 21:14' },
+                    {
+                        id: 's1',
+                        ip_address: '192.168.10.2 (HQ Secure LAN)',
+                        user_agent: 'MacBook Pro M3 Max / Chrome 128',
+                        last_active: 'Active right now',
+                    },
+                    {
+                        id: 's2',
+                        ip_address: '105.161.44.12 (Safaricom Fiber)',
+                        user_agent: 'iPhone 15 Pro / Safari Mobile',
+                        last_active: '07 Sep 2026, 21:14',
+                    },
                 ],
             },
             {
@@ -474,12 +529,44 @@ const usersList = computed<StaffUserItem[]>(() => {
                 sales_profit: 41200,
                 avg_ticket: 5482.35,
                 recent_sales: [
-                    { id: 104, receipt_number: 'REC-260908-T1-0175', total: 22800, profit: 5100, payment_method: 'M-Pesa Buy Goods Till', payment_status: 'Completed', customer_name: 'Kariuki Wholesalers', created_at: '08 Sep 2026, 15:30' },
-                    { id: 105, receipt_number: 'REC-260908-T1-0160', total: 7600, profit: 1650, payment_method: 'Cash', payment_status: 'Completed', customer_name: 'Walk-in Customer', created_at: '08 Sep 2026, 13:20' },
+                    {
+                        id: 104,
+                        receipt_number: 'REC-260908-T1-0175',
+                        total: 22800,
+                        profit: 5100,
+                        payment_method: 'M-Pesa Buy Goods Till',
+                        payment_status: 'Completed',
+                        customer_name: 'Kariuki Wholesalers',
+                        created_at: '08 Sep 2026, 15:30',
+                    },
+                    {
+                        id: 105,
+                        receipt_number: 'REC-260908-T1-0160',
+                        total: 7600,
+                        profit: 1650,
+                        payment_method: 'Cash',
+                        payment_status: 'Completed',
+                        customer_name: 'Walk-in Customer',
+                        created_at: '08 Sep 2026, 13:20',
+                    },
                 ],
                 clock_sessions: [
-                    { id: 3, branch_name: 'Westlands Mega Store', clocked_in_at: '08 Sep 2026, 06:30', clocked_out_at: null, duration: 'Active Shift', status: 'Active' },
-                    { id: 4, branch_name: 'Westlands Mega Store', clocked_in_at: '07 Sep 2026, 06:30', clocked_out_at: '07 Sep 2026, 14:30', duration: '8.0 hrs', status: 'Completed' },
+                    {
+                        id: 3,
+                        branch_name: 'Westlands Mega Store',
+                        clocked_in_at: '08 Sep 2026, 06:30',
+                        clocked_out_at: null,
+                        duration: 'Active Shift',
+                        status: 'Active',
+                    },
+                    {
+                        id: 4,
+                        branch_name: 'Westlands Mega Store',
+                        clocked_in_at: '07 Sep 2026, 06:30',
+                        clocked_out_at: '07 Sep 2026, 14:30',
+                        duration: '8.0 hrs',
+                        status: 'Completed',
+                    },
                 ],
                 sessions: [
                     { id: 's3', ip_address: '192.168.10.102 (Manager VLAN)', user_agent: 'Dell OptiPlex / Edge 128', last_active: '12 mins ago' },
@@ -501,15 +588,54 @@ const usersList = computed<StaffUserItem[]>(() => {
                 sales_profit: 97860,
                 avg_ticket: 3445.77,
                 recent_sales: [
-                    { id: 106, receipt_number: 'REC-260908-T1-0185', total: 3100, profit: 650, payment_method: 'Cash', payment_status: 'Completed', customer_name: 'Walk-in Customer', created_at: '08 Sep 2026, 18:10' },
-                    { id: 107, receipt_number: 'REC-260908-T1-0184', total: 6450, profit: 1380, payment_method: 'M-Pesa Buy Goods Till', payment_status: 'Completed', customer_name: 'Gladys Muthoni', created_at: '08 Sep 2026, 18:02' },
-                    { id: 108, receipt_number: 'REC-260908-T1-0181', total: 1850, profit: 420, payment_method: 'Cash', payment_status: 'Completed', customer_name: 'Walk-in Customer', created_at: '08 Sep 2026, 17:30' },
+                    {
+                        id: 106,
+                        receipt_number: 'REC-260908-T1-0185',
+                        total: 3100,
+                        profit: 650,
+                        payment_method: 'Cash',
+                        payment_status: 'Completed',
+                        customer_name: 'Walk-in Customer',
+                        created_at: '08 Sep 2026, 18:10',
+                    },
+                    {
+                        id: 107,
+                        receipt_number: 'REC-260908-T1-0184',
+                        total: 6450,
+                        profit: 1380,
+                        payment_method: 'M-Pesa Buy Goods Till',
+                        payment_status: 'Completed',
+                        customer_name: 'Gladys Muthoni',
+                        created_at: '08 Sep 2026, 18:02',
+                    },
+                    {
+                        id: 108,
+                        receipt_number: 'REC-260908-T1-0181',
+                        total: 1850,
+                        profit: 420,
+                        payment_method: 'Cash',
+                        payment_status: 'Completed',
+                        customer_name: 'Walk-in Customer',
+                        created_at: '08 Sep 2026, 17:30',
+                    },
                 ],
                 clock_sessions: [
-                    { id: 5, branch_name: 'CBD City Square Branch', clocked_in_at: '08 Sep 2026, 06:30', clocked_out_at: null, duration: 'Active Shift', status: 'Active' },
+                    {
+                        id: 5,
+                        branch_name: 'CBD City Square Branch',
+                        clocked_in_at: '08 Sep 2026, 06:30',
+                        clocked_out_at: null,
+                        duration: 'Active Shift',
+                        status: 'Active',
+                    },
                 ],
                 sessions: [
-                    { id: 's4', ip_address: '192.168.10.15 (Sunmi POS LAN)', user_agent: 'Sunmi V2 Pro Kiosk POS / Android 11', last_active: 'Active right now' },
+                    {
+                        id: 's4',
+                        ip_address: '192.168.10.15 (Sunmi POS LAN)',
+                        user_agent: 'Sunmi V2 Pro Kiosk POS / Android 11',
+                        last_active: 'Active right now',
+                    },
                 ],
             },
             {
@@ -528,13 +654,34 @@ const usersList = computed<StaffUserItem[]>(() => {
                 sales_profit: 18800,
                 avg_ticket: 7833.33,
                 recent_sales: [
-                    { id: 109, receipt_number: 'REC-260907-T1-0150', total: 45000, profit: 9000, payment_method: 'Bank Wire / Invoice', payment_status: 'Completed', customer_name: 'Nairobi Hospital Canteen', created_at: '07 Sep 2026, 11:20' },
+                    {
+                        id: 109,
+                        receipt_number: 'REC-260907-T1-0150',
+                        total: 45000,
+                        profit: 9000,
+                        payment_method: 'Bank Wire / Invoice',
+                        payment_status: 'Completed',
+                        customer_name: 'Nairobi Hospital Canteen',
+                        created_at: '07 Sep 2026, 11:20',
+                    },
                 ],
                 clock_sessions: [
-                    { id: 6, branch_name: 'Westlands Mega Store', clocked_in_at: '08 Sep 2026, 08:00', clocked_out_at: null, duration: 'Active Shift', status: 'Active' },
+                    {
+                        id: 6,
+                        branch_name: 'Westlands Mega Store',
+                        clocked_in_at: '08 Sep 2026, 08:00',
+                        clocked_out_at: null,
+                        duration: 'Active Shift',
+                        status: 'Active',
+                    },
                 ],
                 sessions: [
-                    { id: 's5', ip_address: '105.161.44.82 (Corporate SIM)', user_agent: 'Samsung Galaxy Tab Active 4 / Android 14', last_active: '45 mins ago' },
+                    {
+                        id: 's5',
+                        ip_address: '105.161.44.82 (Corporate SIM)',
+                        user_agent: 'Samsung Galaxy Tab Active 4 / Android 14',
+                        last_active: '45 mins ago',
+                    },
                 ],
             },
             {
@@ -555,13 +702,17 @@ const usersList = computed<StaffUserItem[]>(() => {
                 recent_sales: [],
                 clock_sessions: [],
                 sessions: [
-                    { id: 's6', ip_address: '185.220.101.5 (NordVPN Exit Node)', user_agent: 'iPhone 15 Pro / Safari Mobile', last_active: 'Blocked at 09:15 AM' },
+                    {
+                        id: 's6',
+                        ip_address: '185.220.101.5 (NordVPN Exit Node)',
+                        user_agent: 'iPhone 15 Pro / Safari Mobile',
+                        last_active: 'Blocked at 09:15 AM',
+                    },
                 ],
             },
         ];
     }
     return [];
-
 });
 
 const staffColumns = computed(() => [
@@ -576,7 +727,20 @@ const staffColumns = computed(() => [
 
 // Permission Matrix state
 const selectedMatrixRole = ref<UserRole>('Cashier');
-const modulesList = ['pos', 'sales', 'products', 'inventory', 'purchases', 'customers', 'suppliers', 'expenses', 'reports', 'users', 'branches', 'settings'];
+const modulesList = [
+    'pos',
+    'sales',
+    'products',
+    'inventory',
+    'purchases',
+    'customers',
+    'suppliers',
+    'expenses',
+    'reports',
+    'users',
+    'branches',
+    'settings',
+];
 
 const isOwner = computed(() => currentRole.value === 'Owner');
 
@@ -609,68 +773,72 @@ export interface ShiftEntry {
 }
 
 // Duty roster state: clean for real accounts, demo data only if isDemo
-const dutyRoster = ref<ShiftEntry[]>(isDemo.value ? [
-    {
-        id: 'SH-01',
-        staffId: '2',
-        staffName: 'David Mwangi',
-        role: 'Manager',
-        branch: 'Westlands Mega Store',
-        shiftDate: '2026-08-23 (Today)',
-        shiftType: 'Morning',
-        shiftHours: '06:30 AM - 02:30 PM',
-        station: 'Store Floor / Overseer',
-        status: 'Clocked In',
-    },
-    {
-        id: 'SH-02',
-        staffId: '1',
-        staffName: 'Wamtesh K.',
-        role: 'Cashier / Supervisor',
-        branch: 'Westlands Mega Store',
-        shiftDate: '2026-08-23 (Today)',
-        shiftType: 'Morning',
-        shiftHours: '06:30 AM - 02:30 PM',
-        station: 'POS Register #01 (Front)',
-        status: 'Clocked In',
-    },
-    {
-        id: 'SH-03',
-        staffId: '4',
-        staffName: 'Kevin Otieno',
-        role: 'Inventory Manager',
-        branch: 'Westlands Mega Store',
-        shiftDate: '2026-08-23 (Today)',
-        shiftType: 'Full Day',
-        shiftHours: '08:00 AM - 05:00 PM',
-        station: 'Warehouse Receiving Dock',
-        status: 'Clocked In',
-    },
-    {
-        id: 'SH-04',
-        staffId: '3',
-        staffName: 'Grace Wanjiku',
-        role: 'Cashier',
-        branch: 'CBD City Square Branch',
-        shiftDate: '2026-08-23 (Today)',
-        shiftType: 'Evening',
-        shiftHours: '02:00 PM - 10:00 PM',
-        station: 'POS Register #02 (Express)',
-        status: 'Scheduled',
-    },
-    {
-        id: 'SH-05',
-        staffId: '5',
-        staffName: 'Hassan Ali',
-        role: 'Accountant',
-        branch: 'HQ Central',
-        shiftDate: '2026-08-23 (Today)',
-        shiftType: 'Off Day',
-        shiftHours: '—',
-        station: 'Off Duty',
-        status: 'On Leave',
-    },
-] : []);
+const dutyRoster = ref<ShiftEntry[]>(
+    isDemo.value
+        ? [
+              {
+                  id: 'SH-01',
+                  staffId: '2',
+                  staffName: 'David Mwangi',
+                  role: 'Manager',
+                  branch: 'Westlands Mega Store',
+                  shiftDate: '2026-08-23 (Today)',
+                  shiftType: 'Morning',
+                  shiftHours: '06:30 AM - 02:30 PM',
+                  station: 'Store Floor / Overseer',
+                  status: 'Clocked In',
+              },
+              {
+                  id: 'SH-02',
+                  staffId: '1',
+                  staffName: 'Wamtesh K.',
+                  role: 'Cashier / Supervisor',
+                  branch: 'Westlands Mega Store',
+                  shiftDate: '2026-08-23 (Today)',
+                  shiftType: 'Morning',
+                  shiftHours: '06:30 AM - 02:30 PM',
+                  station: 'POS Register #01 (Front)',
+                  status: 'Clocked In',
+              },
+              {
+                  id: 'SH-03',
+                  staffId: '4',
+                  staffName: 'Kevin Otieno',
+                  role: 'Inventory Manager',
+                  branch: 'Westlands Mega Store',
+                  shiftDate: '2026-08-23 (Today)',
+                  shiftType: 'Full Day',
+                  shiftHours: '08:00 AM - 05:00 PM',
+                  station: 'Warehouse Receiving Dock',
+                  status: 'Clocked In',
+              },
+              {
+                  id: 'SH-04',
+                  staffId: '3',
+                  staffName: 'Grace Wanjiku',
+                  role: 'Cashier',
+                  branch: 'CBD City Square Branch',
+                  shiftDate: '2026-08-23 (Today)',
+                  shiftType: 'Evening',
+                  shiftHours: '02:00 PM - 10:00 PM',
+                  station: 'POS Register #02 (Express)',
+                  status: 'Scheduled',
+              },
+              {
+                  id: 'SH-05',
+                  staffId: '5',
+                  staffName: 'Hassan Ali',
+                  role: 'Accountant',
+                  branch: 'HQ Central',
+                  shiftDate: '2026-08-23 (Today)',
+                  shiftType: 'Off Day',
+                  shiftHours: '—',
+                  station: 'Off Duty',
+                  status: 'On Leave',
+              },
+          ]
+        : [],
+);
 
 const rosterColumns = [
     { key: 'staffName', label: 'Staff Member & Role' },
@@ -743,21 +911,25 @@ const handleCreateStaff = () => {
     if (!newStaff.value.name || !newStaff.value.email || isCreatingStaff.value) return;
 
     isCreatingStaff.value = true;
-    router.post('/users', {
-        name: newStaff.value.name,
-        email: newStaff.value.email,
-        phone: newStaff.value.phone,
-        role: newStaff.value.role,
-        password: 'Password@2026!',
-    }, {
-        onSuccess: () => {
-            addStaffModal.value = false;
-            newStaff.value = { name: '', email: '', phone: '', role: 'Cashier', branch: defaultBranchName.value };
-            success('Staff Member Created', 'Staff account created successfully.');
+    router.post(
+        '/users',
+        {
+            name: newStaff.value.name,
+            email: newStaff.value.email,
+            phone: newStaff.value.phone,
+            role: newStaff.value.role,
+            password: 'Password@2026!',
         },
-        onError: (errs) => error('Creation Failed', Object.values(errs)[0] as string),
-        onFinish: () => (isCreatingStaff.value = false),
-    });
+        {
+            onSuccess: () => {
+                addStaffModal.value = false;
+                newStaff.value = { name: '', email: '', phone: '', role: 'Cashier', branch: defaultBranchName.value };
+                success('Staff Member Created', 'Staff account created successfully.');
+            },
+            onError: (errs) => error('Creation Failed', Object.values(errs)[0] as string),
+            onFinish: () => (isCreatingStaff.value = false),
+        },
+    );
 };
 
 // Edit Staff Member Modal state
@@ -796,47 +968,55 @@ const handleUpdateStaff = () => {
         return;
     }
     editProcessing.value = true;
-    router.patch(`/users/${editStaffForm.value.id}`, {
-        name: editStaffForm.value.name,
-        email: editStaffForm.value.email,
-        phone: editStaffForm.value.phone || null,
-        role: editStaffForm.value.role,
-        status: editStaffForm.value.status,
-        password: editStaffForm.value.password || undefined,
-    }, {
-        onSuccess: () => {
-            editProcessing.value = false;
-            editStaffModal.value = false;
-            if (viewUserTarget.value && String(viewUserTarget.value.id) === String(editStaffForm.value.id)) {
-                viewUserTarget.value.name = editStaffForm.value.name;
-                viewUserTarget.value.email = editStaffForm.value.email;
-                viewUserTarget.value.phone = editStaffForm.value.phone;
-                viewUserTarget.value.role = editStaffForm.value.role;
-                viewUserTarget.value.status = editStaffForm.value.status;
-            }
-            success('Staff Member Updated', `User "${editStaffForm.value.name}" updated successfully.`);
+    router.patch(
+        `/users/${editStaffForm.value.id}`,
+        {
+            name: editStaffForm.value.name,
+            email: editStaffForm.value.email,
+            phone: editStaffForm.value.phone || null,
+            role: editStaffForm.value.role,
+            status: editStaffForm.value.status,
+            password: editStaffForm.value.password || undefined,
         },
-        onError: (errs) => {
-            editProcessing.value = false;
-            error('Update Failed', (Object.values(errs)[0] as string) || 'Failed to update user.');
+        {
+            onSuccess: () => {
+                editProcessing.value = false;
+                editStaffModal.value = false;
+                if (viewUserTarget.value && String(viewUserTarget.value.id) === String(editStaffForm.value.id)) {
+                    viewUserTarget.value.name = editStaffForm.value.name;
+                    viewUserTarget.value.email = editStaffForm.value.email;
+                    viewUserTarget.value.phone = editStaffForm.value.phone;
+                    viewUserTarget.value.role = editStaffForm.value.role;
+                    viewUserTarget.value.status = editStaffForm.value.status;
+                }
+                success('Staff Member Updated', `User "${editStaffForm.value.name}" updated successfully.`);
+            },
+            onError: (errs) => {
+                editProcessing.value = false;
+                error('Update Failed', (Object.values(errs)[0] as string) || 'Failed to update user.');
+            },
         },
-    });
+    );
 };
 
 const handleToggleStatus = (user: any) => {
     const targetStatus = user.status === 'Active' ? 'Suspended' : 'Active';
-    router.patch(`/users/${user.id}/suspend`, {}, {
-        onSuccess: () => {
-            user.status = targetStatus;
-            if (viewUserTarget.value && String(viewUserTarget.value.id) === String(user.id)) {
-                viewUserTarget.value.status = targetStatus;
-            }
-            success('Status Updated', `Staff member ${user.name} is now ${targetStatus}.`);
+    router.patch(
+        `/users/${user.id}/suspend`,
+        {},
+        {
+            onSuccess: () => {
+                user.status = targetStatus;
+                if (viewUserTarget.value && String(viewUserTarget.value.id) === String(user.id)) {
+                    viewUserTarget.value.status = targetStatus;
+                }
+                success('Status Updated', `Staff member ${user.name} is now ${targetStatus}.`);
+            },
+            onError: (errs) => {
+                error('Action Failed', (Object.values(errs)[0] as string) || 'Could not change status.');
+            },
         },
-        onError: (errs) => {
-            error('Action Failed', (Object.values(errs)[0] as string) || 'Could not change status.');
-        },
-    });
+    );
 };
 
 // View Staff Details Modal state
@@ -871,7 +1051,7 @@ const userShiftOptions = computed(() => {
     const options = [
         {
             id: 'current',
-            label: isEnded ? "New Open Shift (Today's Clean Session)" : "Current Active Shift (Today)",
+            label: isEnded ? "New Open Shift (Today's Clean Session)" : 'Current Active Shift (Today)',
             date: 'Today',
             status: isEnded ? 'Fresh Shift (0 Sales)' : 'Active Shift',
         },
@@ -880,7 +1060,7 @@ const userShiftOptions = computed(() => {
     if (isEnded) {
         options.push({
             id: 'ended-today',
-            label: "Ended Shift (Today - Morning Sealed)",
+            label: 'Ended Shift (Today - Morning Sealed)',
             date: 'Today (Closed)',
             status: 'Ended & Sealed',
         });
@@ -889,19 +1069,19 @@ const userShiftOptions = computed(() => {
     options.push(
         {
             id: 'yesterday',
-            label: "Previous Shift (07 Sep 2026)",
+            label: 'Previous Shift (07 Sep 2026)',
             date: 'Yesterday',
             status: 'Archived Shift',
         },
         {
             id: 'prev-day',
-            label: "Previous Shift (06 Sep 2026)",
+            label: 'Previous Shift (06 Sep 2026)',
             date: '06 Sep 2026',
             status: 'Archived Shift',
         },
         {
             id: 'all',
-            label: "All Shifts History (All-Time Combined)",
+            label: 'All Shifts History (All-Time Combined)',
             date: 'All Time',
             status: 'Full Ledger',
         },
@@ -1017,9 +1197,7 @@ const activeShiftSalesCount = computed(() => {
 });
 
 const activeShiftAvgTicket = computed(() => {
-    return activeShiftSalesCount.value > 0
-        ? Math.round(activeShiftSalesTotal.value / activeShiftSalesCount.value)
-        : 0;
+    return activeShiftSalesCount.value > 0 ? Math.round(activeShiftSalesTotal.value / activeShiftSalesCount.value) : 0;
 });
 
 // Handler to End Current Shift and toggle to new day sales session
@@ -1028,9 +1206,7 @@ const handleEndCurrentShift = () => {
     const userId = viewUserTarget.value.id;
 
     // Mark active shift as completed in userDutyShifts
-    const todayShift = userDutyShifts.value.find(
-        (s) => s.status === 'Clocked In' || s.status === 'Scheduled',
-    );
+    const todayShift = userDutyShifts.value.find((s) => s.status === 'Clocked In' || s.status === 'Scheduled');
     if (todayShift) {
         todayShift.status = 'Completed';
     }
@@ -1075,11 +1251,11 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
     <Head title="Staff & Permissions" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
+        <div class="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
             <!-- Header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h2 class="text-2xl font-bold text-foreground flex items-center gap-2">
+                    <h2 class="flex items-center gap-2 text-2xl font-bold text-foreground">
                         <span>Staff Management & Duty Roster</span>
                         <Badge v-if="isOwner" variant="default" class="gap-1 font-mono text-xs">
                             <Crown class="size-3 text-amber-400" />
@@ -1090,7 +1266,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                             Role: {{ currentRole }} (Read Only Perms)
                         </Badge>
                     </h2>
-                    <p class="text-xs text-muted-foreground mt-0.5">
+                    <p class="mt-0.5 text-xs text-muted-foreground">
                         Manage tenant staff, assign POS cashier shifts, inspect duty rosters, and control role-based access rules.
                     </p>
                 </div>
@@ -1100,10 +1276,10 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         id="users-tour-guide-btn"
                         size="sm"
                         variant="outline"
-                        class="h-9 text-xs gap-1.5 border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 font-semibold shadow-xs"
+                        class="shadow-xs h-9 gap-1.5 border-primary/40 bg-primary/10 text-xs font-semibold text-primary hover:bg-primary/20"
                         @click="openGuide()"
                     >
-                        <Compass class="size-4 animate-spin-slow text-primary" />
+                        <Compass class="animate-spin-slow size-4 text-primary" />
                         <span>Page Guide</span>
                     </Button>
 
@@ -1112,7 +1288,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         id="users-tour-btn-import-staff"
                         size="sm"
                         variant="outline"
-                        class="h-9 text-xs gap-1.5 border-border hover:bg-primary/10 hover:text-primary hover:border-primary/40 transition-colors shadow-2xs"
+                        class="shadow-2xs h-9 gap-1.5 border-border text-xs transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
                         @click="staffImportModalOpen = true"
                     >
                         <Upload class="size-3.5" />
@@ -1123,7 +1299,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         v-if="isOwner"
                         id="users-tour-btn-add-staff"
                         size="sm"
-                        class="h-9 text-xs gap-1.5 bg-primary"
+                        class="h-9 gap-1.5 bg-primary text-xs"
                         @click="addStaffModal = true"
                     >
                         <Plus class="size-3.5" />
@@ -1133,11 +1309,11 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
             </div>
 
             <!-- Navigation Tabs -->
-            <div id="users-tour-tabs" class="flex rounded-xl border border-border/80 p-1 bg-card w-fit text-xs font-semibold">
+            <div id="users-tour-tabs" class="flex w-fit rounded-xl border border-border/80 bg-card p-1 text-xs font-semibold">
                 <button
                     type="button"
                     :class="[
-                        'px-4 py-2 rounded-lg transition-all flex items-center gap-2',
+                        'flex items-center gap-2 rounded-lg px-4 py-2 transition-all',
                         activeTab === 'staff' ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground',
                     ]"
                     @click="activeTab = 'staff'"
@@ -1150,57 +1326,57 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     v-if="hasFeature('duty_roster')"
                     type="button"
                     :class="[
-                        'px-4 py-2 rounded-lg transition-all flex items-center gap-2',
+                        'flex items-center gap-2 rounded-lg px-4 py-2 transition-all',
                         activeTab === 'roster' ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground',
                     ]"
                     @click="activeTab = 'roster'"
                 >
                     <Calendar class="size-4" />
                     <span>Duty Roster & Shifts</span>
-                    <Badge v-if="isOwner" variant="success" class="text-[9px] px-1.5 py-0 ml-1">Owner</Badge>
+                    <Badge v-if="isOwner" variant="success" class="ml-1 px-1.5 py-0 text-[9px]">Owner</Badge>
                 </button>
 
                 <button
                     type="button"
                     :class="[
-                        'px-4 py-2 rounded-lg transition-all flex items-center gap-2',
+                        'flex items-center gap-2 rounded-lg px-4 py-2 transition-all',
                         activeTab === 'matrix' ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground',
                     ]"
                     @click="activeTab = 'matrix'"
                 >
                     <ShieldCheck class="size-4" />
                     <span>Permissions Matrix</span>
-                    <Lock v-if="!isOwner" class="size-3 text-muted-foreground ml-1" />
+                    <Lock v-if="!isOwner" class="ml-1 size-3 text-muted-foreground" />
                 </button>
 
                 <button
                     v-if="hasFeature('device_binding')"
                     type="button"
                     :class="[
-                        'px-4 py-2 rounded-lg transition-all flex items-center gap-2',
+                        'flex items-center gap-2 rounded-lg px-4 py-2 transition-all',
                         activeTab === 'devices' ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground',
                     ]"
                     @click="activeTab = 'devices'"
                 >
                     <Wifi class="size-4" />
                     <span>Device & Network Restrictions</span>
-                    <Badge variant="destructive" class="text-[9px] px-1.5 py-0 ml-1">VPN Guard</Badge>
+                    <Badge variant="destructive" class="ml-1 px-1.5 py-0 text-[9px]">VPN Guard</Badge>
                 </button>
             </div>
 
             <!-- Tab 1: Staff Directory -->
             <div v-if="activeTab === 'staff'" class="space-y-4">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-muted/20 p-3.5 rounded-xl border border-border/80">
+                <div class="flex flex-col gap-3 rounded-xl border border-border/80 bg-muted/20 p-3.5 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex items-center gap-2.5">
-                        <div class="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <div class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                             <Users class="size-4" />
                         </div>
                         <div>
-                            <p class="text-xs font-bold text-foreground flex items-center gap-2">
+                            <p class="flex items-center gap-2 text-xs font-bold text-foreground">
                                 <span>Staff Personnel Directory</span>
                                 <Badge variant="outline" class="font-mono text-[10px]">{{ usersList?.length || 0 }} Active Records</Badge>
                             </p>
-                            <p class="text-[11px] text-muted-foreground mt-0.5">
+                            <p class="mt-0.5 text-[11px] text-muted-foreground">
                                 Add individual staff accounts or batch import personnel rosters from Word, PDF, Excel spreadsheets, or CSV text.
                             </p>
                         </div>
@@ -1210,7 +1386,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         <Button
                             size="sm"
                             variant="outline"
-                            class="h-8 text-xs gap-1.5 border-border bg-card hover:bg-primary/10 hover:text-primary hover:border-primary/40 font-semibold transition-colors shadow-xs"
+                            class="shadow-xs h-8 gap-1.5 border-border bg-card text-xs font-semibold transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
                             @click="staffImportModalOpen = true"
                         >
                             <Upload class="size-3.5 text-primary" />
@@ -1237,7 +1413,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         <div :id="row.id === usersList[0]?.id ? 'users-tour-col-role' : undefined">
                             <Badge
                                 :variant="row.role === 'Owner' ? 'default' : row.role === 'Manager' ? 'info' : 'outline'"
-                                class="font-bold font-mono"
+                                class="font-mono font-bold"
                             >
                                 {{ row.role }}
                             </Badge>
@@ -1256,7 +1432,9 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
                     <template #cell-lastLogin="{ row }">
                         <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <span :class="['size-1.5 rounded-full shrink-0', row.status === 'Active' ? 'bg-emerald-500' : 'bg-muted-foreground']"></span>
+                            <span
+                                :class="['size-1.5 shrink-0 rounded-full', row.status === 'Active' ? 'bg-emerald-500' : 'bg-muted-foreground']"
+                            ></span>
                             <span class="font-mono text-[11px]">{{ row.lastLogin }}</span>
                         </div>
                     </template>
@@ -1267,7 +1445,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                 :id="row.id === usersList[0]?.id ? 'users-tour-btn-view' : undefined"
                                 variant="outline"
                                 size="sm"
-                                class="h-7 px-2.5 text-xs gap-1.5 border-sky-500/30 text-sky-700 dark:text-sky-300 hover:bg-sky-500/10 hover:border-sky-500/50 transition-colors shadow-2xs"
+                                class="shadow-2xs h-7 gap-1.5 border-sky-500/30 px-2.5 text-xs text-sky-700 transition-colors hover:border-sky-500/50 hover:bg-sky-500/10 dark:text-sky-300"
                                 title="View User Profile, Schedule, Sales & Logins"
                                 @click="openViewUser(row)"
                             >
@@ -1278,7 +1456,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                 :id="row.id === usersList[0]?.id ? 'users-tour-btn-edit' : undefined"
                                 variant="outline"
                                 size="sm"
-                                class="h-7 px-2.5 text-xs gap-1.5 border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10 hover:border-amber-500/50 transition-colors shadow-2xs"
+                                class="shadow-2xs h-7 gap-1.5 border-amber-500/30 px-2.5 text-xs text-amber-700 transition-colors hover:border-amber-500/50 hover:bg-amber-500/10 dark:text-amber-300"
                                 title="Edit User Information"
                                 @click="openEditUser(row)"
                             >
@@ -1292,13 +1470,16 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
             <!-- Tab 2: Duty Roster & Shift Planning (Owner Feature) -->
             <div v-if="activeTab === 'roster'" class="space-y-4">
-                <div id="users-tour-roster-bar" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-muted/20 p-4 rounded-xl border border-border/80">
+                <div
+                    id="users-tour-roster-bar"
+                    class="flex flex-col gap-3 rounded-xl border border-border/80 bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between"
+                >
                     <div>
-                        <h3 class="text-base font-bold text-foreground flex items-center gap-2">
+                        <h3 class="flex items-center gap-2 text-base font-bold text-foreground">
                             <Clock class="size-4 text-emerald-600" />
                             Store Duty Roster & Cashier Registers
                         </h3>
-                        <p class="text-xs text-muted-foreground mt-0.5">
+                        <p class="mt-0.5 text-xs text-muted-foreground">
                             Assign cashiers to POS stations, balance shift coverage across peak trading hours, and track attendance.
                         </p>
                     </div>
@@ -1308,18 +1489,13 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                             id="users-tour-btn-publish"
                             variant="outline"
                             size="sm"
-                            class="h-8 text-xs gap-1.5 border-emerald-600/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10"
+                            class="h-8 gap-1.5 border-emerald-600/30 text-xs text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-300"
                             @click="handlePublishRoster"
                         >
                             <Send class="size-3.5" />
                             Publish & Broadcast Roster
                         </Button>
-                        <Button
-                            id="users-tour-btn-schedule"
-                            size="sm"
-                            class="h-8 text-xs gap-1.5 bg-primary"
-                            @click="newShiftModal = true"
-                        >
+                        <Button id="users-tour-btn-schedule" size="sm" class="h-8 gap-1.5 bg-primary text-xs" @click="newShiftModal = true">
                             <Plus class="size-3.5" />
                             Schedule Shift
                         </Button>
@@ -1327,22 +1503,22 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                 </div>
 
                 <!-- Shift KPI overview -->
-                <div id="users-tour-roster-kpis" class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                    <div class="p-3 bg-card rounded-xl border border-border/80">
+                <div id="users-tour-roster-kpis" class="grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
+                    <div class="rounded-xl border border-border/80 bg-card p-3">
                         <span class="text-muted-foreground">Morning Shift (06:30 - 14:30)</span>
-                        <p class="text-base font-bold font-mono text-foreground mt-1">2 Staff on Duty</p>
+                        <p class="mt-1 font-mono text-base font-bold text-foreground">2 Staff on Duty</p>
                     </div>
-                    <div class="p-3 bg-card rounded-xl border border-border/80">
+                    <div class="rounded-xl border border-border/80 bg-card p-3">
                         <span class="text-muted-foreground">Evening Shift (14:00 - 22:00)</span>
-                        <p class="text-base font-bold font-mono text-foreground mt-1">1 Staff Scheduled</p>
+                        <p class="mt-1 font-mono text-base font-bold text-foreground">1 Staff Scheduled</p>
                     </div>
-                    <div class="p-3 bg-card rounded-xl border border-border/80">
+                    <div class="rounded-xl border border-border/80 bg-card p-3">
                         <span class="text-muted-foreground">Active POS Stations</span>
-                        <p class="text-base font-bold font-mono text-emerald-600 mt-1">Register #01, #02</p>
+                        <p class="mt-1 font-mono text-base font-bold text-emerald-600">Register #01, #02</p>
                     </div>
-                    <div class="p-3 bg-card rounded-xl border border-border/80">
+                    <div class="rounded-xl border border-border/80 bg-card p-3">
                         <span class="text-muted-foreground">Staff on Leave / Off</span>
-                        <p class="text-base font-bold font-mono text-muted-foreground mt-1">1 Member</p>
+                        <p class="mt-1 font-mono text-base font-bold text-muted-foreground">1 Member</p>
                     </div>
                 </div>
 
@@ -1364,12 +1540,20 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         <template #cell-shiftType="{ row }">
                             <div>
                                 <Badge
-                                    :variant="row.shiftType === 'Morning' ? 'success' : row.shiftType === 'Evening' ? 'info' : row.shiftType === 'Full Day' ? 'default' : 'outline'"
+                                    :variant="
+                                        row.shiftType === 'Morning'
+                                            ? 'success'
+                                            : row.shiftType === 'Evening'
+                                              ? 'info'
+                                              : row.shiftType === 'Full Day'
+                                                ? 'default'
+                                                : 'outline'
+                                    "
                                     class="font-semibold"
                                 >
                                     {{ row.shiftType }}
                                 </Badge>
-                                <div class="text-[10px] text-muted-foreground font-mono mt-0.5">{{ row.shiftHours }}</div>
+                                <div class="mt-0.5 font-mono text-[10px] text-muted-foreground">{{ row.shiftHours }}</div>
                             </div>
                         </template>
 
@@ -1378,9 +1562,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         </template>
 
                         <template #cell-status="{ row }">
-                            <Badge
-                                :variant="row.status === 'Clocked In' ? 'success' : row.status === 'Scheduled' ? 'warning' : 'outline'"
-                            >
+                            <Badge :variant="row.status === 'Clocked In' ? 'success' : row.status === 'Scheduled' ? 'warning' : 'outline'">
                                 {{ row.status }}
                             </Badge>
                         </template>
@@ -1390,11 +1572,13 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                 <Button
                                     v-if="row.status === 'Scheduled'"
                                     size="sm"
-                                    class="h-7 text-xs bg-emerald-600 hover:bg-emerald-700"
-                                    @click="() => {
-                                        row.status = 'Clocked In';
-                                        success('Clock In', `${row.staffName} clocked in for ${row.shiftType} shift.`);
-                                    }"
+                                    class="h-7 bg-emerald-600 text-xs hover:bg-emerald-700"
+                                    @click="
+                                        () => {
+                                            row.status = 'Clocked In';
+                                            success('Clock In', `${row.staffName} clocked in for ${row.shiftType} shift.`);
+                                        }
+                                    "
                                 >
                                     Clock In
                                 </Button>
@@ -1411,11 +1595,11 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                 <div
                     v-if="!isOwner"
                     id="users-tour-matrix-restriction"
-                    class="p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs flex items-start gap-3 text-amber-900 dark:text-amber-200"
+                    class="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs text-amber-900 dark:text-amber-200"
                 >
-                    <ShieldAlert class="size-5 shrink-0 text-amber-600 mt-0.5" />
+                    <ShieldAlert class="mt-0.5 size-5 shrink-0 text-amber-600" />
                     <div>
-                        <h4 class="font-bold text-sm">Permission Modifications Restricted</h4>
+                        <h4 class="text-sm font-bold">Permission Modifications Restricted</h4>
                         <p class="mt-0.5 leading-relaxed text-muted-foreground">
                             Users are strictly restricted from editing or elevating their own permissions. Only accounts with the
                             <strong>Owner</strong> role can adjust authorization rules. (Use the Top Navbar role switcher to test Owner permissions).
@@ -1424,9 +1608,9 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                 </div>
 
                 <Card id="users-tour-matrix-grid" class="border-border/80">
-                    <CardHeader class="pb-3 border-b border-border/70 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <CardHeader class="flex flex-col gap-3 border-b border-border/70 pb-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <CardTitle class="text-base font-bold flex items-center gap-2">
+                            <CardTitle class="flex items-center gap-2 text-base font-bold">
                                 <ShieldCheck class="size-4 text-primary" />
                                 Role Authorization Matrix
                             </CardTitle>
@@ -1442,10 +1626,10 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                 :key="r"
                                 type="button"
                                 :class="[
-                                    'px-3 py-1 font-semibold rounded-lg border text-xs whitespace-nowrap transition-all',
+                                    'whitespace-nowrap rounded-lg border px-3 py-1 text-xs font-semibold transition-all',
                                     selectedMatrixRole === r
-                                        ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                                        : 'bg-card border-border/80 text-muted-foreground hover:text-foreground',
+                                        ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                                        : 'border-border/80 bg-card text-muted-foreground hover:text-foreground',
                                 ]"
                                 @click="selectedMatrixRole = r"
                             >
@@ -1453,15 +1637,15 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                             </button>
                         </div>
                     </CardHeader>
-                    <CardContent class="p-0 overflow-x-auto">
+                    <CardContent class="overflow-x-auto p-0">
                         <table class="w-full text-left text-xs">
                             <thead class="border-b border-border/70 bg-muted/30 text-muted-foreground">
                                 <tr>
                                     <th class="px-6 py-3 font-semibold uppercase">System Module</th>
-                                    <th class="px-4 py-3 font-semibold uppercase text-center">View</th>
-                                    <th class="px-4 py-3 font-semibold uppercase text-center">Create</th>
-                                    <th class="px-4 py-3 font-semibold uppercase text-center">Edit</th>
-                                    <th class="px-4 py-3 font-semibold uppercase text-center">Delete</th>
+                                    <th class="px-4 py-3 text-center font-semibold uppercase">View</th>
+                                    <th class="px-4 py-3 text-center font-semibold uppercase">Create</th>
+                                    <th class="px-4 py-3 text-center font-semibold uppercase">Edit</th>
+                                    <th class="px-4 py-3 text-center font-semibold uppercase">Delete</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border/60">
@@ -1469,7 +1653,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                     v-for="mod in modulesList"
                                     :key="mod"
                                     :id="mod === modulesList[0] ? 'users-tour-matrix-toggles' : undefined"
-                                    class="hover:bg-muted/20 transition-colors"
+                                    class="transition-colors hover:bg-muted/20"
                                 >
                                     <td class="px-6 py-3 font-bold uppercase text-foreground">
                                         {{ mod }}
@@ -1479,8 +1663,10 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                             type="button"
                                             :disabled="!isOwner"
                                             :class="[
-                                                'size-6 rounded inline-flex items-center justify-center transition-all',
-                                                getRoleMatrix(selectedMatrixRole)[mod]?.view ? 'bg-emerald-500/20 text-emerald-600' : 'bg-muted text-muted-foreground opacity-40',
+                                                'inline-flex size-6 items-center justify-center rounded transition-all',
+                                                getRoleMatrix(selectedMatrixRole)[mod]?.view
+                                                    ? 'bg-emerald-500/20 text-emerald-600'
+                                                    : 'bg-muted text-muted-foreground opacity-40',
                                                 !isOwner ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:scale-105 active:scale-95',
                                             ]"
                                             @click="toggleMatrixPerm(mod, 'view')"
@@ -1494,8 +1680,10 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                             type="button"
                                             :disabled="!isOwner"
                                             :class="[
-                                                'size-6 rounded inline-flex items-center justify-center transition-all',
-                                                getRoleMatrix(selectedMatrixRole)[mod]?.create ? 'bg-emerald-500/20 text-emerald-600' : 'bg-muted text-muted-foreground opacity-40',
+                                                'inline-flex size-6 items-center justify-center rounded transition-all',
+                                                getRoleMatrix(selectedMatrixRole)[mod]?.create
+                                                    ? 'bg-emerald-500/20 text-emerald-600'
+                                                    : 'bg-muted text-muted-foreground opacity-40',
                                                 !isOwner ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:scale-105 active:scale-95',
                                             ]"
                                             @click="toggleMatrixPerm(mod, 'create')"
@@ -1509,8 +1697,10 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                             type="button"
                                             :disabled="!isOwner"
                                             :class="[
-                                                'size-6 rounded inline-flex items-center justify-center transition-all',
-                                                getRoleMatrix(selectedMatrixRole)[mod]?.edit ? 'bg-emerald-500/20 text-emerald-600' : 'bg-muted text-muted-foreground opacity-40',
+                                                'inline-flex size-6 items-center justify-center rounded transition-all',
+                                                getRoleMatrix(selectedMatrixRole)[mod]?.edit
+                                                    ? 'bg-emerald-500/20 text-emerald-600'
+                                                    : 'bg-muted text-muted-foreground opacity-40',
                                                 !isOwner ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:scale-105 active:scale-95',
                                             ]"
                                             @click="toggleMatrixPerm(mod, 'edit')"
@@ -1524,8 +1714,10 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                             type="button"
                                             :disabled="!isOwner"
                                             :class="[
-                                                'size-6 rounded inline-flex items-center justify-center transition-all',
-                                                getRoleMatrix(selectedMatrixRole)[mod]?.delete ? 'bg-emerald-500/20 text-emerald-600' : 'bg-muted text-muted-foreground opacity-40',
+                                                'inline-flex size-6 items-center justify-center rounded transition-all',
+                                                getRoleMatrix(selectedMatrixRole)[mod]?.delete
+                                                    ? 'bg-emerald-500/20 text-emerald-600'
+                                                    : 'bg-muted text-muted-foreground opacity-40',
                                                 !isOwner ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:scale-105 active:scale-95',
                                             ]"
                                             @click="toggleMatrixPerm(mod, 'delete')"
@@ -1544,12 +1736,12 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
             <!-- Tab 4: Device & Network Restrictions -->
             <div v-if="activeTab === 'devices'" class="space-y-6">
                 <!-- Network Policies Grid -->
-                <div id="users-tour-devices-policies" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div id="users-tour-devices-policies" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                     <!-- Policy 1: VPN Guard -->
                     <Card id="users-tour-policy-vpn" class="border-border/80">
                         <CardHeader class="pb-3">
                             <div class="flex items-center justify-between">
-                                <CardTitle class="text-sm font-bold flex items-center gap-2">
+                                <CardTitle class="flex items-center gap-2 text-sm font-bold">
                                     <ShieldAlert class="size-4 text-rose-500" />
                                     VPN & Proxy Blocker
                                 </CardTitle>
@@ -1561,11 +1753,17 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                 />
                             </div>
                             <CardDescription class="text-xs">
-                                Block any staff login attempting to connect via commercial VPNs (NordVPN, ExpressVPN, WireGuard tunnels) or proxy servers.
+                                Block any staff login attempting to connect via commercial VPNs (NordVPN, ExpressVPN, WireGuard tunnels) or proxy
+                                servers.
                             </CardDescription>
                         </CardHeader>
                         <CardContent class="pt-0 text-[11px]">
-                            <span :class="['font-bold px-2 py-0.5 rounded', networkPolicies.blockVpn ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' : 'bg-muted text-muted-foreground']">
+                            <span
+                                :class="[
+                                    'rounded px-2 py-0.5 font-bold',
+                                    networkPolicies.blockVpn ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' : 'bg-muted text-muted-foreground',
+                                ]"
+                            >
                                 {{ networkPolicies.blockVpn ? 'Active: VPN Logins Auto-Blocked' : 'Disabled' }}
                             </span>
                         </CardContent>
@@ -1575,7 +1773,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     <Card id="users-tour-policy-wifi" class="border-border/80">
                         <CardHeader class="pb-3">
                             <div class="flex items-center justify-between">
-                                <CardTitle class="text-sm font-bold flex items-center gap-2">
+                                <CardTitle class="flex items-center gap-2 text-sm font-bold">
                                     <Wifi class="size-4 text-emerald-500" />
                                     Enforce Store Wi-Fi
                                 </CardTitle>
@@ -1591,7 +1789,14 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                             </CardDescription>
                         </CardHeader>
                         <CardContent class="pt-0 text-[11px]">
-                            <span :class="['font-bold px-2 py-0.5 rounded', networkPolicies.requireStoreWifiForCashiers ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-muted text-muted-foreground']">
+                            <span
+                                :class="[
+                                    'rounded px-2 py-0.5 font-bold',
+                                    networkPolicies.requireStoreWifiForCashiers
+                                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                        : 'bg-muted text-muted-foreground',
+                                ]"
+                            >
                                 {{ networkPolicies.requireStoreWifiForCashiers ? 'Active: Store Network Required' : 'Disabled' }}
                             </span>
                         </CardContent>
@@ -1601,7 +1806,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     <Card class="border-border/80">
                         <CardHeader class="pb-3">
                             <div class="flex items-center justify-between">
-                                <CardTitle class="text-sm font-bold flex items-center gap-2">
+                                <CardTitle class="flex items-center gap-2 text-sm font-bold">
                                     <Radio class="size-4 text-amber-500" />
                                     Block Mobile Hotspots
                                 </CardTitle>
@@ -1617,7 +1822,14 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                             </CardDescription>
                         </CardHeader>
                         <CardContent class="pt-0 text-[11px]">
-                            <span :class="['font-bold px-2 py-0.5 rounded', networkPolicies.blockMobileHotspots ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-muted text-muted-foreground']">
+                            <span
+                                :class="[
+                                    'rounded px-2 py-0.5 font-bold',
+                                    networkPolicies.blockMobileHotspots
+                                        ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                        : 'bg-muted text-muted-foreground',
+                                ]"
+                            >
                                 {{ networkPolicies.blockMobileHotspots ? 'Active: Hotspots Blocked' : 'Disabled' }}
                             </span>
                         </CardContent>
@@ -1627,7 +1839,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     <Card class="border-border/80">
                         <CardHeader class="pb-3">
                             <div class="flex items-center justify-between">
-                                <CardTitle class="text-sm font-bold flex items-center gap-2">
+                                <CardTitle class="flex items-center gap-2 text-sm font-bold">
                                     <Signal class="size-4 text-sky-500" />
                                     Cellular SIM Policy
                                 </CardTitle>
@@ -1643,7 +1855,14 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                             </CardDescription>
                         </CardHeader>
                         <CardContent class="pt-0 text-[11px]">
-                            <span :class="['font-bold px-2 py-0.5 rounded', networkPolicies.allowSimDataForFieldRoles ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400' : 'bg-muted text-muted-foreground']">
+                            <span
+                                :class="[
+                                    'rounded px-2 py-0.5 font-bold',
+                                    networkPolicies.allowSimDataForFieldRoles
+                                        ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400'
+                                        : 'bg-muted text-muted-foreground',
+                                ]"
+                            >
                                 {{ networkPolicies.allowSimDataForFieldRoles ? 'Restricted: Role-Gated Cellular' : 'Unrestricted SIM' }}
                             </span>
                         </CardContent>
@@ -1653,7 +1872,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     <Card class="border-border/80">
                         <CardHeader class="pb-3">
                             <div class="flex items-center justify-between">
-                                <CardTitle class="text-sm font-bold flex items-center gap-2">
+                                <CardTitle class="flex items-center gap-2 text-sm font-bold">
                                     <Key class="size-4 text-violet-500" />
                                     Hardware Device Binding
                                 </CardTitle>
@@ -1669,7 +1888,14 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                             </CardDescription>
                         </CardHeader>
                         <CardContent class="pt-0 text-[11px]">
-                            <span :class="['font-bold px-2 py-0.5 rounded', networkPolicies.requireHardwareDeviceBinding ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400' : 'bg-muted text-muted-foreground']">
+                            <span
+                                :class="[
+                                    'rounded px-2 py-0.5 font-bold',
+                                    networkPolicies.requireHardwareDeviceBinding
+                                        ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400'
+                                        : 'bg-muted text-muted-foreground',
+                                ]"
+                            >
                                 {{ networkPolicies.requireHardwareDeviceBinding ? 'Active: Unknown Devices Gated' : 'Disabled' }}
                             </span>
                         </CardContent>
@@ -1679,7 +1905,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     <Card class="border-border/80">
                         <CardHeader class="pb-3">
                             <div class="flex items-center justify-between">
-                                <CardTitle class="text-sm font-bold flex items-center gap-2">
+                                <CardTitle class="flex items-center gap-2 text-sm font-bold">
                                     <Lock class="size-4 text-primary" />
                                     Single-Terminal Session
                                 </CardTitle>
@@ -1695,7 +1921,12 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                             </CardDescription>
                         </CardHeader>
                         <CardContent class="pt-0 text-[11px]">
-                            <span :class="['font-bold px-2 py-0.5 rounded', networkPolicies.enforceSingleSessionPerCashier ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground']">
+                            <span
+                                :class="[
+                                    'rounded px-2 py-0.5 font-bold',
+                                    networkPolicies.enforceSingleSessionPerCashier ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground',
+                                ]"
+                            >
                                 {{ networkPolicies.enforceSingleSessionPerCashier ? 'Active: Concurrency Locked' : 'Disabled' }}
                             </span>
                         </CardContent>
@@ -1704,21 +1935,22 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
                 <!-- Whitelisted Store Wi-Fi Networks Section -->
                 <Card id="users-tour-wifi-whitelist" class="border-border/80">
-                    <CardHeader class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3">
+                    <CardHeader class="flex flex-col gap-3 pb-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <CardTitle class="text-base font-bold flex items-center gap-2">
+                            <CardTitle class="flex items-center gap-2 text-base font-bold">
                                 <Router class="size-4 text-emerald-500" />
                                 Whitelisted Store Wi-Fi Access Points
                             </CardTitle>
                             <CardDescription class="text-xs">
-                                Only devices connected to these verified physical store router SSIDs & MAC subnets are authorized to process transactions.
+                                Only devices connected to these verified physical store router SSIDs & MAC subnets are authorized to process
+                                transactions.
                             </CardDescription>
                         </div>
                         <Button
                             v-if="isOwner"
                             id="users-tour-btn-add-wifi"
                             size="sm"
-                            class="h-8 text-xs gap-1.5 bg-primary"
+                            class="h-8 gap-1.5 bg-primary text-xs"
                             @click="newWifiModal = true"
                         >
                             <Plus class="size-3.5" />
@@ -1726,20 +1958,20 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         </Button>
                     </CardHeader>
                     <CardContent class="pt-0">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                             <div
                                 v-for="wifi in whitelistedWifi"
                                 :key="wifi.id"
-                                class="p-3 rounded-xl border border-border/80 bg-muted/20 flex items-center justify-between"
+                                class="flex items-center justify-between rounded-xl border border-border/80 bg-muted/20 p-3"
                             >
                                 <div class="flex items-center gap-3">
-                                    <div class="size-9 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                                    <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600">
                                         <Wifi class="size-4.5" />
                                     </div>
                                     <div>
                                         <p class="text-xs font-bold text-foreground">{{ wifi.ssid }}</p>
-                                        <p class="text-[10px] text-muted-foreground font-mono">BSSID: {{ wifi.bssid }} · Subnet: {{ wifi.subnet }}</p>
-                                        <p class="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
+                                        <p class="font-mono text-[10px] text-muted-foreground">BSSID: {{ wifi.bssid }} · Subnet: {{ wifi.subnet }}</p>
+                                        <p class="mt-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
                                             <Store class="size-3 text-primary" /> {{ wifi.branch }}
                                         </p>
                                     </div>
@@ -1751,11 +1983,11 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                 </Card>
 
                 <!-- Live Connected Staff Devices Table -->
-                <Card id="users-tour-devices-table" class="border-border/80 overflow-hidden">
+                <Card id="users-tour-devices-table" class="overflow-hidden border-border/80">
                     <CardHeader class="pb-3">
                         <div class="flex items-center justify-between">
                             <div>
-                                <CardTitle class="text-base font-bold flex items-center gap-2">
+                                <CardTitle class="flex items-center gap-2 text-base font-bold">
                                     <Smartphone class="size-4 text-primary" />
                                     Live Connected & Bound Staff Devices
                                 </CardTitle>
@@ -1763,26 +1995,24 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                     Real-time inspection of hardware types, operating systems, network connections, and security lock states.
                                 </CardDescription>
                             </div>
-                            <span class="text-xs text-muted-foreground font-mono font-bold">
-                                {{ userDevices.length }} Monitored Devices
-                            </span>
+                            <span class="font-mono text-xs font-bold text-muted-foreground"> {{ userDevices.length }} Monitored Devices </span>
                         </div>
                     </CardHeader>
                     <CardContent class="p-0">
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs">
-                                <thead class="bg-muted/40 text-muted-foreground border-y border-border/80">
+                                <thead class="border-y border-border/80 bg-muted/40 text-muted-foreground">
                                     <tr>
                                         <th class="px-5 py-3 font-semibold uppercase">Staff Member</th>
                                         <th class="px-4 py-3 font-semibold uppercase">Device & Hardware</th>
                                         <th class="px-4 py-3 font-semibold uppercase">Connection & Network</th>
                                         <th class="px-4 py-3 font-semibold uppercase">IP & Location</th>
-                                        <th class="px-4 py-3 font-semibold uppercase text-center">Status</th>
-                                        <th class="px-4 py-3 font-semibold uppercase text-right">Actions</th>
+                                        <th class="px-4 py-3 text-center font-semibold uppercase">Status</th>
+                                        <th class="px-4 py-3 text-right font-semibold uppercase">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-border/60">
-                                    <tr v-for="dev in userDevices" :key="dev.id" class="hover:bg-muted/20 transition-colors">
+                                    <tr v-for="dev in userDevices" :key="dev.id" class="transition-colors hover:bg-muted/20">
                                         <td class="px-5 py-3.5">
                                             <div class="font-bold text-foreground">{{ dev.staffName }}</div>
                                             <div class="text-[10px] text-muted-foreground">{{ dev.role }}</div>
@@ -1791,30 +2021,37 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                         <!-- Device & Hardware Info -->
                                         <td class="px-4 py-3.5">
                                             <div class="flex items-center gap-2.5">
-                                                <div class="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                                <div class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                                     <component :is="deviceIconMap[dev.deviceCategory] || Smartphone" class="size-4" />
                                                 </div>
                                                 <div>
-                                                    <div class="font-bold text-foreground flex items-center gap-1.5">
+                                                    <div class="flex items-center gap-1.5 font-bold text-foreground">
                                                         <span>{{ dev.deviceName }}</span>
-                                                        <Badge variant="outline" class="text-[9px] px-1 py-0 font-mono">{{ dev.deviceCategory }}</Badge>
+                                                        <Badge variant="outline" class="px-1 py-0 font-mono text-[9px]">{{
+                                                            dev.deviceCategory
+                                                        }}</Badge>
                                                     </div>
-                                                    <div class="text-[10px] text-muted-foreground font-mono">{{ dev.os }}</div>
-                                                    <div class="text-[9px] text-muted-foreground font-mono truncate max-w-xs">{{ dev.deviceFingerprint }}</div>
+                                                    <div class="font-mono text-[10px] text-muted-foreground">{{ dev.os }}</div>
+                                                    <div class="max-w-xs truncate font-mono text-[9px] text-muted-foreground">
+                                                        {{ dev.deviceFingerprint }}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
 
                                         <!-- Connection & Network Type -->
                                         <td class="px-4 py-3.5">
-                                            <div class="flex items-center gap-1.5 mb-0.5">
+                                            <div class="mb-0.5 flex items-center gap-1.5">
                                                 <span
                                                     :class="[
-                                                        'inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded border',
-                                                        dev.networkType === 'Store Wi-Fi (Verified)' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' :
-                                                        dev.networkType === 'Cellular SIM (4G/5G)' ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20' :
-                                                        dev.networkType === 'VPN / Proxy' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' :
-                                                        'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+                                                        'inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-bold',
+                                                        dev.networkType === 'Store Wi-Fi (Verified)'
+                                                            ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                                            : dev.networkType === 'Cellular SIM (4G/5G)'
+                                                              ? 'border-sky-500/20 bg-sky-500/10 text-sky-600 dark:text-sky-400'
+                                                              : dev.networkType === 'VPN / Proxy'
+                                                                ? 'border-rose-500/20 bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                                                                : 'border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400',
                                                     ]"
                                                 >
                                                     <Wifi v-if="dev.networkType === 'Store Wi-Fi (Verified)'" class="size-3" />
@@ -1829,14 +2066,20 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
                                         <!-- IP & Location -->
                                         <td class="px-4 py-3.5">
-                                            <p class="text-xs font-mono text-foreground font-bold">{{ dev.ipAddress }}</p>
+                                            <p class="font-mono text-xs font-bold text-foreground">{{ dev.ipAddress }}</p>
                                             <p class="text-[10px] text-muted-foreground">{{ dev.lastActive }}</p>
                                         </td>
 
                                         <!-- Status -->
                                         <td class="px-4 py-3.5 text-center">
                                             <Badge
-                                                :variant="dev.status === 'Authorized & Bound' ? 'success' : dev.status === 'Blocked (VPN Detected)' ? 'destructive' : 'outline'"
+                                                :variant="
+                                                    dev.status === 'Authorized & Bound'
+                                                        ? 'success'
+                                                        : dev.status === 'Blocked (VPN Detected)'
+                                                          ? 'destructive'
+                                                          : 'outline'
+                                                "
                                                 class="text-[10px] font-bold"
                                             >
                                                 {{ dev.status }}
@@ -1851,7 +2094,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                                     :id="dev.id === userDevices[0]?.id ? 'users-tour-btn-remote-lock' : undefined"
                                                     size="sm"
                                                     variant="ghost"
-                                                    class="h-7 text-[11px] text-rose-600 hover:bg-rose-500/10 gap-1"
+                                                    class="h-7 gap-1 text-[11px] text-rose-600 hover:bg-rose-500/10"
                                                     @click="handleRemoteLock(dev)"
                                                 >
                                                     <Ban class="size-3" />
@@ -1861,7 +2104,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                                 <Button
                                                     v-if="dev.status !== 'Authorized & Bound'"
                                                     size="sm"
-                                                    class="h-7 text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
+                                                    class="h-7 gap-1 bg-emerald-600 text-[11px] text-white hover:bg-emerald-700"
                                                     @click="handleAuthorizeDevice(dev)"
                                                 >
                                                     <CheckCircle2 class="size-3" />
@@ -1872,7 +2115,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                                     v-if="dev.bound"
                                                     size="sm"
                                                     variant="ghost"
-                                                    class="h-7 text-[11px] text-muted-foreground hover:text-destructive gap-1"
+                                                    class="h-7 gap-1 text-[11px] text-muted-foreground hover:text-destructive"
                                                     @click="handleRevokeDevice(dev)"
                                                 >
                                                     <XCircle class="size-3" />
@@ -1891,14 +2134,14 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
         <!-- Add Whitelisted Store Wi-Fi Modal -->
         <Dialog :open="newWifiModal" @update:open="(v) => (newWifiModal = v)">
-            <DialogContent class="w-[92vw] sm:max-w-md max-h-[85vh] flex flex-col p-0 overflow-hidden shadow-xl">
-                <DialogHeader class="p-4 border-b border-border/80 bg-muted/20 shrink-0">
-                    <DialogTitle class="text-base font-bold flex items-center gap-2">
+            <DialogContent class="flex max-h-[85vh] w-[92vw] flex-col overflow-hidden p-0 shadow-xl sm:max-w-md">
+                <DialogHeader class="shrink-0 border-b border-border/80 bg-muted/20 p-4">
+                    <DialogTitle class="flex items-center gap-2 text-base font-bold">
                         <Wifi class="size-4 text-emerald-500" />
                         Whitelist Store Wi-Fi Network
                     </DialogTitle>
                 </DialogHeader>
-                <div class="p-4 overflow-y-auto flex-1 space-y-3 text-xs">
+                <div class="flex-1 space-y-3 overflow-y-auto p-4 text-xs">
                     <div>
                         <Label class="text-xs">Wi-Fi Network SSID (Name)</Label>
                         <Input v-model="newWifiForm.ssid" placeholder="e.g. NairobiFresh-POS-Store5G" class="mt-1 text-xs" />
@@ -1906,12 +2149,12 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
                     <div>
                         <Label class="text-xs">Router BSSID / MAC Address (Optional)</Label>
-                        <Input v-model="newWifiForm.bssid" placeholder="e.g. F4:8C:50:A1:3B:90" class="mt-1 text-xs font-mono" />
+                        <Input v-model="newWifiForm.bssid" placeholder="e.g. F4:8C:50:A1:3B:90" class="mt-1 font-mono text-xs" />
                     </div>
 
                     <div>
                         <Label class="text-xs">Local LAN Subnet Range</Label>
-                        <Input v-model="newWifiForm.subnet" placeholder="192.168.10.0/24" class="mt-1 text-xs font-mono" />
+                        <Input v-model="newWifiForm.subnet" placeholder="192.168.10.0/24" class="mt-1 font-mono text-xs" />
                     </div>
 
                     <div>
@@ -1921,7 +2164,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         </select>
                     </div>
                 </div>
-                <DialogFooter class="p-3 border-t border-border/80 bg-muted/20 gap-2 shrink-0">
+                <DialogFooter class="shrink-0 gap-2 border-t border-border/80 bg-muted/20 p-3">
                     <Button variant="ghost" size="sm" @click="newWifiModal = false">Cancel</Button>
                     <Button size="sm" class="bg-primary" :loading="isSavingWifi" @click="handleAddWifi">Save & Whitelist Wi-Fi</Button>
                 </DialogFooter>
@@ -1930,24 +2173,25 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
         <!-- Schedule Shift Modal -->
         <Dialog :open="newShiftModal" @update:open="(v) => (newShiftModal = v)">
-            <DialogContent class="w-[92vw] sm:max-w-md max-h-[85vh] flex flex-col p-0 overflow-hidden shadow-xl">
-                <DialogHeader class="p-4 border-b border-border/80 bg-muted/20 shrink-0">
+            <DialogContent class="flex max-h-[85vh] w-[92vw] flex-col overflow-hidden p-0 shadow-xl sm:max-w-md">
+                <DialogHeader class="shrink-0 border-b border-border/80 bg-muted/20 p-4">
                     <DialogTitle class="text-base font-bold">Assign Staff Duty Shift</DialogTitle>
                 </DialogHeader>
-                <div class="p-4 overflow-y-auto flex-1 space-y-3 text-xs">
+                <div class="flex-1 space-y-3 overflow-y-auto p-4 text-xs">
                     <div>
                         <Label class="text-xs">Select Staff Member</Label>
                         <select v-model="newShiftForm.staffId" class="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs">
-                            <option v-for="u in usersList" :key="u.id" :value="u.id">
-                                {{ u.name }} ({{ u.role }})
-                            </option>
+                            <option v-for="u in usersList" :key="u.id" :value="u.id">{{ u.name }} ({{ u.role }})</option>
                         </select>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <Label class="text-xs">Shift Timing</Label>
-                            <select v-model="newShiftForm.shiftType" class="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs">
+                            <select
+                                v-model="newShiftForm.shiftType"
+                                class="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs"
+                            >
                                 <option value="Morning">Morning (06:30 - 14:30)</option>
                                 <option value="Evening">Evening (14:00 - 22:00)</option>
                                 <option value="Full Day">Full Day (08:00 - 17:00)</option>
@@ -1957,7 +2201,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         </div>
                         <div>
                             <Label class="text-xs">Shift Date</Label>
-                            <Input v-model="newShiftForm.shiftDate" class="mt-1 text-xs font-mono" />
+                            <Input v-model="newShiftForm.shiftDate" class="mt-1 font-mono text-xs" />
                         </div>
                     </div>
 
@@ -1973,7 +2217,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         </select>
                     </div>
                 </div>
-                <DialogFooter class="p-3 border-t border-border/80 bg-muted/20 gap-2 shrink-0">
+                <DialogFooter class="shrink-0 gap-2 border-t border-border/80 bg-muted/20 p-3">
                     <Button variant="ghost" size="sm" @click="newShiftModal = false">Cancel</Button>
                     <Button size="sm" class="bg-primary" :loading="isSavingShift" @click="handleAddShift">Assign Shift</Button>
                 </DialogFooter>
@@ -1982,11 +2226,11 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
         <!-- Add Staff Modal -->
         <Dialog :open="addStaffModal" @update:open="(v) => (addStaffModal = v)">
-            <DialogContent class="w-[92vw] sm:max-w-md max-h-[85vh] flex flex-col p-0 overflow-hidden shadow-xl">
-                <DialogHeader class="p-4 border-b border-border/80 bg-muted/20 shrink-0">
+            <DialogContent class="flex max-h-[85vh] w-[92vw] flex-col overflow-hidden p-0 shadow-xl sm:max-w-md">
+                <DialogHeader class="shrink-0 border-b border-border/80 bg-muted/20 p-4">
                     <DialogTitle class="text-base font-bold">Add New Staff Member</DialogTitle>
                 </DialogHeader>
-                <div class="p-4 overflow-y-auto flex-1 space-y-3 text-xs">
+                <div class="flex-1 space-y-3 overflow-y-auto p-4 text-xs">
                     <div>
                         <Label class="text-xs">Full Name</Label>
                         <Input v-model="newStaff.name" placeholder="e.g. Brian Kipkorir" class="mt-1 text-xs" />
@@ -1997,7 +2241,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     </div>
                     <div>
                         <Label class="text-xs">Phone Number (M-Pesa / SMS)</Label>
-                        <Input v-model="newStaff.phone" placeholder="+254 7XX XXX XXX" class="mt-1 text-xs font-mono" />
+                        <Input v-model="newStaff.phone" placeholder="+254 7XX XXX XXX" class="mt-1 font-mono text-xs" />
                     </div>
                     <div :class="['grid gap-3', isMultiBranch ? 'grid-cols-2' : 'grid-cols-1']">
                         <div>
@@ -2014,7 +2258,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         </div>
                     </div>
                 </div>
-                <DialogFooter class="p-3 border-t border-border/80 bg-muted/20 gap-2 shrink-0">
+                <DialogFooter class="shrink-0 gap-2 border-t border-border/80 bg-muted/20 p-3">
                     <Button variant="ghost" size="sm" @click="addStaffModal = false">Cancel</Button>
                     <Button size="sm" class="bg-primary" :loading="isCreatingStaff" @click="handleCreateStaff">Save & Send Invite</Button>
                 </DialogFooter>
@@ -2023,16 +2267,16 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
         <!-- Edit Staff Member Modal -->
         <Dialog :open="editStaffModal" @update:open="(v) => (editStaffModal = v)">
-            <DialogContent class="w-[92vw] sm:max-w-md max-h-[85vh] flex flex-col p-0 overflow-hidden shadow-xl">
-                <DialogHeader class="p-4 border-b border-border/80 bg-muted/20 shrink-0">
-                    <DialogTitle class="text-base font-bold flex items-center gap-2">
+            <DialogContent class="flex max-h-[85vh] w-[92vw] flex-col overflow-hidden p-0 shadow-xl sm:max-w-md">
+                <DialogHeader class="shrink-0 border-b border-border/80 bg-muted/20 p-4">
+                    <DialogTitle class="flex items-center gap-2 text-base font-bold">
                         <Pencil class="size-4 text-amber-500" />
                         <span>Edit Staff Member</span>
-                        <Badge variant="outline" class="font-mono text-[10px] ml-auto">ID: {{ editStaffForm.id }}</Badge>
+                        <Badge variant="outline" class="ml-auto font-mono text-[10px]">ID: {{ editStaffForm.id }}</Badge>
                     </DialogTitle>
                 </DialogHeader>
 
-                <div class="p-4 overflow-y-auto flex-1 space-y-3.5 text-xs">
+                <div class="flex-1 space-y-3.5 overflow-y-auto p-4 text-xs">
                     <div>
                         <Label class="text-xs font-semibold">Full Name</Label>
                         <Input v-model="editStaffForm.name" placeholder="e.g. David Mwangi" class="mt-1 text-xs" />
@@ -2046,7 +2290,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <Label class="text-xs font-semibold">Phone Number (M-Pesa / SMS)</Label>
-                            <Input v-model="editStaffForm.phone" placeholder="+254 7XX XXX XXX" class="mt-1 text-xs font-mono" />
+                            <Input v-model="editStaffForm.phone" placeholder="+254 7XX XXX XXX" class="mt-1 font-mono text-xs" />
                         </div>
                         <div>
                             <Label class="text-xs font-semibold">Assigned Role</Label>
@@ -2074,7 +2318,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     </div>
 
                     <!-- Password Reset Section -->
-                    <div class="pt-2 border-t border-border/70">
+                    <div class="border-t border-border/70 pt-2">
                         <div class="flex items-center justify-between">
                             <div>
                                 <Label class="text-xs font-semibold">Reset Staff Password</Label>
@@ -2090,23 +2334,23 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                 {{ showEditPassword ? 'Hide Password' : 'Change Password' }}
                             </Button>
                         </div>
-                        <div v-if="showEditPassword" class="mt-2 relative">
+                        <div v-if="showEditPassword" class="relative mt-2">
                             <Input
                                 v-model="editStaffForm.password"
                                 type="text"
                                 placeholder="Enter new password (min 8 characters)"
-                                class="h-8 text-xs font-mono pr-8"
+                                class="h-8 pr-8 font-mono text-xs"
                             />
-                            <Key class="size-3.5 absolute right-2.5 top-2.5 text-muted-foreground" />
+                            <Key class="absolute right-2.5 top-2.5 size-3.5 text-muted-foreground" />
                         </div>
                     </div>
                 </div>
 
-                <DialogFooter class="p-3 border-t border-border/80 bg-muted/20 gap-2 shrink-0">
+                <DialogFooter class="shrink-0 gap-2 border-t border-border/80 bg-muted/20 p-3">
                     <Button variant="ghost" size="sm" @click="editStaffModal = false">Cancel</Button>
                     <Button
                         size="sm"
-                        class="bg-amber-600 hover:bg-amber-700 text-white font-semibold gap-1.5"
+                        class="gap-1.5 bg-amber-600 font-semibold text-white hover:bg-amber-700"
                         :loading="editProcessing"
                         @click="handleUpdateStaff"
                     >
@@ -2119,19 +2363,26 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
         <!-- View Staff Profile & Activity Details Modal -->
         <Dialog :open="viewStaffModal" @update:open="(v) => (viewStaffModal = v)">
-            <DialogContent v-if="viewUserTarget" class="w-[94vw] sm:max-w-3xl md:max-w-4xl max-h-[85vh] flex flex-col p-0 overflow-hidden shadow-2xl rounded-2xl border-border/80">
+            <DialogContent
+                v-if="viewUserTarget"
+                class="flex max-h-[85vh] w-[94vw] flex-col overflow-hidden rounded-2xl border-border/80 p-0 shadow-2xl sm:max-w-3xl md:max-w-4xl"
+            >
                 <!-- User Profile Header Banner -->
-                <div class="p-4 sm:p-5 border-b border-border/70 bg-gradient-to-r from-primary/10 via-card to-card shrink-0">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div class="shrink-0 border-b border-border/70 bg-gradient-to-r from-primary/10 via-card to-card p-4 sm:p-5">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div class="flex items-center gap-3">
-                            <div class="size-11 rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground flex items-center justify-center font-bold text-lg shadow-md ring-4 ring-primary/10">
+                            <div
+                                class="flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-lg font-bold text-primary-foreground shadow-md ring-4 ring-primary/10"
+                            >
                                 {{ viewUserTarget.name.charAt(0).toUpperCase() }}
                             </div>
                             <div>
-                                <div class="flex items-center gap-2 flex-wrap">
+                                <div class="flex flex-wrap items-center gap-2">
                                     <h3 class="text-base font-bold text-foreground">{{ viewUserTarget.name }}</h3>
                                     <Badge
-                                        :variant="viewUserTarget.role === 'Owner' ? 'default' : viewUserTarget.role === 'Manager' ? 'info' : 'outline'"
+                                        :variant="
+                                            viewUserTarget.role === 'Owner' ? 'default' : viewUserTarget.role === 'Manager' ? 'info' : 'outline'
+                                        "
                                         class="font-mono text-xs font-semibold"
                                     >
                                         {{ viewUserTarget.role }}
@@ -2140,25 +2391,29 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                         {{ viewUserTarget.status }}
                                     </Badge>
                                 </div>
-                                <div class="flex items-center gap-2.5 text-xs text-muted-foreground mt-0.5 flex-wrap">
+                                <div class="mt-0.5 flex flex-wrap items-center gap-2.5 text-xs text-muted-foreground">
                                     <span class="font-mono">{{ viewUserTarget.email }}</span>
                                     <span>•</span>
                                     <span class="font-mono">{{ viewUserTarget.phone || 'No phone' }}</span>
                                     <span>•</span>
-                                    <span class="flex items-center gap-1"><Store class="size-3 text-muted-foreground" /> {{ viewUserTarget.branch }}</span>
+                                    <span class="flex items-center gap-1"
+                                        ><Store class="size-3 text-muted-foreground" /> {{ viewUserTarget.branch }}</span
+                                    >
                                 </div>
                             </div>
                         </div>
 
-                        <div class="flex items-center gap-2 shrink-0">
+                        <div class="flex shrink-0 items-center gap-2">
                             <Button
                                 variant="outline"
                                 size="sm"
-                                class="h-7 text-xs gap-1.5 border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10"
-                                @click="() => {
-                                    viewStaffModal = false;
-                                    openEditUser(viewUserTarget);
-                                }"
+                                class="h-7 gap-1.5 border-amber-500/30 text-xs text-amber-700 hover:bg-amber-500/10 dark:text-amber-300"
+                                @click="
+                                    () => {
+                                        viewStaffModal = false;
+                                        openEditUser(viewUserTarget);
+                                    }
+                                "
                             >
                                 <Pencil class="size-3" />
                                 Edit User
@@ -2168,10 +2423,10 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                 variant="outline"
                                 size="sm"
                                 :class="[
-                                    'h-7 text-xs gap-1.5',
+                                    'h-7 gap-1.5 text-xs',
                                     viewUserTarget.status === 'Active'
-                                        ? 'border-rose-500/30 text-rose-700 dark:text-rose-300 hover:bg-rose-500/10'
-                                        : 'border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10'
+                                        ? 'border-rose-500/30 text-rose-700 hover:bg-rose-500/10 dark:text-rose-300'
+                                        : 'border-emerald-500/30 text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-300',
                                 ]"
                                 @click="handleToggleStatus(viewUserTarget)"
                             >
@@ -2183,12 +2438,14 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     </div>
 
                     <!-- Inner Navigation Tabs -->
-                    <div class="flex items-center gap-1 border-t border-border/60 mt-3 pt-2.5 overflow-x-auto text-xs font-semibold scrollbar-none">
+                    <div class="scrollbar-none mt-3 flex items-center gap-1 overflow-x-auto border-t border-border/60 pt-2.5 text-xs font-semibold">
                         <button
                             type="button"
                             :class="[
-                                'px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap',
-                                viewUserTab === 'overview' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+                                'flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1 transition-all',
+                                viewUserTab === 'overview'
+                                    ? 'shadow-xs bg-primary text-primary-foreground'
+                                    : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground',
                             ]"
                             @click="viewUserTab = 'overview'"
                         >
@@ -2198,8 +2455,10 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         <button
                             type="button"
                             :class="[
-                                'px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap',
-                                viewUserTab === 'schedule' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+                                'flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 transition-all',
+                                viewUserTab === 'schedule'
+                                    ? 'shadow-xs bg-primary text-primary-foreground'
+                                    : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground',
                             ]"
                             @click="viewUserTab = 'schedule'"
                         >
@@ -2209,8 +2468,10 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         <button
                             type="button"
                             :class="[
-                                'px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap',
-                                viewUserTab === 'sales' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+                                'flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 transition-all',
+                                viewUserTab === 'sales'
+                                    ? 'shadow-xs bg-primary text-primary-foreground'
+                                    : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground',
                             ]"
                             @click="viewUserTab = 'sales'"
                         >
@@ -2220,8 +2481,10 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         <button
                             type="button"
                             :class="[
-                                'px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap',
-                                viewUserTab === 'logins' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+                                'flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 transition-all',
+                                viewUserTab === 'logins'
+                                    ? 'shadow-xs bg-primary text-primary-foreground'
+                                    : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground',
                             ]"
                             @click="viewUserTab = 'logins'"
                         >
@@ -2232,85 +2495,107 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                 </div>
 
                 <!-- Tab Content Body -->
-                <div class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 scrollbar-thin">
+                <div class="scrollbar-thin flex-1 space-y-4 overflow-y-auto p-4 sm:p-5">
                     <!-- ── TAB 1: OVERVIEW & RELATIVE INFO ───────────────────── -->
                     <div v-if="viewUserTab === 'overview'" class="space-y-4">
                         <!-- Quick KPI Grid -->
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                            <div class="p-3 bg-card rounded-xl border border-border/80 shadow-2xs">
-                                <span class="text-muted-foreground text-[11px] flex items-center gap-1">
+                        <div class="grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
+                            <div class="shadow-2xs rounded-xl border border-border/80 bg-card p-3">
+                                <span class="flex items-center gap-1 text-[11px] text-muted-foreground">
                                     <TrendingUp class="size-3 text-emerald-500" /> Total Sales Generated
                                 </span>
-                                <p class="text-base font-bold font-mono text-emerald-600 mt-1">
+                                <p class="mt-1 font-mono text-base font-bold text-emerald-600">
                                     KES {{ (viewUserTarget.sales_total || 0).toLocaleString() }}
                                 </p>
                             </div>
-                            <div class="p-3 bg-card rounded-xl border border-border/80 shadow-2xs">
-                                <span class="text-muted-foreground text-[11px] flex items-center gap-1">
+                            <div class="shadow-2xs rounded-xl border border-border/80 bg-card p-3">
+                                <span class="flex items-center gap-1 text-[11px] text-muted-foreground">
                                     <Receipt class="size-3 text-sky-500" /> Orders Processed
                                 </span>
-                                <p class="text-base font-bold font-mono text-foreground mt-1">
-                                    {{ viewUserTarget.sales_count || 0 }} sales
-                                </p>
+                                <p class="mt-1 font-mono text-base font-bold text-foreground">{{ viewUserTarget.sales_count || 0 }} sales</p>
                             </div>
-                            <div class="p-3 bg-card rounded-xl border border-border/80 shadow-2xs">
-                                <span class="text-muted-foreground text-[11px] flex items-center gap-1">
+                            <div class="shadow-2xs rounded-xl border border-border/80 bg-card p-3">
+                                <span class="flex items-center gap-1 text-[11px] text-muted-foreground">
                                     <Coins class="size-3 text-amber-500" /> Average Basket Size
                                 </span>
-                                <p class="text-base font-bold font-mono text-foreground mt-1">
+                                <p class="mt-1 font-mono text-base font-bold text-foreground">
                                     KES {{ (viewUserTarget.avg_ticket || 0).toLocaleString() }}
                                 </p>
                             </div>
-                            <div class="p-3 bg-card rounded-xl border border-border/80 shadow-2xs">
-                                <span class="text-muted-foreground text-[11px] flex items-center gap-1">
+                            <div class="shadow-2xs rounded-xl border border-border/80 bg-card p-3">
+                                <span class="flex items-center gap-1 text-[11px] text-muted-foreground">
                                     <Clock class="size-3 text-primary" /> Duty Shifts Assigned
                                 </span>
-                                <p class="text-base font-bold font-mono text-foreground mt-1">
-                                    {{ userDutyShifts.length }} scheduled
-                                </p>
+                                <p class="mt-1 font-mono text-base font-bold text-foreground">{{ userDutyShifts.length }} scheduled</p>
                             </div>
                         </div>
 
                         <!-- Two Column Detailed Cards -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <!-- Role Authorization Capabilities -->
                             <Card class="border-border/80">
-                                <CardHeader class="pb-3 border-b border-border/70">
-                                    <CardTitle class="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                <CardHeader class="border-b border-border/70 pb-3">
+                                    <CardTitle class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                         <ShieldCheck class="size-4 text-primary" />
                                         Role Capabilities for {{ viewUserTarget.role }}
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent class="p-4 space-y-2.5 text-xs">
-                                    <div class="flex items-center justify-between py-1 border-b border-border/50">
+                                <CardContent class="space-y-2.5 p-4 text-xs">
+                                    <div class="flex items-center justify-between border-b border-border/50 py-1">
                                         <span class="flex items-center gap-2">
                                             <Store class="size-3.5 text-muted-foreground" /> POS Terminal Checkout
                                         </span>
-                                        <Badge :variant="['Owner', 'Manager', 'Cashier', 'Supervisor'].includes(viewUserTarget.role) ? 'success' : 'outline'" class="text-[10px]">
-                                            {{ ['Owner', 'Manager', 'Cashier', 'Supervisor'].includes(viewUserTarget.role) ? 'Authorized' : 'Restricted' }}
+                                        <Badge
+                                            :variant="
+                                                ['Owner', 'Manager', 'Cashier', 'Supervisor'].includes(viewUserTarget.role) ? 'success' : 'outline'
+                                            "
+                                            class="text-[10px]"
+                                        >
+                                            {{
+                                                ['Owner', 'Manager', 'Cashier', 'Supervisor'].includes(viewUserTarget.role)
+                                                    ? 'Authorized'
+                                                    : 'Restricted'
+                                            }}
                                         </Badge>
                                     </div>
-                                    <div class="flex items-center justify-between py-1 border-b border-border/50">
+                                    <div class="flex items-center justify-between border-b border-border/50 py-1">
                                         <span class="flex items-center gap-2">
                                             <Receipt class="size-3.5 text-muted-foreground" /> Sales Records & Returns
                                         </span>
-                                        <Badge :variant="['Owner', 'Manager', 'Supervisor', 'Accountant'].includes(viewUserTarget.role) ? 'success' : 'outline'" class="text-[10px]">
-                                            {{ ['Owner', 'Manager', 'Supervisor', 'Accountant'].includes(viewUserTarget.role) ? 'Authorized' : 'Restricted' }}
+                                        <Badge
+                                            :variant="
+                                                ['Owner', 'Manager', 'Supervisor', 'Accountant'].includes(viewUserTarget.role) ? 'success' : 'outline'
+                                            "
+                                            class="text-[10px]"
+                                        >
+                                            {{
+                                                ['Owner', 'Manager', 'Supervisor', 'Accountant'].includes(viewUserTarget.role)
+                                                    ? 'Authorized'
+                                                    : 'Restricted'
+                                            }}
                                         </Badge>
                                     </div>
-                                    <div class="flex items-center justify-between py-1 border-b border-border/50">
+                                    <div class="flex items-center justify-between border-b border-border/50 py-1">
                                         <span class="flex items-center gap-2">
                                             <Layers class="size-3.5 text-muted-foreground" /> Inventory & Stock Receiving
                                         </span>
-                                        <Badge :variant="['Owner', 'Manager', 'Inventory Manager'].includes(viewUserTarget.role) ? 'success' : 'outline'" class="text-[10px]">
-                                            {{ ['Owner', 'Manager', 'Inventory Manager'].includes(viewUserTarget.role) ? 'Authorized' : 'Restricted' }}
+                                        <Badge
+                                            :variant="['Owner', 'Manager', 'Inventory Manager'].includes(viewUserTarget.role) ? 'success' : 'outline'"
+                                            class="text-[10px]"
+                                        >
+                                            {{
+                                                ['Owner', 'Manager', 'Inventory Manager'].includes(viewUserTarget.role) ? 'Authorized' : 'Restricted'
+                                            }}
                                         </Badge>
                                     </div>
-                                    <div class="flex items-center justify-between py-1 border-b border-border/50">
+                                    <div class="flex items-center justify-between border-b border-border/50 py-1">
                                         <span class="flex items-center gap-2">
                                             <TrendingUp class="size-3.5 text-muted-foreground" /> Financial Reports & P&L
                                         </span>
-                                        <Badge :variant="['Owner', 'Manager', 'Accountant'].includes(viewUserTarget.role) ? 'success' : 'outline'" class="text-[10px]">
+                                        <Badge
+                                            :variant="['Owner', 'Manager', 'Accountant'].includes(viewUserTarget.role) ? 'success' : 'outline'"
+                                            class="text-[10px]"
+                                        >
                                             {{ ['Owner', 'Manager', 'Accountant'].includes(viewUserTarget.role) ? 'Authorized' : 'Restricted' }}
                                         </Badge>
                                     </div>
@@ -2327,32 +2612,36 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
                             <!-- Account & Employment Metadata -->
                             <Card class="border-border/80">
-                                <CardHeader class="pb-3 border-b border-border/70">
-                                    <CardTitle class="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                <CardHeader class="border-b border-border/70 pb-3">
+                                    <CardTitle class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                         <UserCheck class="size-4 text-primary" />
                                         Profile & Security Metadata
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent class="p-4 space-y-2.5 text-xs">
-                                    <div class="flex items-center justify-between py-1 border-b border-border/50">
+                                <CardContent class="space-y-2.5 p-4 text-xs">
+                                    <div class="flex items-center justify-between border-b border-border/50 py-1">
                                         <span class="text-muted-foreground">Staff Member ID</span>
-                                        <span class="font-mono font-bold text-foreground">#STF-{{ viewUserTarget.id.padStart ? viewUserTarget.id.padStart(4, '0') : viewUserTarget.id }}</span>
+                                        <span class="font-mono font-bold text-foreground"
+                                            >#STF-{{ viewUserTarget.id.padStart ? viewUserTarget.id.padStart(4, '0') : viewUserTarget.id }}</span
+                                        >
                                     </div>
-                                    <div class="flex items-center justify-between py-1 border-b border-border/50">
+                                    <div class="flex items-center justify-between border-b border-border/50 py-1">
                                         <span class="text-muted-foreground">Account Created</span>
-                                        <span class="font-mono text-foreground">{{ viewUserTarget.created_at_formatted || viewUserTarget.created_at }}</span>
+                                        <span class="font-mono text-foreground">{{
+                                            viewUserTarget.created_at_formatted || viewUserTarget.created_at
+                                        }}</span>
                                     </div>
-                                    <div class="flex items-center justify-between py-1 border-b border-border/50">
+                                    <div class="flex items-center justify-between border-b border-border/50 py-1">
                                         <span class="text-muted-foreground">Default Operating Branch</span>
                                         <span class="font-semibold text-foreground">{{ viewUserTarget.branch }}</span>
                                     </div>
-                                    <div class="flex items-center justify-between py-1 border-b border-border/50">
+                                    <div class="flex items-center justify-between border-b border-border/50 py-1">
                                         <span class="text-muted-foreground">Hardware Terminal Binding</span>
                                         <Badge variant="success" class="text-[10px]">{{ userBoundDevices.length }} Device(s) Bound</Badge>
                                     </div>
                                     <div class="flex items-center justify-between py-1">
                                         <span class="text-muted-foreground">Security Status</span>
-                                        <span class="flex items-center gap-1 text-emerald-600 font-semibold">
+                                        <span class="flex items-center gap-1 font-semibold text-emerald-600">
                                             <ShieldCheck class="size-3.5" /> No Flagged Incidents
                                         </span>
                                     </div>
@@ -2364,13 +2653,15 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     <!-- ── TAB 2: SCHEDULE & SHIFTS ────────────────────────── -->
                     <div v-if="viewUserTab === 'schedule'" class="space-y-4">
                         <!-- Current Today Assignment Banner -->
-                        <div class="p-4 rounded-xl border border-border/80 bg-muted/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div
+                            class="flex flex-col gap-3 rounded-xl border border-border/80 bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between"
+                        >
                             <div>
-                                <h4 class="font-bold text-sm text-foreground flex items-center gap-2">
+                                <h4 class="flex items-center gap-2 text-sm font-bold text-foreground">
                                     <Clock class="size-4 text-emerald-600" />
                                     Active Duty Status for Today
                                 </h4>
-                                <div v-if="userDutyShifts.length > 0" class="text-xs text-muted-foreground mt-1 space-y-0.5">
+                                <div v-if="userDutyShifts.length > 0" class="mt-1 space-y-0.5 text-xs text-muted-foreground">
                                     <p>
                                         Assigned Station:
                                         <strong class="text-foreground">{{ userDutyShifts[0].station }}</strong>
@@ -2378,16 +2669,14 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                     </p>
                                     <p>Branch Location: {{ userDutyShifts[0].branch }}</p>
                                 </div>
-                                <div v-else class="text-xs text-muted-foreground mt-1">
-                                    No shifts assigned on the roster for today.
-                                </div>
+                                <div v-else class="mt-1 text-xs text-muted-foreground">No shifts assigned on the roster for today.</div>
                             </div>
 
                             <div class="flex items-center gap-2">
                                 <Button
                                     v-if="userDutyShifts.length > 0 && userDutyShifts[0].status === 'Scheduled'"
                                     size="sm"
-                                    class="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 gap-1.5"
+                                    class="h-8 gap-1.5 bg-emerald-600 text-xs hover:bg-emerald-700"
                                     @click="handleQuickClockIn(userDutyShifts[0])"
                                 >
                                     <Clock class="size-3.5" />
@@ -2396,11 +2685,13 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                 <Button
                                     size="sm"
                                     variant="outline"
-                                    class="h-8 text-xs gap-1.5"
-                                    @click="() => {
-                                        newShiftForm.staffId = viewUserTarget.id;
-                                        newShiftModal = true;
-                                    }"
+                                    class="h-8 gap-1.5 text-xs"
+                                    @click="
+                                        () => {
+                                            newShiftForm.staffId = viewUserTarget.id;
+                                            newShiftModal = true;
+                                        }
+                                    "
                                 >
                                     <Plus class="size-3.5" />
                                     Assign Shift
@@ -2410,21 +2701,21 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
                         <!-- Scheduled Shifts Table -->
                         <Card class="border-border/80">
-                            <CardHeader class="pb-3 border-b border-border/70">
-                                <CardTitle class="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                            <CardHeader class="border-b border-border/70 pb-3">
+                                <CardTitle class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                     <Calendar class="size-4 text-primary" />
                                     Scheduled Duty Shifts ({{ userDutyShifts.length }})
                                 </CardTitle>
                             </CardHeader>
-                            <div class="p-0 overflow-x-auto">
-                                <table class="w-full text-left text-xs whitespace-nowrap">
-                                    <thead class="bg-muted/40 text-muted-foreground border-b border-border/70">
+                            <div class="overflow-x-auto p-0">
+                                <table class="w-full whitespace-nowrap text-left text-xs">
+                                    <thead class="border-b border-border/70 bg-muted/40 text-muted-foreground">
                                         <tr>
                                             <th class="px-4 py-2.5 font-semibold">Shift Date</th>
                                             <th class="px-4 py-2.5 font-semibold">Timing & Hours</th>
                                             <th class="px-4 py-2.5 font-semibold">Assigned Station / POS</th>
                                             <th class="px-4 py-2.5 font-semibold">Branch</th>
-                                            <th class="px-4 py-2.5 font-semibold text-center">Status</th>
+                                            <th class="px-4 py-2.5 text-center font-semibold">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-border/60">
@@ -2433,11 +2724,11 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                             <td class="px-4 py-3">
                                                 <Badge
                                                     :variant="s.shiftType === 'Morning' ? 'success' : s.shiftType === 'Evening' ? 'info' : 'default'"
-                                                    class="font-semibold text-[10px]"
+                                                    class="text-[10px] font-semibold"
                                                 >
                                                     {{ s.shiftType }}
                                                 </Badge>
-                                                <span class="text-[11px] text-muted-foreground font-mono ml-2">{{ s.shiftHours }}</span>
+                                                <span class="ml-2 font-mono text-[11px] text-muted-foreground">{{ s.shiftHours }}</span>
                                             </td>
                                             <td class="px-4 py-3 font-mono font-semibold">{{ s.station }}</td>
                                             <td class="px-4 py-3 text-muted-foreground">{{ s.branch }}</td>
@@ -2448,7 +2739,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                             </td>
                                         </tr>
                                         <tr v-if="userDutyShifts.length === 0">
-                                            <td colspan="5" class="px-4 py-8 text-center text-muted-foreground text-xs">
+                                            <td colspan="5" class="px-4 py-8 text-center text-xs text-muted-foreground">
                                                 No duty shifts scheduled for {{ viewUserTarget.name }}. Use "Assign Shift" to schedule.
                                             </td>
                                         </tr>
@@ -2459,21 +2750,21 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
                         <!-- Attendance & Clock In / Out Log -->
                         <Card class="border-border/80">
-                            <CardHeader class="pb-3 border-b border-border/70">
-                                <CardTitle class="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                            <CardHeader class="border-b border-border/70 pb-3">
+                                <CardTitle class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                     <Clock class="size-4 text-primary" />
                                     Attendance & Clock-In Sessions History
                                 </CardTitle>
                             </CardHeader>
-                            <div class="p-0 overflow-x-auto">
-                                <table class="w-full text-left text-xs whitespace-nowrap">
-                                    <thead class="bg-muted/40 text-muted-foreground border-b border-border/70">
+                            <div class="overflow-x-auto p-0">
+                                <table class="w-full whitespace-nowrap text-left text-xs">
+                                    <thead class="border-b border-border/70 bg-muted/40 text-muted-foreground">
                                         <tr>
                                             <th class="px-4 py-2.5 font-semibold">Clock In</th>
                                             <th class="px-4 py-2.5 font-semibold">Clock Out</th>
                                             <th class="px-4 py-2.5 font-semibold">Duration</th>
                                             <th class="px-4 py-2.5 font-semibold">Station / Branch</th>
-                                            <th class="px-4 py-2.5 font-semibold text-center">Session Status</th>
+                                            <th class="px-4 py-2.5 text-center font-semibold">Session Status</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-border/60">
@@ -2489,7 +2780,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                             </td>
                                         </tr>
                                         <tr v-if="!viewUserTarget.clock_sessions || viewUserTarget.clock_sessions.length === 0">
-                                            <td colspan="5" class="px-4 py-6 text-center text-muted-foreground text-xs">
+                                            <td colspan="5" class="px-4 py-6 text-center text-xs text-muted-foreground">
                                                 No recorded clock-in sessions yet for this user.
                                             </td>
                                         </tr>
@@ -2502,10 +2793,12 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     <!-- ── TAB 3: SALES & PERFORMANCE (WITH SHIFT TOGGLE) ──── -->
                     <div v-if="viewUserTab === 'sales'" class="space-y-4">
                         <!-- Shift / Day Sales History Toggle Bar -->
-                        <div class="p-4 rounded-xl border border-border/80 bg-muted/20 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                        <div
+                            class="flex flex-col gap-3 rounded-xl border border-border/80 bg-muted/20 p-4 lg:flex-row lg:items-center lg:justify-between"
+                        >
                             <div class="space-y-1">
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <h4 class="font-bold text-sm text-foreground flex items-center gap-2">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <h4 class="flex items-center gap-2 text-sm font-bold text-foreground">
                                         <ShoppingBag class="size-4 text-emerald-600" />
                                         <span>Daily Shift Sales History</span>
                                     </h4>
@@ -2514,22 +2807,18 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                         variant="success"
                                         class="gap-1 text-[10px] font-semibold"
                                     >
-                                        <span class="size-1.5 rounded-full bg-white animate-pulse"></span>
+                                        <span class="size-1.5 animate-pulse rounded-full bg-white"></span>
                                         Live Shift In Progress
                                     </Badge>
                                     <Badge
                                         v-else-if="selectedSalesShift === 'current' && shiftEndedMap[viewUserTarget.id]"
                                         variant="outline"
-                                        class="gap-1 text-[10px] border-emerald-500/40 text-emerald-600 font-semibold"
+                                        class="gap-1 border-emerald-500/40 text-[10px] font-semibold text-emerald-600"
                                     >
                                         <CheckCircle2 class="size-3 text-emerald-500" />
                                         Clean Shift Started (0 Sales)
                                     </Badge>
-                                    <Badge
-                                        v-else
-                                        variant="outline"
-                                        class="gap-1 text-[10px] text-muted-foreground"
-                                    >
+                                    <Badge v-else variant="outline" class="gap-1 text-[10px] text-muted-foreground">
                                         <Clock class="size-3" />
                                         Archived Shift Ledger
                                     </Badge>
@@ -2540,18 +2829,18 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                             </div>
 
                             <!-- Shift Selector Pills & End Shift Action -->
-                            <div class="flex items-center gap-2 flex-wrap">
+                            <div class="flex flex-wrap items-center gap-2">
                                 <!-- Shift Selection Dropdown / Buttons -->
-                                <div class="flex rounded-lg border border-border/80 p-0.5 bg-card text-xs">
+                                <div class="flex rounded-lg border border-border/80 bg-card p-0.5 text-xs">
                                     <button
                                         v-for="opt in userShiftOptions"
                                         :key="opt.id"
                                         type="button"
                                         :class="[
-                                            'px-2.5 py-1.5 rounded-md transition-all font-medium whitespace-nowrap',
+                                            'whitespace-nowrap rounded-md px-2.5 py-1.5 font-medium transition-all',
                                             selectedSalesShift === opt.id
-                                                ? 'bg-primary text-primary-foreground shadow-2xs font-semibold'
-                                                : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+                                                ? 'shadow-2xs bg-primary font-semibold text-primary-foreground'
+                                                : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground',
                                         ]"
                                         @click="selectedSalesShift = opt.id"
                                     >
@@ -2564,7 +2853,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                     v-if="selectedSalesShift === 'current' && !shiftEndedMap[viewUserTarget.id]"
                                     variant="destructive"
                                     size="sm"
-                                    class="h-8 text-xs gap-1.5 bg-rose-600 hover:bg-rose-700 font-semibold shadow-xs"
+                                    class="shadow-xs h-8 gap-1.5 bg-rose-600 text-xs font-semibold hover:bg-rose-700"
                                     title="End active shift and start fresh sales ledger for the next shift/day"
                                     @click="handleEndCurrentShift"
                                 >
@@ -2575,7 +2864,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                     v-else-if="shiftEndedMap[viewUserTarget.id]"
                                     variant="outline"
                                     size="sm"
-                                    class="h-8 text-xs gap-1.5 border-emerald-600/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 font-semibold"
+                                    class="h-8 gap-1.5 border-emerald-600/30 text-xs font-semibold text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-300"
                                     @click="handleStartNewShift"
                                 >
                                     <History class="size-3.5" />
@@ -2585,7 +2874,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                     v-else
                                     variant="outline"
                                     size="sm"
-                                    class="h-8 text-xs gap-1.5 border-primary/30 text-primary"
+                                    class="h-8 gap-1.5 border-primary/30 text-xs text-primary"
                                     @click="selectedSalesShift = 'current'"
                                 >
                                     <ArrowUpRight class="size-3.5" />
@@ -2595,94 +2884,92 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         </div>
 
                         <!-- Dynamic Summary metrics for selected shift -->
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                            <div class="p-3 bg-card rounded-xl border border-border/80 shadow-2xs">
-                                <span class="text-muted-foreground text-[11px] flex items-center gap-1">
+                        <div class="grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
+                            <div class="shadow-2xs rounded-xl border border-border/80 bg-card p-3">
+                                <span class="flex items-center gap-1 text-[11px] text-muted-foreground">
                                     <TrendingUp class="size-3 text-emerald-500" /> Shift Sales Revenue
                                 </span>
-                                <p class="text-base font-bold font-mono text-emerald-600 mt-1">
-                                    KES {{ activeShiftSalesTotal.toLocaleString() }}
-                                </p>
-                                <span class="text-[10px] text-muted-foreground font-mono">
+                                <p class="mt-1 font-mono text-base font-bold text-emerald-600">KES {{ activeShiftSalesTotal.toLocaleString() }}</p>
+                                <span class="font-mono text-[10px] text-muted-foreground">
                                     {{ selectedSalesShift === 'all' ? 'All-Time Total' : 'For Selected Shift' }}
                                 </span>
                             </div>
-                            <div class="p-3 bg-card rounded-xl border border-border/80 shadow-2xs">
-                                <span class="text-muted-foreground text-[11px] flex items-center gap-1">
+                            <div class="shadow-2xs rounded-xl border border-border/80 bg-card p-3">
+                                <span class="flex items-center gap-1 text-[11px] text-muted-foreground">
                                     <Coins class="size-3 text-emerald-600" /> Attributed Gross Profit
                                 </span>
-                                <p class="text-base font-bold font-mono text-foreground mt-1">
-                                    KES {{ activeShiftSalesProfit.toLocaleString() }}
-                                </p>
-                                <span class="text-[10px] text-muted-foreground font-mono">Margin included</span>
+                                <p class="mt-1 font-mono text-base font-bold text-foreground">KES {{ activeShiftSalesProfit.toLocaleString() }}</p>
+                                <span class="font-mono text-[10px] text-muted-foreground">Margin included</span>
                             </div>
-                            <div class="p-3 bg-card rounded-xl border border-border/80 shadow-2xs">
-                                <span class="text-muted-foreground text-[11px] flex items-center gap-1">
+                            <div class="shadow-2xs rounded-xl border border-border/80 bg-card p-3">
+                                <span class="flex items-center gap-1 text-[11px] text-muted-foreground">
                                     <Receipt class="size-3 text-sky-500" /> Shift Receipts Issued
                                 </span>
-                                <p class="text-base font-bold font-mono text-foreground mt-1">
-                                    {{ activeShiftSalesCount }} transactions
-                                </p>
-                                <span class="text-[10px] text-muted-foreground font-mono">
+                                <p class="mt-1 font-mono text-base font-bold text-foreground">{{ activeShiftSalesCount }} transactions</p>
+                                <span class="font-mono text-[10px] text-muted-foreground">
                                     {{ activeShiftSalesCount === 0 ? 'Clean Slate' : 'Processed' }}
                                 </span>
                             </div>
-                            <div class="p-3 bg-card rounded-xl border border-border/80 shadow-2xs">
-                                <span class="text-muted-foreground text-[11px] flex items-center gap-1">
+                            <div class="shadow-2xs rounded-xl border border-border/80 bg-card p-3">
+                                <span class="flex items-center gap-1 text-[11px] text-muted-foreground">
                                     <CreditCard class="size-3 text-amber-500" /> Average Ticket Size
                                 </span>
-                                <p class="text-base font-bold font-mono text-primary mt-1">
-                                    KES {{ activeShiftAvgTicket.toLocaleString() }}
-                                </p>
-                                <span class="text-[10px] text-muted-foreground font-mono">Per transaction</span>
+                                <p class="mt-1 font-mono text-base font-bold text-primary">KES {{ activeShiftAvgTicket.toLocaleString() }}</p>
+                                <span class="font-mono text-[10px] text-muted-foreground">Per transaction</span>
                             </div>
                         </div>
 
                         <!-- Sales Receipts Table for Selected Shift -->
-                        <Card class="border-border/80 shadow-2xs">
-                            <CardHeader class="pb-3 border-b border-border/70 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <Card class="shadow-2xs border-border/80">
+                            <CardHeader class="flex flex-col gap-2 border-b border-border/70 pb-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
-                                    <CardTitle class="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                    <CardTitle class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                         <ShoppingBag class="size-4 text-primary" />
                                         <span>Transactions for:</span>
-                                        <span class="text-foreground font-semibold normal-case">
-                                            {{ userShiftOptions.find(o => o.id === selectedSalesShift)?.label || 'Current Shift' }}
+                                        <span class="font-semibold normal-case text-foreground">
+                                            {{ userShiftOptions.find((o) => o.id === selectedSalesShift)?.label || 'Current Shift' }}
                                         </span>
                                     </CardTitle>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <Badge variant="outline" class="text-[10px] font-mono">
-                                        {{ activeShiftSalesCount }} Receipts
-                                    </Badge>
+                                    <Badge variant="outline" class="font-mono text-[10px]"> {{ activeShiftSalesCount }} Receipts </Badge>
                                     <Badge
                                         :variant="selectedSalesShift === 'current' && !shiftEndedMap[viewUserTarget.id] ? 'success' : 'outline'"
                                         class="text-[10px]"
                                     >
-                                        {{ selectedSalesShift === 'current' && !shiftEndedMap[viewUserTarget.id] ? 'Shift Active' : 'Shift Finalized' }}
+                                        {{
+                                            selectedSalesShift === 'current' && !shiftEndedMap[viewUserTarget.id] ? 'Shift Active' : 'Shift Finalized'
+                                        }}
                                     </Badge>
                                 </div>
                             </CardHeader>
-                            <div class="p-0 overflow-x-auto">
-                                <table class="w-full text-left text-xs whitespace-nowrap">
-                                    <thead class="bg-muted/40 text-muted-foreground border-b border-border/70">
+                            <div class="overflow-x-auto p-0">
+                                <table class="w-full whitespace-nowrap text-left text-xs">
+                                    <thead class="border-b border-border/70 bg-muted/40 text-muted-foreground">
                                         <tr>
                                             <th class="px-4 py-2.5 font-semibold">Receipt Number</th>
                                             <th class="px-4 py-2.5 font-semibold">Date & Time</th>
                                             <th class="px-4 py-2.5 font-semibold">Customer</th>
                                             <th class="px-4 py-2.5 font-semibold">Payment Method</th>
-                                            <th class="px-4 py-2.5 font-semibold text-right">Total (KES)</th>
-                                            <th class="px-4 py-2.5 font-semibold text-right">Profit (KES)</th>
-                                            <th class="px-4 py-2.5 font-semibold text-center">Status</th>
+                                            <th class="px-4 py-2.5 text-right font-semibold">Total (KES)</th>
+                                            <th class="px-4 py-2.5 text-right font-semibold">Profit (KES)</th>
+                                            <th class="px-4 py-2.5 text-center font-semibold">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-border/60">
                                         <tr v-for="(sale, idx) in activeUserSales" :key="idx" class="hover:bg-muted/30">
                                             <td class="px-4 py-3 font-mono font-bold text-foreground">{{ sale.receipt_number }}</td>
-                                            <td class="px-4 py-3 text-muted-foreground font-mono">{{ sale.created_at }}</td>
+                                            <td class="px-4 py-3 font-mono text-muted-foreground">{{ sale.created_at }}</td>
                                             <td class="px-4 py-3 font-semibold text-foreground">{{ sale.customer_name || 'Walk-in Customer' }}</td>
                                             <td class="px-4 py-3">
                                                 <Badge
-                                                    :variant="sale.payment_method.includes('M-Pesa') ? 'success' : sale.payment_method.includes('Cash') ? 'warning' : 'info'"
+                                                    :variant="
+                                                        sale.payment_method.includes('M-Pesa')
+                                                            ? 'success'
+                                                            : sale.payment_method.includes('Cash')
+                                                              ? 'warning'
+                                                              : 'info'
+                                                    "
                                                     class="text-[10px]"
                                                 >
                                                     {{ sale.payment_method }}
@@ -2699,25 +2986,32 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                             </td>
                                         </tr>
                                         <tr v-if="activeUserSales.length === 0">
-                                            <td colspan="7" class="px-4 py-12 text-center text-muted-foreground text-xs">
-                                                <div class="max-w-sm mx-auto space-y-2">
-                                                    <div class="size-10 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
+                                            <td colspan="7" class="px-4 py-12 text-center text-xs text-muted-foreground">
+                                                <div class="mx-auto max-w-sm space-y-2">
+                                                    <div
+                                                        class="mx-auto flex size-10 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600"
+                                                    >
                                                         <CheckCircle2 class="size-5" />
                                                     </div>
-                                                    <p class="font-bold text-foreground text-sm">
-                                                        {{ shiftEndedMap[viewUserTarget.id] ? "New Shift Session Initialized (Fresh Day)" : "No Transactions Recorded" }}
+                                                    <p class="text-sm font-bold text-foreground">
+                                                        {{
+                                                            shiftEndedMap[viewUserTarget.id]
+                                                                ? 'New Shift Session Initialized (Fresh Day)'
+                                                                : 'No Transactions Recorded'
+                                                        }}
                                                     </p>
                                                     <p class="text-xs text-muted-foreground">
-                                                        {{ shiftEndedMap[viewUserTarget.id] 
-                                                            ? "Previous shift was ended & reconciled. This active shift ledger is ready for new daily checkout transactions."
-                                                            : "No sales transactions recorded under this shift. Ready for checkout at the POS register."
+                                                        {{
+                                                            shiftEndedMap[viewUserTarget.id]
+                                                                ? 'Previous shift was ended & reconciled. This active shift ledger is ready for new daily checkout transactions.'
+                                                                : 'No sales transactions recorded under this shift. Ready for checkout at the POS register.'
                                                         }}
                                                     </p>
                                                     <div v-if="shiftEndedMap[viewUserTarget.id]" class="pt-2">
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
-                                                            class="h-7 text-xs gap-1 border-border"
+                                                            class="h-7 gap-1 border-border text-xs"
                                                             @click="selectedSalesShift = 'ended-today'"
                                                         >
                                                             <History class="size-3" />
@@ -2736,23 +3030,27 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     <!-- ── TAB 4: LOGINS & SECURITY AUDIT ─────────────────── -->
                     <div v-if="viewUserTab === 'logins'" class="space-y-4">
                         <!-- Security Policies Status Banner -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                            <div class="p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-900 dark:text-emerald-200 flex items-center gap-2.5">
-                                <ShieldCheck class="size-4 text-emerald-600 shrink-0" />
+                        <div class="grid grid-cols-1 gap-3 text-xs sm:grid-cols-3">
+                            <div
+                                class="flex items-center gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-emerald-900 dark:text-emerald-200"
+                            >
+                                <ShieldCheck class="size-4 shrink-0 text-emerald-600" />
                                 <div>
                                     <div class="font-bold">VPN Guard Active</div>
                                     <div class="text-[11px] opacity-80">Anonymized proxies blocked</div>
                                 </div>
                             </div>
-                            <div class="p-3 rounded-xl border border-primary/30 bg-primary/10 text-primary flex items-center gap-2.5">
-                                <Wifi class="size-4 text-primary shrink-0" />
+                            <div class="flex items-center gap-2.5 rounded-xl border border-primary/30 bg-primary/10 p-3 text-primary">
+                                <Wifi class="size-4 shrink-0 text-primary" />
                                 <div>
                                     <div class="font-bold">Store Wi-Fi Verified</div>
                                     <div class="text-[11px] opacity-80">Authorized router connection</div>
                                 </div>
                             </div>
-                            <div class="p-3 rounded-xl border border-sky-500/30 bg-sky-500/10 text-sky-900 dark:text-sky-200 flex items-center gap-2.5">
-                                <Lock class="size-4 text-sky-600 shrink-0" />
+                            <div
+                                class="flex items-center gap-2.5 rounded-xl border border-sky-500/30 bg-sky-500/10 p-3 text-sky-900 dark:text-sky-200"
+                            >
+                                <Lock class="size-4 shrink-0 text-sky-600" />
                                 <div>
                                     <div class="font-bold">Single POS Session</div>
                                     <div class="text-[11px] opacity-80">Concurrent logins restricted</div>
@@ -2762,20 +3060,20 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
                         <!-- Login Sessions History Table -->
                         <Card class="border-border/80">
-                            <CardHeader class="pb-3 border-b border-border/70">
-                                <CardTitle class="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                            <CardHeader class="border-b border-border/70 pb-3">
+                                <CardTitle class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                     <Monitor class="size-4 text-primary" />
                                     Active Sessions & Login Audit History
                                 </CardTitle>
                             </CardHeader>
-                            <div class="p-0 overflow-x-auto">
-                                <table class="w-full text-left text-xs whitespace-nowrap">
-                                    <thead class="bg-muted/40 text-muted-foreground border-b border-border/70">
+                            <div class="overflow-x-auto p-0">
+                                <table class="w-full whitespace-nowrap text-left text-xs">
+                                    <thead class="border-b border-border/70 bg-muted/40 text-muted-foreground">
                                         <tr>
                                             <th class="px-4 py-2.5 font-semibold">Last Active / Timestamp</th>
                                             <th class="px-4 py-2.5 font-semibold">IP Address</th>
                                             <th class="px-4 py-2.5 font-semibold">Device & Browser Client</th>
-                                            <th class="px-4 py-2.5 font-semibold text-center">Security Status</th>
+                                            <th class="px-4 py-2.5 text-center font-semibold">Security Status</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-border/60">
@@ -2785,7 +3083,13 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                             <td class="px-4 py-3 text-foreground">{{ sess.user_agent || 'Standard POS Client' }}</td>
                                             <td class="px-4 py-3 text-center">
                                                 <Badge
-                                                    :variant="sess.last_active.includes('Blocked') ? 'destructive' : sess.last_active.includes('Active') ? 'success' : 'outline'"
+                                                    :variant="
+                                                        sess.last_active.includes('Blocked')
+                                                            ? 'destructive'
+                                                            : sess.last_active.includes('Active')
+                                                              ? 'success'
+                                                              : 'outline'
+                                                    "
                                                     class="text-[10px]"
                                                 >
                                                     {{ sess.last_active.includes('Blocked') ? 'Blocked Proxy' : 'Session Active' }}
@@ -2793,7 +3097,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                             </td>
                                         </tr>
                                         <tr v-if="!viewUserTarget.sessions || viewUserTarget.sessions.length === 0">
-                                            <td colspan="4" class="px-4 py-6 text-center text-muted-foreground text-xs">
+                                            <td colspan="4" class="px-4 py-6 text-center text-xs text-muted-foreground">
                                                 No recorded active web sessions.
                                             </td>
                                         </tr>
@@ -2804,25 +3108,25 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
                         <!-- Bound POS Hardware Terminals -->
                         <Card class="border-border/80">
-                            <CardHeader class="pb-3 border-b border-border/70">
-                                <CardTitle class="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                            <CardHeader class="border-b border-border/70 pb-3">
+                                <CardTitle class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                     <Smartphone class="size-4 text-primary" />
                                     Bound Hardware POS Devices ({{ userBoundDevices.length }})
                                 </CardTitle>
                             </CardHeader>
-                            <div class="p-4 space-y-3">
+                            <div class="space-y-3 p-4">
                                 <div
                                     v-for="dev in userBoundDevices"
                                     :key="dev.id"
-                                    class="p-3 rounded-xl border border-border/80 bg-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs"
+                                    class="flex flex-col gap-3 rounded-xl border border-border/80 bg-card p-3 text-xs sm:flex-row sm:items-center sm:justify-between"
                                 >
                                     <div class="flex items-center gap-3">
-                                        <div class="p-2 rounded-lg bg-primary/10 text-primary">
+                                        <div class="rounded-lg bg-primary/10 p-2 text-primary">
                                             <component :is="deviceIconMap[dev.deviceCategory] || Smartphone" class="size-5" />
                                         </div>
                                         <div>
                                             <div class="font-bold text-foreground">{{ dev.deviceName }}</div>
-                                            <div class="text-[11px] text-muted-foreground font-mono">{{ dev.deviceFingerprint }}</div>
+                                            <div class="font-mono text-[11px] text-muted-foreground">{{ dev.deviceFingerprint }}</div>
                                             <div class="text-[11px] text-muted-foreground">{{ dev.os }} • {{ dev.networkType }}</div>
                                         </div>
                                     </div>
@@ -2835,7 +3139,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                             v-if="dev.bound"
                                             variant="outline"
                                             size="sm"
-                                            class="h-7 text-xs border-rose-500/30 text-rose-600 hover:bg-rose-500/10"
+                                            class="h-7 border-rose-500/30 text-xs text-rose-600 hover:bg-rose-500/10"
                                             @click="handleRemoteLock(dev)"
                                         >
                                             Lock Device
@@ -2843,7 +3147,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                     </div>
                                 </div>
 
-                                <div v-if="userBoundDevices.length === 0" class="text-center py-6 text-muted-foreground text-xs">
+                                <div v-if="userBoundDevices.length === 0" class="py-6 text-center text-xs text-muted-foreground">
                                     No dedicated hardware POS terminal bound to {{ viewUserTarget.name }}.
                                 </div>
                             </div>
@@ -2851,28 +3155,38 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     </div>
                 </div>
 
-                <div class="p-3 sm:p-4 px-4 sm:px-5 border-t border-border/70 bg-muted/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 shrink-0 text-xs">
-                    <div class="text-muted-foreground flex items-center gap-2 flex-wrap text-[11px]">
-                        <span>Staff Record: <strong class="text-foreground font-mono">#STF-{{ viewUserTarget.id }}</strong></span>
+                <div
+                    class="flex shrink-0 flex-col gap-2.5 border-t border-border/70 bg-muted/20 p-3 px-4 text-xs sm:flex-row sm:items-center sm:justify-between sm:p-4 sm:px-5"
+                >
+                    <div class="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                        <span
+                            >Staff Record: <strong class="font-mono text-foreground">#STF-{{ viewUserTarget.id }}</strong></span
+                        >
                         <span>•</span>
-                        <span>Branch: <strong class="text-foreground">{{ viewUserTarget.branch }}</strong></span>
+                        <span
+                            >Branch: <strong class="text-foreground">{{ viewUserTarget.branch }}</strong></span
+                        >
                         <span>•</span>
-                        <span>Role: <strong class="text-foreground">{{ viewUserTarget.role }}</strong></span>
+                        <span
+                            >Role: <strong class="text-foreground">{{ viewUserTarget.role }}</strong></span
+                        >
                     </div>
                     <div class="flex items-center gap-2">
                         <Button
                             variant="outline"
                             size="sm"
-                            class="h-7 text-xs gap-1.5 border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10"
-                            @click="() => {
-                                viewStaffModal = false;
-                                openEditUser(viewUserTarget);
-                            }"
+                            class="h-7 gap-1.5 border-amber-500/30 text-xs text-amber-700 hover:bg-amber-500/10 dark:text-amber-300"
+                            @click="
+                                () => {
+                                    viewStaffModal = false;
+                                    openEditUser(viewUserTarget);
+                                }
+                            "
                         >
                             <Pencil class="size-3" />
                             Edit Staff Member
                         </Button>
-                        <Button variant="default" size="sm" class="h-7 text-xs bg-primary px-3.5" @click="viewStaffModal = false">
+                        <Button variant="default" size="sm" class="h-7 bg-primary px-3.5 text-xs" @click="viewStaffModal = false">
                             Done / Close
                         </Button>
                     </div>
@@ -2881,10 +3195,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
         </Dialog>
 
         <!-- Universal Staff Directory Import Modal (Excel, Word, PDF, CSV) -->
-        <StaffImportModal
-            v-model:open="staffImportModalOpen"
-            :branches="branches || allBranches"
-        />
+        <StaffImportModal v-model:open="staffImportModalOpen" :branches="branches || allBranches" />
 
         <!-- Interactive Users & Permissions Guide Overlay -->
         <UsersGuideOverlay

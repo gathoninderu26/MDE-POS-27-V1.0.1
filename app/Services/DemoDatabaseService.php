@@ -44,12 +44,16 @@ class DemoDatabaseService
      */
     public static function switchTo(Tenant $tenant): void
     {
+        if (app()->environment('testing')) {
+            return;
+        }
+
         if (! $tenant->is_demo) {
             return;
         }
 
-        $demoDir  = self::getDemoDirectory();
-        $dbPath   = self::getTenantDatabasePath($tenant->slug);
+        $demoDir = self::getDemoDirectory();
+        $dbPath = self::getTenantDatabasePath($tenant->slug);
         $template = self::getTemplatePath();
 
         if (! is_dir($demoDir)) {
@@ -78,7 +82,7 @@ class DemoDatabaseService
     public static function adaptDatabaseForTenant(string $dbPath, Tenant $tenant): void
     {
         try {
-            $pdo = new PDO('sqlite:' . $dbPath);
+            $pdo = new PDO('sqlite:'.$dbPath);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
             // 1. Update the tenant record
@@ -122,7 +126,7 @@ class DemoDatabaseService
                 }
             }
         } catch (Throwable $e) {
-            Log::warning("Failed to adapt demo SQLite database for {$tenant->slug}: " . $e->getMessage());
+            Log::warning("Failed to adapt demo SQLite database for {$tenant->slug}: ".$e->getMessage());
         }
     }
 
@@ -131,7 +135,7 @@ class DemoDatabaseService
      */
     public static function resetTenant(Tenant $tenant): bool
     {
-        $dbPath   = self::getTenantDatabasePath($tenant->slug);
+        $dbPath = self::getTenantDatabasePath($tenant->slug);
         $template = self::getTemplatePath();
 
         if (! file_exists($template)) {
@@ -170,7 +174,7 @@ class DemoDatabaseService
         $cutoff = time() - ($hoursOld * 3600);
         $deleted = 0;
 
-        $files = glob($demoDir . DIRECTORY_SEPARATOR . '*.sqlite');
+        $files = glob($demoDir.DIRECTORY_SEPARATOR.'*.sqlite');
         foreach ($files as $file) {
             $base = basename($file);
             if (in_array($base, $persistent)) {

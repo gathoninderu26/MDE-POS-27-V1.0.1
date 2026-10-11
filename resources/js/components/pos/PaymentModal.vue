@@ -6,27 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { Customer, PaymentEntry } from '@/composables/useCart';
 import { formatCurrency, generateMpesaCode } from '@/composables/useCurrency';
+import { useFeatures } from '@/composables/useFeatures';
 import { isInputFocused } from '@/composables/useKeyboardNavigation';
 import { useTenant } from '@/composables/useTenant';
-import { useFeatures } from '@/composables/useFeatures';
 import { useToast } from '@/composables/useToast';
 import axios from 'axios';
-import {
-    AlertCircle,
-    Banknote,
-    Building2,
-    CheckCircle2,
-    CreditCard,
-    DollarSign,
-    Loader2,
-    Plus,
-    RotateCcw,
-    Smartphone,
-    Sparkles,
-    Trash2,
-    UserCheck,
-    Wallet,
-} from 'lucide-vue-next';
+import { AlertCircle, Banknote, Building2, CheckCircle2, CreditCard, Loader2, Plus, Smartphone, Sparkles, Trash2, Wallet } from 'lucide-vue-next';
 import { computed, onUnmounted, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -45,7 +30,7 @@ const { hasFeature } = useFeatures();
 const { error, info, success } = useToast();
 
 const availableMethods = computed(() => {
-    return activePaymentMethods.value.filter(pm => {
+    return activePaymentMethods.value.filter((pm) => {
         if (pm.type === 'Credit' && !hasFeature('customer_credit')) return false;
         return true;
     });
@@ -61,7 +46,10 @@ const mpesaConfirmedAt = ref<string>('');
 const isConfirming = ref(false); // loading state while completing payment
 
 const currentActiveMethod = computed(() => {
-    return availableMethods.value.find(m => m.name === selectedMethod.value || m.type === selectedMethod.value || m.code === selectedMethod.value) || availableMethods.value[0];
+    return (
+        availableMethods.value.find((m) => m.name === selectedMethod.value || m.type === selectedMethod.value || m.code === selectedMethod.value) ||
+        availableMethods.value[0]
+    );
 });
 
 const isCash = computed(() => currentActiveMethod.value?.type === 'Cash' || selectedMethod.value === 'Cash');
@@ -92,23 +80,35 @@ const storePaybillDetails = computed(() => {
 
 const getMethodIcon = (type: string) => {
     switch (type) {
-        case 'Cash': return Banknote;
-        case 'Mobile Money': return Smartphone;
-        case 'Card': return CreditCard;
-        case 'Bank': return Building2;
-        case 'Credit': return Wallet;
-        default: return Wallet;
+        case 'Cash':
+            return Banknote;
+        case 'Mobile Money':
+            return Smartphone;
+        case 'Card':
+            return CreditCard;
+        case 'Bank':
+            return Building2;
+        case 'Credit':
+            return Wallet;
+        default:
+            return Wallet;
     }
 };
 
 const getMethodActiveClass = (pm: any) => {
     switch (pm.type) {
-        case 'Cash': return 'border-primary bg-primary/10 text-primary ring-2 ring-primary/20';
-        case 'Mobile Money': return 'border-emerald-600 bg-emerald-500/10 text-emerald-600 ring-2 ring-emerald-500/20';
-        case 'Card': return 'border-sky-600 bg-sky-500/10 text-sky-600 ring-2 ring-sky-500/20';
-        case 'Bank': return 'border-indigo-600 bg-indigo-500/10 text-indigo-600 ring-2 ring-indigo-500/20';
-        case 'Credit': return 'border-amber-600 bg-amber-500/10 text-amber-600 ring-2 ring-amber-500/20';
-        default: return 'border-primary bg-primary/10 text-primary ring-2 ring-primary/20';
+        case 'Cash':
+            return 'border-primary bg-primary/10 text-primary ring-2 ring-primary/20';
+        case 'Mobile Money':
+            return 'border-emerald-600 bg-emerald-500/10 text-emerald-600 ring-2 ring-emerald-500/20';
+        case 'Card':
+            return 'border-sky-600 bg-sky-500/10 text-sky-600 ring-2 ring-sky-500/20';
+        case 'Bank':
+            return 'border-indigo-600 bg-indigo-500/10 text-indigo-600 ring-2 ring-indigo-500/20';
+        case 'Credit':
+            return 'border-amber-600 bg-amber-500/10 text-amber-600 ring-2 ring-amber-500/20';
+        default:
+            return 'border-primary bg-primary/10 text-primary ring-2 ring-primary/20';
     }
 };
 
@@ -176,8 +176,14 @@ const playMpesaChime = () => {
 const runDemoSimulation = () => {
     stkStatus.value = 'waiting';
     stkCountdown.value = 15;
-    if (stkTimer) { clearInterval(stkTimer); stkTimer = null; }
-    if (stkCountdownTimer) { clearInterval(stkCountdownTimer); stkCountdownTimer = null; }
+    if (stkTimer) {
+        clearInterval(stkTimer);
+        stkTimer = null;
+    }
+    if (stkCountdownTimer) {
+        clearInterval(stkCountdownTimer);
+        stkCountdownTimer = null;
+    }
 
     stkCountdownTimer = setInterval(() => {
         if (stkCountdown.value > 0) {
@@ -194,9 +200,18 @@ const runDemoSimulation = () => {
 };
 
 const completeMpesaStk = (realCode?: string, payerPhone?: string) => {
-    if (stkTimer)  { clearInterval(stkTimer);  stkTimer = null; }
-    if (stkPollTimer) { clearInterval(stkPollTimer); stkPollTimer = null; }
-    if (stkCountdownTimer) { clearInterval(stkCountdownTimer); stkCountdownTimer = null; }
+    if (stkTimer) {
+        clearInterval(stkTimer);
+        stkTimer = null;
+    }
+    if (stkPollTimer) {
+        clearInterval(stkPollTimer);
+        stkPollTimer = null;
+    }
+    if (stkCountdownTimer) {
+        clearInterval(stkCountdownTimer);
+        stkCountdownTimer = null;
+    }
 
     const code = realCode || stkConfirmedCode.value || generateMpesaCode();
     const payer = stkPayerName.value.trim() || payerPhone || stkTargetPhone.value;
@@ -242,9 +257,18 @@ const completeMpesaStk = (realCode?: string, payerPhone?: string) => {
 };
 
 const cancelMpesaStk = () => {
-    if (stkTimer)  { clearInterval(stkTimer);  stkTimer = null; }
-    if (stkPollTimer) { clearInterval(stkPollTimer); stkPollTimer = null; }
-    if (stkCountdownTimer) { clearInterval(stkCountdownTimer); stkCountdownTimer = null; }
+    if (stkTimer) {
+        clearInterval(stkTimer);
+        stkTimer = null;
+    }
+    if (stkPollTimer) {
+        clearInterval(stkPollTimer);
+        stkPollTimer = null;
+    }
+    if (stkCountdownTimer) {
+        clearInterval(stkCountdownTimer);
+        stkCountdownTimer = null;
+    }
     stkStatus.value = 'idle';
     error('STK Prompt Cancelled', 'M-Pesa prompt was cancelled.');
     stkModalOpen.value = false;
@@ -340,9 +364,9 @@ const startMpesaStk = async (mode: 'single' | 'split', splitIdx: number = 0, for
     stkStatus.value = 'sending';
     try {
         const { data } = await axios.post('/mpesa/stk-push', {
-            phone:  stkTargetPhone.value,
+            phone: stkTargetPhone.value,
             amount: stkAmount.value,
-            ref:    `POS-${Date.now()}`,
+            ref: `POS-${Date.now()}`,
         });
 
         if (data.success) {
@@ -367,9 +391,7 @@ watch(
     (isOpen) => {
         if (isOpen) {
             cashTendered.value = props.totalAmount;
-            mpesaPhone.value = props.customer?.phone && props.customer.phone !== '+254 700 000 000'
-                ? props.customer.phone
-                : '0712 345 678';
+            mpesaPhone.value = props.customer?.phone && props.customer.phone !== '+254 700 000 000' ? props.customer.phone : '0712 345 678';
             referenceCode.value = '';
             splitEntries.value = [{ method: 'Cash', amount: props.totalAmount }];
         } else {
@@ -456,14 +478,16 @@ const handleConfirmPayment = () => {
             finalPayments = [{ method: selectedMethod.value || 'Cash', amount: props.totalAmount }];
         } else if (isMpesa.value) {
             tendered = props.totalAmount;
-            finalPayments = [{
-                method: selectedMethod.value || 'M-Pesa',
-                amount: props.totalAmount,
-                phone: mpesaPhone.value,
-                reference: referenceCode.value || generateMpesaCode(),
-                payerName: mpesaPayerName.value || undefined,
-                confirmedAt: mpesaConfirmedAt.value || undefined,
-            }];
+            finalPayments = [
+                {
+                    method: selectedMethod.value || 'M-Pesa',
+                    amount: props.totalAmount,
+                    phone: mpesaPhone.value,
+                    reference: referenceCode.value || generateMpesaCode(),
+                    payerName: mpesaPayerName.value || undefined,
+                    confirmedAt: mpesaConfirmedAt.value || undefined,
+                },
+            ];
         } else {
             tendered = props.totalAmount;
             finalPayments = [{ method: selectedMethod.value, amount: props.totalAmount, reference: referenceCode.value }];
@@ -471,7 +495,8 @@ const handleConfirmPayment = () => {
     } else {
         tendered = splitTotalPaid.value;
         finalPayments = splitEntries.value.map((e) => {
-            const isRowMpesa = e.method?.toLowerCase().includes('mpesa') || e.method?.toLowerCase().includes('till') || e.method?.toLowerCase().includes('paybill');
+            const isRowMpesa =
+                e.method?.toLowerCase().includes('mpesa') || e.method?.toLowerCase().includes('till') || e.method?.toLowerCase().includes('paybill');
             return {
                 ...e,
                 amount: Number(e.amount),
@@ -577,14 +602,14 @@ const handleModalKeydown = (e: KeyboardEvent) => {
             selectedMethod.value = availableMethods.value[digit - 1].name;
         } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
             e.preventDefault();
-            const names = availableMethods.value.map(m => m.name);
+            const names = availableMethods.value.map((m) => m.name);
             const currentIndex = names.indexOf(selectedMethod.value);
             if (names.length > 0) {
                 selectedMethod.value = names[(currentIndex + 1) % names.length];
             }
         } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
             e.preventDefault();
-            const names = availableMethods.value.map(m => m.name);
+            const names = availableMethods.value.map((m) => m.name);
             const currentIndex = names.indexOf(selectedMethod.value);
             if (names.length > 0) {
                 selectedMethod.value = names[(currentIndex - 1 + names.length) % names.length];
@@ -616,26 +641,28 @@ onUnmounted(() => {
 
 <template>
     <Dialog :open="open" spinnerText="Opening Payment Checkout..." @update:open="(v) => emit('update:open', v)">
-        <DialogContent class="w-[95vw] sm:max-w-2xl p-0 max-h-[92vh] flex flex-col overflow-hidden">
-            <DialogHeader class="px-4 sm:px-6 py-3 sm:py-4 border-b border-border/70 flex flex-row items-center justify-between bg-muted/20 shrink-0">
+        <DialogContent class="flex max-h-[92vh] w-[95vw] flex-col overflow-hidden p-0 sm:max-w-2xl">
+            <DialogHeader class="flex shrink-0 flex-row items-center justify-between border-b border-border/70 bg-muted/20 px-4 py-3 sm:px-6 sm:py-4">
                 <div class="min-w-0 pr-2">
-                    <DialogTitle class="text-base sm:text-lg font-bold">Process Payment</DialogTitle>
-                    <DialogDescription class="text-[11px] sm:text-xs text-muted-foreground truncate">Customer: {{ customer.name }} ({{ customer.group }})</DialogDescription>
+                    <DialogTitle class="text-base font-bold sm:text-lg">Process Payment</DialogTitle>
+                    <DialogDescription class="truncate text-[11px] text-muted-foreground sm:text-xs"
+                        >Customer: {{ customer.name }} ({{ customer.group }})</DialogDescription
+                    >
                 </div>
-                <div class="text-right shrink-0">
-                    <span class="text-[10px] sm:text-xs text-muted-foreground uppercase font-semibold">Total Payable</span>
-                    <div class="text-xl sm:text-2xl font-black text-primary font-mono">{{ formatCurrency(totalAmount) }}</div>
+                <div class="shrink-0 text-right">
+                    <span class="text-[10px] font-semibold uppercase text-muted-foreground sm:text-xs">Total Payable</span>
+                    <div class="font-mono text-xl font-black text-primary sm:text-2xl">{{ formatCurrency(totalAmount) }}</div>
                 </div>
             </DialogHeader>
 
-            <div class="p-4 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto flex-1">
+            <div class="flex-1 space-y-4 overflow-y-auto p-4 sm:space-y-5 sm:p-6">
                 <!-- Payment Mode Switcher -->
-                <div class="flex rounded-lg border border-border/80 p-1 bg-muted/40 text-xs">
+                <div class="flex rounded-lg border border-border/80 bg-muted/40 p-1 text-xs">
                     <button
                         type="button"
                         :class="[
-                            'flex-1 py-1.5 font-semibold rounded-md transition-all',
-                            paymentType === 'single' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground',
+                            'flex-1 rounded-md py-1.5 font-semibold transition-all',
+                            paymentType === 'single' ? 'bg-background text-foreground shadow' : 'text-muted-foreground hover:text-foreground',
                         ]"
                         @click="paymentType = 'single'"
                     >
@@ -644,8 +671,8 @@ onUnmounted(() => {
                     <button
                         type="button"
                         :class="[
-                            'flex-1 py-1.5 font-semibold rounded-md transition-all',
-                            paymentType === 'split' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground',
+                            'flex-1 rounded-md py-1.5 font-semibold transition-all',
+                            paymentType === 'split' ? 'bg-background text-foreground shadow' : 'text-muted-foreground hover:text-foreground',
                         ]"
                         @click="paymentType = 'split'"
                     >
@@ -659,10 +686,13 @@ onUnmounted(() => {
                     <div
                         class="grid gap-2"
                         :class="[
-                            availableMethods.length <= 3 ? 'grid-cols-3' :
-                            availableMethods.length === 4 ? 'grid-cols-4' :
-                            availableMethods.length === 5 ? 'grid-cols-5' :
-                            'grid-cols-3 sm:grid-cols-6'
+                            availableMethods.length <= 3
+                                ? 'grid-cols-3'
+                                : availableMethods.length === 4
+                                  ? 'grid-cols-4'
+                                  : availableMethods.length === 5
+                                    ? 'grid-cols-5'
+                                    : 'grid-cols-3 sm:grid-cols-6',
                         ]"
                     >
                         <button
@@ -670,23 +700,21 @@ onUnmounted(() => {
                             :key="pm.id || pm.name"
                             type="button"
                             :class="[
-                                'flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-semibold gap-1.5 transition-all relative',
-                                selectedMethod === pm.name
-                                    ? getMethodActiveClass(pm)
-                                    : 'border-border/80 hover:bg-muted/40 text-muted-foreground',
+                                'relative flex flex-col items-center justify-center gap-1.5 rounded-xl border p-3 text-xs font-semibold transition-all',
+                                selectedMethod === pm.name ? getMethodActiveClass(pm) : 'border-border/80 text-muted-foreground hover:bg-muted/40',
                             ]"
                             @click="selectedMethod = pm.name"
                         >
-                            <span class="absolute top-1 right-1.5 text-[9px] font-mono text-muted-foreground/60 font-semibold">
+                            <span class="absolute right-1.5 top-1 font-mono text-[9px] font-semibold text-muted-foreground/60">
                                 {{ idx + 1 }}
                             </span>
                             <component :is="getMethodIcon(pm.type)" class="size-5" />
-                            <span class="truncate max-w-full px-1">{{ pm.name }}</span>
+                            <span class="max-w-full truncate px-1">{{ pm.name }}</span>
                         </button>
                     </div>
 
                     <!-- Cash Interface with Quick Tenders -->
-                    <div v-if="isCash" class="space-y-3 bg-muted/20 p-4 rounded-xl border border-border/70">
+                    <div v-if="isCash" class="space-y-3 rounded-xl border border-border/70 bg-muted/20 p-4">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <Label class="text-xs font-semibold">Cash Tendered (KES)</Label>
@@ -702,52 +730,71 @@ onUnmounted(() => {
                                 v-model.number="cashTendered"
                                 type="number"
                                 step="10"
-                                class="h-12 text-xl font-bold font-mono text-primary bg-background"
+                                class="h-12 bg-background font-mono text-xl font-bold text-primary"
                             />
                         </div>
 
                         <!-- Quick Cash Note Buttons (Kenyan Shillings Notes) -->
                         <div class="flex flex-wrap gap-2 pt-1">
-                            <Button variant="outline" size="sm" class="h-8 text-xs font-mono" @click="setQuickCash(totalAmount)">
+                            <Button variant="outline" size="sm" class="h-8 font-mono text-xs" @click="setQuickCash(totalAmount)">
                                 Exact ({{ formatCurrency(totalAmount) }})
                             </Button>
-                            <Button variant="outline" size="sm" class="h-8 text-xs font-mono" @click="setQuickCash(Math.ceil(totalAmount / 500) * 500)">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                class="h-8 font-mono text-xs"
+                                @click="setQuickCash(Math.ceil(totalAmount / 500) * 500)"
+                            >
                                 {{ formatCurrency(Math.ceil(totalAmount / 500) * 500) }}
                             </Button>
-                            <Button variant="outline" size="sm" class="h-8 text-xs font-mono" @click="setQuickCash(Math.ceil(totalAmount / 1000) * 1000)">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                class="h-8 font-mono text-xs"
+                                @click="setQuickCash(Math.ceil(totalAmount / 1000) * 1000)"
+                            >
                                 {{ formatCurrency(Math.ceil(totalAmount / 1000) * 1000) }}
                             </Button>
-                            <Button variant="outline" size="sm" class="h-8 text-xs font-mono" @click="addQuickCash(500)">
-                                + KES 500
-                            </Button>
-                            <Button variant="outline" size="sm" class="h-8 text-xs font-mono" @click="addQuickCash(1000)">
-                                + KES 1,000
-                            </Button>
+                            <Button variant="outline" size="sm" class="h-8 font-mono text-xs" @click="addQuickCash(500)"> + KES 500 </Button>
+                            <Button variant="outline" size="sm" class="h-8 font-mono text-xs" @click="addQuickCash(1000)"> + KES 1,000 </Button>
                         </div>
                     </div>
 
                     <!-- M-Pesa STK Prompt Simulation & Till / Paybill Reference -->
-                    <div v-if="isMpesa" class="space-y-3 bg-emerald-500/5 p-4 rounded-xl border border-emerald-500/20">
+                    <div v-if="isMpesa" class="space-y-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
                         <!-- Store Till / Paybill Identification Strip -->
-                        <div v-if="currentActiveMethod?.details?.till_number" class="flex items-center justify-between p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-xs">
+                        <div
+                            v-if="currentActiveMethod?.details?.till_number"
+                            class="flex items-center justify-between rounded-lg border border-emerald-500/25 bg-emerald-500/10 p-2.5 text-xs"
+                        >
                             <div class="flex items-center gap-2">
-                                <Smartphone class="size-4 text-emerald-600 shrink-0" />
+                                <Smartphone class="size-4 shrink-0 text-emerald-600" />
                                 <div>
-                                    <span class="text-muted-foreground font-medium">Buy Goods Till: </span>
-                                    <span class="font-mono font-black text-emerald-700 dark:text-emerald-300 text-sm tracking-wide">{{ currentActiveMethod.details.till_number }}</span>
+                                    <span class="font-medium text-muted-foreground">Buy Goods Till: </span>
+                                    <span class="font-mono text-sm font-black tracking-wide text-emerald-700 dark:text-emerald-300">{{
+                                        currentActiveMethod.details.till_number
+                                    }}</span>
                                 </div>
                             </div>
-                            <span v-if="currentActiveMethod.details.store_name" class="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-background/80 px-2 py-0.5 rounded border border-emerald-500/20">
+                            <span
+                                v-if="currentActiveMethod.details.store_name"
+                                class="rounded border border-emerald-500/20 bg-background/80 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400"
+                            >
                                 {{ currentActiveMethod.details.store_name }}
                             </span>
                         </div>
-                        <div v-else-if="currentActiveMethod?.details?.business_number" class="flex items-center justify-between p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-xs">
+                        <div
+                            v-else-if="currentActiveMethod?.details?.business_number"
+                            class="flex items-center justify-between rounded-lg border border-emerald-500/25 bg-emerald-500/10 p-2.5 text-xs"
+                        >
                             <div class="flex items-center gap-2">
-                                <Smartphone class="size-4 text-emerald-600 shrink-0" />
+                                <Smartphone class="size-4 shrink-0 text-emerald-600" />
                                 <div>
-                                    <span class="text-muted-foreground font-medium">Paybill: </span>
-                                    <span class="font-mono font-black text-emerald-700 dark:text-emerald-300 text-sm tracking-wide">{{ currentActiveMethod.details.business_number }}</span>
-                                    <span class="text-muted-foreground font-medium ml-2">Account: </span>
+                                    <span class="font-medium text-muted-foreground">Paybill: </span>
+                                    <span class="font-mono text-sm font-black tracking-wide text-emerald-700 dark:text-emerald-300">{{
+                                        currentActiveMethod.details.business_number
+                                    }}</span>
+                                    <span class="ml-2 font-medium text-muted-foreground">Account: </span>
                                     <span class="font-mono font-bold">{{ currentActiveMethod.details.account_number || 'STORE' }}</span>
                                 </div>
                             </div>
@@ -764,12 +811,12 @@ onUnmounted(() => {
                             <Input
                                 v-model="mpesaPhone"
                                 placeholder="07XX XXX XXX or 2547XX XXX XXX"
-                                class="h-10 text-sm bg-background font-mono flex-1"
+                                class="h-10 flex-1 bg-background font-mono text-sm"
                             />
                             <Button
                                 type="button"
                                 variant="default"
-                                class="h-10 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 gap-1.5 shadow-sm"
+                                class="h-10 gap-1.5 bg-emerald-600 px-3.5 text-xs font-bold text-white shadow-sm hover:bg-emerald-700"
                                 :disabled="!mpesaPhone || totalAmount <= 0"
                                 title="Send live STK push prompt to customer phone via Safaricom Daraja (Shortcut: S)"
                                 @click="startMpesaStk('single', 0, false)"
@@ -780,7 +827,7 @@ onUnmounted(() => {
                             <Button
                                 type="button"
                                 variant="outline"
-                                class="h-10 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 font-bold text-xs px-3 gap-1 shadow-sm"
+                                class="h-10 gap-1 border-emerald-500/40 px-3 text-xs font-bold text-emerald-700 shadow-sm hover:bg-emerald-500/10 dark:text-emerald-300"
                                 :disabled="!mpesaPhone || totalAmount <= 0"
                                 title="Simulate payment approval without calling Daraja"
                                 @click="startMpesaStk('single', 0, true)"
@@ -791,36 +838,40 @@ onUnmounted(() => {
                         </div>
 
                         <!-- Confirmed M-Pesa State -->
-                        <div v-if="referenceCode" class="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/30 space-y-2">
+                        <div v-if="referenceCode" class="space-y-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2">
-                                    <CheckCircle2 class="size-4 text-emerald-600 shrink-0" />
+                                    <CheckCircle2 class="size-4 shrink-0 text-emerald-600" />
                                     <p class="text-xs font-bold text-emerald-950 dark:text-emerald-200">M-Pesa Confirmed</p>
                                 </div>
                                 <Button
                                     variant="ghost"
                                     size="sm"
                                     class="h-7 text-[10px] text-muted-foreground hover:text-foreground"
-                                    @click="referenceCode = ''; mpesaPayerName = ''; mpesaConfirmedAt = ''"
+                                    @click="
+                                        referenceCode = '';
+                                        mpesaPayerName = '';
+                                        mpesaConfirmedAt = '';
+                                    "
                                 >
                                     Re-prompt
                                 </Button>
                             </div>
                             <div class="grid grid-cols-2 gap-2 text-[11px]">
-                                <div class="bg-background/70 rounded-lg p-2 border border-emerald-500/20">
-                                    <p class="text-muted-foreground text-[10px] font-bold uppercase mb-0.5">Transaction Code</p>
+                                <div class="rounded-lg border border-emerald-500/20 bg-background/70 p-2">
+                                    <p class="mb-0.5 text-[10px] font-bold uppercase text-muted-foreground">Transaction Code</p>
                                     <p class="font-mono font-bold text-emerald-700 dark:text-emerald-400">{{ referenceCode }}</p>
                                 </div>
-                                <div class="bg-background/70 rounded-lg p-2 border border-emerald-500/20">
-                                    <p class="text-muted-foreground text-[10px] font-bold uppercase mb-0.5">Amount</p>
+                                <div class="rounded-lg border border-emerald-500/20 bg-background/70 p-2">
+                                    <p class="mb-0.5 text-[10px] font-bold uppercase text-muted-foreground">Amount</p>
                                     <p class="font-mono font-bold text-foreground">{{ formatCurrency(totalAmount) }}</p>
                                 </div>
-                                <div class="bg-background/70 rounded-lg p-2 border border-emerald-500/20">
-                                    <p class="text-muted-foreground text-[10px] font-bold uppercase mb-0.5">Payer</p>
-                                    <p class="font-semibold text-foreground truncate">{{ mpesaPayerName || mpesaPhone || '—' }}</p>
+                                <div class="rounded-lg border border-emerald-500/20 bg-background/70 p-2">
+                                    <p class="mb-0.5 text-[10px] font-bold uppercase text-muted-foreground">Payer</p>
+                                    <p class="truncate font-semibold text-foreground">{{ mpesaPayerName || mpesaPhone || '—' }}</p>
                                 </div>
-                                <div class="bg-background/70 rounded-lg p-2 border border-emerald-500/20">
-                                    <p class="text-muted-foreground text-[10px] font-bold uppercase mb-0.5">Time</p>
+                                <div class="rounded-lg border border-emerald-500/20 bg-background/70 p-2">
+                                    <p class="mb-0.5 text-[10px] font-bold uppercase text-muted-foreground">Time</p>
                                     <p class="font-mono text-foreground">{{ mpesaConfirmedAt || '—' }}</p>
                                 </div>
                             </div>
@@ -829,19 +880,15 @@ onUnmounted(() => {
                         <!-- Manual Reference input fallback -->
                         <div v-else class="flex items-center gap-2 pt-1 text-[11px] text-muted-foreground">
                             <span>Or enter manual Till/Paybill code:</span>
-                            <Input
-                                v-model="referenceCode"
-                                placeholder="e.g. QK8912..."
-                                class="h-7 text-xs bg-background font-mono uppercase w-32"
-                            />
+                            <Input v-model="referenceCode" placeholder="e.g. QK8912..." class="h-7 w-32 bg-background font-mono text-xs uppercase" />
                         </div>
                     </div>
 
                     <!-- Card / Bank Reference -->
-                    <div v-if="isCard || isBank" class="space-y-2 bg-muted/20 p-4 rounded-xl border border-border/70">
+                    <div v-if="isCard || isBank" class="space-y-2 rounded-xl border border-border/70 bg-muted/20 p-4">
                         <div class="flex items-center justify-between">
                             <Label class="text-xs font-semibold">Transaction / Auth Code Reference</Label>
-                            <span v-if="currentActiveMethod?.details?.terminal_id" class="text-[11px] font-mono text-muted-foreground">
+                            <span v-if="currentActiveMethod?.details?.terminal_id" class="font-mono text-[11px] text-muted-foreground">
                                 Terminal: <strong class="text-foreground">{{ currentActiveMethod.details.terminal_id }}</strong>
                                 <span v-if="currentActiveMethod?.details?.bank_name"> ({{ currentActiveMethod.details.bank_name }})</span>
                             </span>
@@ -849,28 +896,28 @@ onUnmounted(() => {
                         <Input
                             v-model="referenceCode"
                             placeholder="Enter POS terminal auth code or bank ref"
-                            class="h-10 text-sm bg-background font-mono"
+                            class="h-10 bg-background font-mono text-sm"
                         />
                     </div>
 
                     <!-- Credit Account Info -->
-                    <div v-if="isCredit" class="space-y-2 bg-amber-500/10 p-4 rounded-xl border border-amber-500/20">
+                    <div v-if="isCredit" class="space-y-2 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-semibold text-amber-900 dark:text-amber-300">Customer Credit Account</span>
                             <Badge variant="warning">{{ customer.group }}</Badge>
                         </div>
-                        <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                        <div class="grid grid-cols-2 gap-2 pt-1 text-xs">
                             <div>
                                 <span class="text-muted-foreground">Credit Limit:</span>
-                                <p class="font-bold font-mono">{{ formatCurrency(customer.creditLimit) }}</p>
+                                <p class="font-mono font-bold">{{ formatCurrency(customer.creditLimit) }}</p>
                             </div>
                             <div>
                                 <span class="text-muted-foreground">Current Balance:</span>
-                                <p class="font-bold font-mono text-rose-600">{{ formatCurrency(customer.currentBalance) }}</p>
+                                <p class="font-mono font-bold text-rose-600">{{ formatCurrency(customer.currentBalance) }}</p>
                             </div>
                         </div>
-                        <div v-if="customer.id === 'walk-in'" class="text-xs text-rose-600 font-semibold pt-1 flex items-center gap-1.5">
-                            <Badge variant="destructive" class="text-[9px] px-1 py-0">Required</Badge>
+                        <div v-if="customer.id === 'walk-in'" class="flex items-center gap-1.5 pt-1 text-xs font-semibold text-rose-600">
+                            <Badge variant="destructive" class="px-1 py-0 text-[9px]">Required</Badge>
                             <span>Credit sales require a registered customer account.</span>
                         </div>
                     </div>
@@ -880,22 +927,19 @@ onUnmounted(() => {
                 <div v-else class="space-y-3">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-semibold text-muted-foreground">Split breakdown:</span>
-                        <Button variant="outline" size="sm" class="h-7 text-xs gap-1" @click="addSplitRow">
+                        <Button variant="outline" size="sm" class="h-7 gap-1 text-xs" @click="addSplitRow">
                             <Plus class="size-3" />
                             Add Payment Method
                         </Button>
                     </div>
 
-                    <div class="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                    <div class="max-h-[220px] space-y-2 overflow-y-auto pr-1">
                         <div
                             v-for="(item, idx) in splitEntries"
                             :key="idx"
-                            class="flex items-center gap-2 bg-muted/20 p-2.5 rounded-lg border border-border/70"
+                            class="flex items-center gap-2 rounded-lg border border-border/70 bg-muted/20 p-2.5"
                         >
-                            <select
-                                v-model="item.method"
-                                class="h-9 rounded-md border border-input bg-background px-2 text-xs font-semibold"
-                            >
+                            <select v-model="item.method" class="h-9 rounded-md border border-input bg-background px-2 text-xs font-semibold">
                                 <option v-for="pm in availableMethods" :key="pm.id || pm.name" :value="pm.name">
                                     {{ pm.name }}
                                 </option>
@@ -905,23 +949,25 @@ onUnmounted(() => {
                                 v-model.number="item.amount"
                                 type="number"
                                 placeholder="Amount (KES)"
-                                class="h-9 text-xs font-mono font-bold bg-background flex-1"
+                                class="h-9 flex-1 bg-background font-mono text-xs font-bold"
                             />
 
                             <!-- If M-Pesa row in split mode -->
-                            <template v-if="item.method?.toLowerCase().includes('mpesa') || item.method?.toLowerCase().includes('till') || item.method?.toLowerCase().includes('paybill')">
-                                <Input
-                                    v-model="item.phone"
-                                    placeholder="07XX..."
-                                    class="h-9 text-xs font-mono bg-background w-24"
-                                />
+                            <template
+                                v-if="
+                                    item.method?.toLowerCase().includes('mpesa') ||
+                                    item.method?.toLowerCase().includes('till') ||
+                                    item.method?.toLowerCase().includes('paybill')
+                                "
+                            >
+                                <Input v-model="item.phone" placeholder="07XX..." class="h-9 w-24 bg-background font-mono text-xs" />
 
-                                <div v-if="!item.reference" class="flex gap-1 shrink-0">
+                                <div v-if="!item.reference" class="flex shrink-0 gap-1">
                                     <Button
                                         type="button"
                                         size="sm"
                                         variant="default"
-                                        class="h-9 px-2 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-1 shrink-0"
+                                        class="h-9 shrink-0 gap-1 bg-emerald-600 px-2 text-[11px] font-bold text-white hover:bg-emerald-700"
                                         @click="startMpesaStk('split', idx, false)"
                                         title="Send live M-Pesa STK Push to phone"
                                     >
@@ -932,7 +978,7 @@ onUnmounted(() => {
                                         type="button"
                                         size="sm"
                                         variant="outline"
-                                        class="h-9 px-1.5 text-[11px] font-bold border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 shrink-0"
+                                        class="h-9 shrink-0 border-emerald-500/40 px-1.5 text-[11px] font-bold text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-300"
                                         @click="startMpesaStk('split', idx, true)"
                                         title="Simulate split M-Pesa approval"
                                     >
@@ -941,21 +987,25 @@ onUnmounted(() => {
                                 </div>
                                 <div
                                     v-else
-                                    class="flex flex-col gap-0.5 text-[11px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1.5 rounded border border-emerald-500/30 shrink-0 min-w-[80px]"
+                                    class="flex min-w-[80px] shrink-0 flex-col gap-0.5 rounded border border-emerald-500/30 bg-emerald-500/10 px-2 py-1.5 font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400"
                                     :title="`Code: ${item.reference}${item.payerName ? ' | Payer: ' + item.payerName : ''}`"
                                 >
                                     <div class="flex items-center gap-1">
                                         <CheckCircle2 class="size-3.5 shrink-0" />
                                         <span>{{ item.reference }}</span>
                                     </div>
-                                    <span v-if="item.payerName" class="text-[10px] font-sans font-semibold text-emerald-700 dark:text-emerald-300 truncate max-w-[100px]">{{ item.payerName }}</span>
+                                    <span
+                                        v-if="item.payerName"
+                                        class="max-w-[100px] truncate font-sans text-[10px] font-semibold text-emerald-700 dark:text-emerald-300"
+                                        >{{ item.payerName }}</span
+                                    >
                                 </div>
                             </template>
 
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                class="h-8 w-8 p-0 text-muted-foreground hover:text-destructive shrink-0"
+                                class="h-8 w-8 shrink-0 p-0 text-muted-foreground hover:text-destructive"
                                 :disabled="splitEntries.length <= 1"
                                 @click="removeSplitRow(idx)"
                             >
@@ -966,30 +1016,28 @@ onUnmounted(() => {
                 </div>
 
                 <!-- Live Balance & Change Strip -->
-                <div class="grid grid-cols-2 gap-3 bg-muted/40 p-3.5 rounded-xl border border-border/80 text-xs">
+                <div class="grid grid-cols-2 gap-3 rounded-xl border border-border/80 bg-muted/40 p-3.5 text-xs">
                     <div>
                         <span class="text-muted-foreground">Remaining to Pay:</span>
-                        <div :class="['text-base font-bold font-mono', remainingToPay > 0 ? 'text-amber-600' : 'text-emerald-600']">
+                        <div :class="['font-mono text-base font-bold', remainingToPay > 0 ? 'text-amber-600' : 'text-emerald-600']">
                             {{ formatCurrency(remainingToPay) }}
                         </div>
                     </div>
                     <div class="text-right">
                         <span class="text-muted-foreground">Change to Return:</span>
-                        <div class="text-base font-bold font-mono text-primary">
+                        <div class="font-mono text-base font-bold text-primary">
                             {{ formatCurrency(changeToReturn) }}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <DialogFooter class="px-6 py-3.5 bg-muted/30 border-t border-border/70 flex sm:justify-between items-center gap-2">
-                <Button variant="ghost" size="sm" :disabled="isConfirming" @click="emit('update:open', false)">
-                    Cancel (C)
-                </Button>
+            <DialogFooter class="flex items-center gap-2 border-t border-border/70 bg-muted/30 px-6 py-3.5 sm:justify-between">
+                <Button variant="ghost" size="sm" :disabled="isConfirming" @click="emit('update:open', false)"> Cancel (C) </Button>
 
                 <Button
                     size="sm"
-                    class="h-9 px-6 bg-primary font-bold text-xs gap-2"
+                    class="h-9 gap-2 bg-primary px-6 text-xs font-bold"
                     :disabled="!isPaymentComplete || isConfirming"
                     @click="handleConfirmPayment"
                 >
@@ -1004,10 +1052,10 @@ onUnmounted(() => {
     <Dialog :open="stkModalOpen" @update:open="(v) => (stkModalOpen = v)">
         <DialogContent class="sm:max-w-md">
             <DialogHeader>
-                <DialogTitle class="text-base font-bold flex items-center gap-2">
+                <DialogTitle class="flex items-center gap-2 text-base font-bold">
                     <Smartphone class="size-4 text-emerald-600" />
                     <span>M-Pesa STK Push</span>
-                    <Badge variant="outline" class="font-mono text-[10px] ml-auto mr-6">
+                    <Badge variant="outline" class="ml-auto mr-6 font-mono text-[10px]">
                         <span v-if="stkStatus === 'sending'">Sending…</span>
                         <span v-else-if="stkStatus === 'waiting'">Awaiting PIN</span>
                         <span v-else-if="stkStatus === 'confirmed'">Confirmed</span>
@@ -1016,59 +1064,69 @@ onUnmounted(() => {
                     </Badge>
                 </DialogTitle>
                 <DialogDescription>
-                    {{ isDemo ? 'Demo Simulator' : 'Safaricom Daraja' }} • Target: <strong class="font-mono text-foreground">{{ stkTargetPhone }}</strong>
+                    {{ isDemo ? 'Demo Simulator' : 'Safaricom Daraja' }} • Target:
+                    <strong class="font-mono text-foreground">{{ stkTargetPhone }}</strong>
                 </DialogDescription>
             </DialogHeader>
 
             <div class="space-y-4 py-1 text-xs">
                 <!-- Merchant & Amount Info Card -->
-                <div class="bg-muted/40 border border-border/80 rounded-lg p-3 text-center space-y-1">
-                    <p class="text-[11px] text-muted-foreground">Pay Merchant / Till: <strong class="text-foreground">{{ currentTenant.name }}</strong></p>
-                    <p class="text-2xl font-black font-mono text-primary pt-0.5">
+                <div class="space-y-1 rounded-lg border border-border/80 bg-muted/40 p-3 text-center">
+                    <p class="text-[11px] text-muted-foreground">
+                        Pay Merchant / Till: <strong class="text-foreground">{{ currentTenant.name }}</strong>
+                    </p>
+                    <p class="pt-0.5 font-mono text-2xl font-black text-primary">
                         {{ formatCurrency(stkAmount) }}
                     </p>
                 </div>
 
                 <!-- Sending -->
                 <div v-if="stkStatus === 'sending'" class="space-y-2 py-4 text-center">
-                    <Loader2 class="size-6 text-primary animate-spin mx-auto" />
+                    <Loader2 class="mx-auto size-6 animate-spin text-primary" />
                     <p class="text-xs font-medium text-foreground">Contacting Safaricom Daraja gateway…</p>
                 </div>
 
                 <!-- Waiting PIN / Customer Payment (Automatic Capture Active) -->
                 <div v-else-if="stkStatus === 'waiting'" class="space-y-3 py-2 text-center">
                     <div class="flex items-center justify-center gap-2">
-                        <Badge variant="outline" class="font-mono text-xs px-2.5 py-1 bg-muted font-bold">
+                        <Badge variant="outline" class="bg-muted px-2.5 py-1 font-mono text-xs font-bold">
                             {{ formatCurrency(stkAmount) }}
                         </Badge>
-                        <Badge variant="outline" class="font-mono text-xs px-2.5 py-1 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 font-bold flex items-center gap-1.5">
-                            <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <Badge
+                            variant="outline"
+                            class="flex items-center gap-1.5 border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 font-mono text-xs font-bold text-emerald-700 dark:text-emerald-300"
+                        >
+                            <span class="size-1.5 animate-pulse rounded-full bg-emerald-500"></span>
                             <span>{{ formatCountdown(stkCountdown) }}</span>
                         </Badge>
                     </div>
 
-                    <div class="rounded-lg bg-muted/40 border border-border/80 p-3 text-left space-y-1">
+                    <div class="space-y-1 rounded-lg border border-border/80 bg-muted/40 p-3 text-left">
                         <div class="flex items-center gap-1.5 font-bold text-foreground">
-                            <span class="size-2 rounded-full bg-emerald-600 animate-pulse"></span>
+                            <span class="size-2 animate-pulse rounded-full bg-emerald-600"></span>
                             <span>Automatic Status Capture Active</span>
                         </div>
-                        <p class="text-[11px] text-muted-foreground leading-relaxed">
-                            STK prompt sent to <span class="font-mono font-bold text-foreground">{{ stkTargetPhone }}</span>. Awaiting customer PIN on phone. Payment status and receipt code will capture automatically.
+                        <p class="text-[11px] leading-relaxed text-muted-foreground">
+                            STK prompt sent to <span class="font-mono font-bold text-foreground">{{ stkTargetPhone }}</span
+                            >. Awaiting customer PIN on phone. Payment status and receipt code will capture automatically.
                         </p>
                     </div>
                 </div>
 
                 <!-- Confirmed -->
                 <div v-else-if="stkStatus === 'confirmed'" class="space-y-2 py-3 text-center">
-                    <CheckCircle2 class="size-8 text-emerald-600 mx-auto" />
+                    <CheckCircle2 class="mx-auto size-8 text-emerald-600" />
                     <p class="text-sm font-bold text-emerald-700 dark:text-emerald-400">Payment Confirmed!</p>
                 </div>
 
                 <!-- Failed -->
                 <div v-else-if="stkStatus === 'failed'" class="space-y-2 py-2 text-center">
-                    <AlertCircle class="size-8 text-destructive mx-auto" />
+                    <AlertCircle class="mx-auto size-8 text-destructive" />
                     <p class="text-xs font-bold text-destructive">STK Push Not Sent / Failed</p>
-                    <div v-if="stkErrorMessage" class="p-2.5 bg-destructive/10 border border-destructive/20 rounded-lg text-left text-[11px] space-y-1">
+                    <div
+                        v-if="stkErrorMessage"
+                        class="space-y-1 rounded-lg border border-destructive/20 bg-destructive/10 p-2.5 text-left text-[11px]"
+                    >
                         <p class="font-bold text-destructive">Daraja Response:</p>
                         <p class="font-mono text-[10px] leading-relaxed text-destructive">{{ stkErrorMessage }}</p>
                     </div>
@@ -1082,52 +1140,24 @@ onUnmounted(() => {
                         type="button"
                         variant="default"
                         size="sm"
-                        class="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+                        class="gap-1.5 bg-emerald-600 text-white hover:bg-emerald-700"
                         @click="startMpesaStk(stkMode, stkSplitIndex, true)"
                     >
                         <Sparkles class="size-3.5" />
                         <span>Run Demo Simulation</span>
                     </Button>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        @click="startMpesaStk(stkMode, stkSplitIndex, false)"
-                    >
-                        Retry Push
-                    </Button>
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        @click="cancelMpesaStk"
-                    >
-                        Dismiss
-                    </Button>
+                    <Button type="button" variant="outline" size="sm" @click="startMpesaStk(stkMode, stkSplitIndex, false)"> Retry Push </Button>
+                    <Button type="button" variant="ghost" size="sm" @click="cancelMpesaStk"> Dismiss </Button>
                 </template>
 
                 <!-- Waiting State Button -->
                 <template v-else-if="stkStatus === 'waiting'">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        class="text-destructive hover:text-destructive"
-                        @click="cancelMpesaStk"
-                    >
+                    <Button type="button" variant="outline" size="sm" class="text-destructive hover:text-destructive" @click="cancelMpesaStk">
                         Cancel Prompt (C)
                     </Button>
                 </template>
 
-                <Button
-                    v-else-if="stkStatus === 'sending'"
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    @click="cancelMpesaStk"
-                >
-                    Cancel (C)
-                </Button>
+                <Button v-else-if="stkStatus === 'sending'" type="button" variant="outline" size="sm" @click="cancelMpesaStk"> Cancel (C) </Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>

@@ -2,11 +2,10 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-    AlertCircle,
     AlertTriangle,
     ArrowLeft,
-    ArrowRight,
     ArrowLeftRight,
+    ArrowRight,
     Boxes,
     Building2,
     Check,
@@ -14,24 +13,18 @@ import {
     Clock,
     Compass,
     DollarSign,
-    Download,
-    Eye,
     FileSpreadsheet,
     History,
     Info,
     Layers,
     Package,
-    Plus,
     Printer,
     Scale,
     ScanBarcode,
     Search,
     ShieldCheck,
     SlidersHorizontal,
-    Sparkles,
     Tag,
-    TrendingDown,
-    TrendingUp,
     Truck,
     X,
     Zap,
@@ -139,7 +132,8 @@ const sections: TourSection[] = [
         rx: 10,
         icon: Compass,
         preferredPlacement: 'bottom-right',
-        usedFor: 'Welcome to your Multi-Branch Stock Control & Valuation Center! This interactive tour guides you through every single operational tool: asset valuation telemetry, reorder triggers, thermal barcodes and shelf tags, live wireless barcode stock-take audits, audited shrinkage write-offs, and inter-branch logistics transfers.',
+        usedFor:
+            'Welcome to your Multi-Branch Stock Control & Valuation Center! This interactive tour guides you through every single operational tool: asset valuation telemetry, reorder triggers, thermal barcodes and shelf tags, live wireless barcode stock-take audits, audited shrinkage write-offs, and inter-branch logistics transfers.',
         capabilities: [
             'Real-Time Capital Valuation at Cost',
             'Live USB/Bluetooth Barcode Audits',
@@ -150,7 +144,7 @@ const sections: TourSection[] = [
         ],
         howToUse: [
             'Click "Start Tour" or press → on your keyboard to navigate step by step.',
-            'Use the tab categories at the top of this card to jump directly to any tab\'s guide.',
+            "Use the tab categories at the top of this card to jump directly to any tab's guide.",
             'Press Esc at any time to exit the guide.',
         ],
         proTip: 'The "Page Guide" button remains pinned in the header toolbar at all times so managers and auditors can re-launch it on demand.',
@@ -170,7 +164,8 @@ const sections: TourSection[] = [
         icon: Boxes,
         preferredPlacement: 'right',
         activeTabRequired: 'overview',
-        usedFor: 'Instant financial asset telemetry: "Total Stock Valuation" measures the exact capital invested at wholesale cost across all branch shelves, while "Retail Potential" calculates total expected gross revenue and projected gross margin % upon complete stock turnover.',
+        usedFor:
+            'Instant financial asset telemetry: "Total Stock Valuation" measures the exact capital invested at wholesale cost across all branch shelves, while "Retail Potential" calculates total expected gross revenue and projected gross margin % upon complete stock turnover.',
         capabilities: [
             'Wholesale Working Capital at Cost',
             'Projected Gross Retail Sales Revenue',
@@ -197,7 +192,8 @@ const sections: TourSection[] = [
         icon: AlertTriangle,
         preferredPlacement: 'left',
         activeTabRequired: 'overview',
-        usedFor: 'Real-time inventory depletion monitor. "Low Stock Items" flags all SKUs that have reached or dropped below their safety reorder thresholds, while "Out of Stock" alerts management to zero-balance items requiring immediate replenishment.',
+        usedFor:
+            'Real-time inventory depletion monitor. "Low Stock Items" flags all SKUs that have reached or dropped below their safety reorder thresholds, while "Out of Stock" alerts management to zero-balance items requiring immediate replenishment.',
         capabilities: [
             'Safety Reorder Threshold Depletion Flags',
             'Zero-Unit Out-of-Stock Emergency Counters',
@@ -225,7 +221,8 @@ const sections: TourSection[] = [
         icon: Layers,
         preferredPlacement: 'bottom-left',
         activeTabRequired: 'overview',
-        usedFor: 'Central module switcher navigating between 4 dedicated workspaces: (1) Stock Catalog, (2) Barcode Stock Take, (3) Adjustments & Shrinkage, and (4) Branch Transfers — paired with instant 1-click stock health filter pills (All, In Stock, Low Stock, Out of Stock).',
+        usedFor:
+            'Central module switcher navigating between 4 dedicated workspaces: (1) Stock Catalog, (2) Barcode Stock Take, (3) Adjustments & Shrinkage, and (4) Branch Transfers — paired with instant 1-click stock health filter pills (All, In Stock, Low Stock, Out of Stock).',
         capabilities: [
             'Zero-Latency Tabbed Workspace Navigation',
             'Instant 1-Click Status Filtering (Low / Out of Stock)',
@@ -254,7 +251,8 @@ const sections: TourSection[] = [
         icon: Search,
         preferredPlacement: 'left',
         activeTabRequired: 'overview',
-        usedFor: 'High-speed multi-field search engine. Instantly filters the stock inventory table across item names, SKU codes, manufacturer barcodes, and branch warehouse locations as you type or scan.',
+        usedFor:
+            'High-speed multi-field search engine. Instantly filters the stock inventory table across item names, SKU codes, manufacturer barcodes, and branch warehouse locations as you type or scan.',
         capabilities: [
             'Multi-Field Fuzzy Search across 4 Attributes',
             'Hardware Barcode Scanner Auto-Lookup',
@@ -283,7 +281,8 @@ const sections: TourSection[] = [
         icon: ScanBarcode,
         preferredPlacement: 'right',
         activeTabRequired: 'overview',
-        usedFor: 'Master product identification showing the official product name, internal warehouse SKU code for picking, and the scannable EAN/UPC barcode with visual scanner indicator.',
+        usedFor:
+            'Master product identification showing the official product name, internal warehouse SKU code for picking, and the scannable EAN/UPC barcode with visual scanner indicator.',
         capabilities: [
             'High-Visibility Product Nomenclature',
             'Monospaced Alphanumeric Warehouse SKU',
@@ -309,7 +308,8 @@ const sections: TourSection[] = [
         icon: Building2,
         preferredPlacement: 'right',
         activeTabRequired: 'overview',
-        usedFor: 'Displays the exact branch store, distribution center, or warehouse facility holding physical custody of the stock line. Supports multi-store retail chains and regional depots.',
+        usedFor:
+            'Displays the exact branch store, distribution center, or warehouse facility holding physical custody of the stock line. Supports multi-store retail chains and regional depots.',
         capabilities: [
             'Location-Specific Inventory Segregation',
             'Multi-Branch Warehouse Tracking',
@@ -320,7 +320,7 @@ const sections: TourSection[] = [
             'Check the branch badge to confirm which store location currently holds the physical units.',
             'When managing multi-branch businesses, switch the active branch in the global top header to view location-specific inventory.',
         ],
-        proTip: 'You can type a branch name into the search bar to filter the stock table to that specific location\'s inventory.',
+        proTip: "You can type a branch name into the search bar to filter the stock table to that specific location's inventory.",
     },
     {
         id: 'col-stock',
@@ -335,7 +335,8 @@ const sections: TourSection[] = [
         icon: Package,
         preferredPlacement: 'right',
         activeTabRequired: 'overview',
-        usedFor: 'Numerical inventory balance tracking: displays on-hand physical units, custom units of measurement (Pcs, Kg, Bales, Liters, Cartons), and the configured minimum safety reorder threshold.',
+        usedFor:
+            'Numerical inventory balance tracking: displays on-hand physical units, custom units of measurement (Pcs, Kg, Bales, Liters, Cartons), and the configured minimum safety reorder threshold.',
         capabilities: [
             'Real-Time Available Quantity Display',
             'Custom Metric & Imperial Units of Measurement',
@@ -362,7 +363,8 @@ const sections: TourSection[] = [
         icon: DollarSign,
         preferredPlacement: 'left',
         activeTabRequired: 'overview',
-        usedFor: 'Comprehensive line-item financial breakdown: displays the wholesale unit cost, active retail selling price, total stock valuation at cost (Available × Cost), and potential retail revenue (Available × Retail).',
+        usedFor:
+            'Comprehensive line-item financial breakdown: displays the wholesale unit cost, active retail selling price, total stock valuation at cost (Available × Cost), and potential retail revenue (Available × Retail).',
         capabilities: [
             'Unit Cost Price & Retail Price Display',
             'Line Cost Valuation (Available × Unit Cost)',
@@ -388,7 +390,8 @@ const sections: TourSection[] = [
         icon: Printer,
         preferredPlacement: 'left',
         activeTabRequired: 'overview',
-        usedFor: 'Direct-to-printer thermal sticker generator. Creates compliant EAN-13, UPC, and Code-128 barcode labels with item title, store branding, and KES retail price for 50x30mm or 40x25mm thermal sticker rolls.',
+        usedFor:
+            'Direct-to-printer thermal sticker generator. Creates compliant EAN-13, UPC, and Code-128 barcode labels with item title, store branding, and KES retail price for 50x30mm or 40x25mm thermal sticker rolls.',
         capabilities: [
             'EAN-13, UPC & Code-128 Scannable Barcode Generation',
             'Standard 50x30mm & 40x25mm Label Sizes',
@@ -417,7 +420,8 @@ const sections: TourSection[] = [
         icon: Tag,
         preferredPlacement: 'left',
         activeTabRequired: 'overview',
-        usedFor: 'Specialized price card generator designed specifically for retail supermarket gondolas, pharmacy shelf edges, and boutique display strips. Formats large high-contrast prices without barcodes for clean customer browsing.',
+        usedFor:
+            'Specialized price card generator designed specifically for retail supermarket gondolas, pharmacy shelf edges, and boutique display strips. Formats large high-contrast prices without barcodes for clean customer browsing.',
         capabilities: [
             'Bold High-Contrast Price & Unit of Measure',
             'Store Branding & Branch Location Watermark',
@@ -446,7 +450,8 @@ const sections: TourSection[] = [
         icon: SlidersHorizontal,
         preferredPlacement: 'left',
         activeTabRequired: 'overview',
-        usedFor: 'Rapid stock correction dialog for recording physical warehouse count variances, receiving unbilled vendor surplus, or writing off damaged goods, expired batches, theft, and store sampling with audited reason codes.',
+        usedFor:
+            'Rapid stock correction dialog for recording physical warehouse count variances, receiving unbilled vendor surplus, or writing off damaged goods, expired batches, theft, and store sampling with audited reason codes.',
         capabilities: [
             'Dual Shift Direction (- Deduct Loss / + Add Surplus)',
             '7 Standardized Warehouse Audit Reason Codes',
@@ -476,7 +481,8 @@ const sections: TourSection[] = [
         icon: FileSpreadsheet,
         preferredPlacement: 'bottom-right',
         activeTabRequired: 'overview',
-        usedFor: 'Instant 1-click full catalog CSV snapshot. Downloads an RFC-4180 compliant spreadsheet containing all product names, SKUs, barcodes, branch locations, available units, unit costs, selling prices, line valuations, reorder levels, and health statuses.',
+        usedFor:
+            'Instant 1-click full catalog CSV snapshot. Downloads an RFC-4180 compliant spreadsheet containing all product names, SKUs, barcodes, branch locations, available units, unit costs, selling prices, line valuations, reorder levels, and health statuses.',
         capabilities: [
             '1-Click Complete Inventory CSV Export',
             'Full Accounting & Financial Valuation Data Fields',
@@ -508,7 +514,8 @@ const sections: TourSection[] = [
         icon: ScanBarcode,
         preferredPlacement: 'bottom-right',
         activeTabRequired: 'audit',
-        usedFor: 'Turns any POS terminal, laptop, or tablet into a dedicated physical inventory verification workstation. Hardware scanners are armed by default with instant variance calculations, acoustic feedback, and financial discrepancy tracking.',
+        usedFor:
+            'Turns any POS terminal, laptop, or tablet into a dedicated physical inventory verification workstation. Hardware scanners are armed by default with instant variance calculations, acoustic feedback, and financial discrepancy tracking.',
         capabilities: [
             'Hardware Barcode Scanner Listener Armed',
             'Real-Time Expected vs Counted Comparison',
@@ -537,7 +544,8 @@ const sections: TourSection[] = [
         icon: Search,
         preferredPlacement: 'bottom',
         activeTabRequired: 'audit',
-        usedFor: 'Dedicated hands-free barcode scanner wedge input. Whenever a scanner pulls a barcode, it matches the SKU, increments physical count by +1, flashes confirmation, and resets for the next scan without requiring mouse clicks.',
+        usedFor:
+            'Dedicated hands-free barcode scanner wedge input. Whenever a scanner pulls a barcode, it matches the SKU, increments physical count by +1, flashes confirmation, and resets for the next scan without requiring mouse clicks.',
         capabilities: [
             'Auto-Enter Keystroke Trapping & Rapid Reset',
             'Continuous Multi-Item Scanning (30+ items/min)',
@@ -546,7 +554,7 @@ const sections: TourSection[] = [
         ],
         howToUse: [
             'Keep cursor in this field while walking aisles with your scanner.',
-            'Scan items continuously — each scan auto-increments that product\'s counted units.',
+            "Scan items continuously — each scan auto-increments that product's counted units.",
             'If a barcode label is unreadable, type the numeric SKU and press Enter.',
         ],
         proTip: 'Hardware barcode guns send an Enter keypress after every scan, enabling rapid hands-free auditing at shelf racks.',
@@ -566,7 +574,8 @@ const sections: TourSection[] = [
         icon: Scale,
         preferredPlacement: 'bottom',
         activeTabRequired: 'audit',
-        usedFor: 'Executive telemetry measuring count accuracy and discrepancy impact in real time: tracks Total SKUs Audited, Discrepancy Lines (mismatches), Net Unit Shift (+/- count), and Total Variance Financial Valuation in KES at wholesale cost.',
+        usedFor:
+            'Executive telemetry measuring count accuracy and discrepancy impact in real time: tracks Total SKUs Audited, Discrepancy Lines (mismatches), Net Unit Shift (+/- count), and Total Variance Financial Valuation in KES at wholesale cost.',
         capabilities: [
             'Total Lines Audited Telemetry',
             'Discrepancy Line Isolation & Highlighting',
@@ -593,7 +602,8 @@ const sections: TourSection[] = [
         icon: Boxes,
         preferredPlacement: 'top',
         activeTabRequired: 'audit',
-        usedFor: 'Interactive counting table comparing System Expected against Physical Counted: allows instant 1-click quantity nudging with `+` and `-` stepper buttons, direct numerical typing, line-by-line financial variance, and real-time status badges (Exact Match, Surplus, Shortage).',
+        usedFor:
+            'Interactive counting table comparing System Expected against Physical Counted: allows instant 1-click quantity nudging with `+` and `-` stepper buttons, direct numerical typing, line-by-line financial variance, and real-time status badges (Exact Match, Surplus, Shortage).',
         capabilities: [
             'Precision Stepper Increment/Decrement Buttons',
             'Direct Numerical Keyboard Input for Full Cartons',
@@ -620,7 +630,8 @@ const sections: TourSection[] = [
         icon: CheckCircle2,
         preferredPlacement: 'left',
         activeTabRequired: 'audit',
-        usedFor: 'One-click reconciliation engine. Analyzes all physical count variances, automatically posts compensatory adjustment entries into the ledger, and synchronizes live stock balances to match physical shelf reality in one single transaction.',
+        usedFor:
+            'One-click reconciliation engine. Analyzes all physical count variances, automatically posts compensatory adjustment entries into the ledger, and synchronizes live stock balances to match physical shelf reality in one single transaction.',
         capabilities: [
             '1-Click Multi-SKU Discrepancy Reconciliation',
             'Automatic Ledger Entry Generation for Variances',
@@ -653,7 +664,8 @@ const sections: TourSection[] = [
         icon: History,
         preferredPlacement: 'bottom-left',
         activeTabRequired: 'adjustments',
-        usedFor: 'Permanent, tamper-evident transaction ledger recording every single stock adjustment, audit reconciliation, breakage write-off, and shrinkage event. Displays unique adjustment ID, timestamp, product name, quantity shift, reason code, and author.',
+        usedFor:
+            'Permanent, tamper-evident transaction ledger recording every single stock adjustment, audit reconciliation, breakage write-off, and shrinkage event. Displays unique adjustment ID, timestamp, product name, quantity shift, reason code, and author.',
         capabilities: [
             'Permanent Audited Stock Movement Ledger',
             'Loss Prevention & Shrinkage Pattern Detection',
@@ -681,7 +693,8 @@ const sections: TourSection[] = [
         icon: SlidersHorizontal,
         preferredPlacement: 'right',
         activeTabRequired: 'adjustments',
-        usedFor: 'Monitors the exact direction and magnitude of physical inventory adjustments: displays emerald positive shifts (+ units) for surplus stock discoveries and rose negative shifts (- units) for damaged goods, expired batches, and shrinkage write-offs.',
+        usedFor:
+            'Monitors the exact direction and magnitude of physical inventory adjustments: displays emerald positive shifts (+ units) for surplus stock discoveries and rose negative shifts (- units) for damaged goods, expired batches, and shrinkage write-offs.',
         capabilities: [
             'High-Contrast Color-Coded Quantity Deltas',
             'Precise Unit-of-Measure Alignment',
@@ -708,7 +721,8 @@ const sections: TourSection[] = [
         icon: ShieldCheck,
         preferredPlacement: 'left',
         activeTabRequired: 'adjustments',
-        usedFor: 'Mandatory reason classification: every adjustment is tagged with one of 7 standardized warehouse audit reason codes (Breakage in Store, Expired / Spoilage, Theft / Missing, Physical Stock Take Reconciliation, Sampling, Supplier Delivery Variance, Internal Branch Shift) along with the staff member who authorized the change.',
+        usedFor:
+            'Mandatory reason classification: every adjustment is tagged with one of 7 standardized warehouse audit reason codes (Breakage in Store, Expired / Spoilage, Theft / Missing, Physical Stock Take Reconciliation, Sampling, Supplier Delivery Variance, Internal Branch Shift) along with the staff member who authorized the change.',
         capabilities: [
             '7 Standardized Inventory Audit Reason Codes',
             'Mandatory Accountability & User Attribution',
@@ -738,7 +752,8 @@ const sections: TourSection[] = [
         icon: ArrowLeftRight,
         preferredPlacement: 'bottom-left',
         activeTabRequired: 'transfers',
-        usedFor: 'Multi-branch stock transfer hub. Facilitates dispatching goods between central warehouses and satellite branch stores, tracks transfers currently in-transit, and provides a 1-click "Receive & Stock" verification button at the destination branch.',
+        usedFor:
+            'Multi-branch stock transfer hub. Facilitates dispatching goods between central warehouses and satellite branch stores, tracks transfers currently in-transit, and provides a 1-click "Receive & Stock" verification button at the destination branch.',
         capabilities: [
             'Origin-to-Destination Branch Routing',
             'In-Transit State Machine (Pending -> Approved -> Completed)',
@@ -766,7 +781,8 @@ const sections: TourSection[] = [
         icon: Truck,
         preferredPlacement: 'left',
         activeTabRequired: 'transfers',
-        usedFor: 'Creates an official transfer manifest for moving stock between stores. Select source warehouse, destination branch, product SKU, and quantity. Deducts dispatched units from origin and tags them as in-transit.',
+        usedFor:
+            'Creates an official transfer manifest for moving stock between stores. Select source warehouse, destination branch, product SKU, and quantity. Deducts dispatched units from origin and tags them as in-transit.',
         capabilities: [
             'Inter-Store Stock Movement Manifest',
             'Origin Warehouse Stock Reservation',
@@ -795,7 +811,8 @@ const sections: TourSection[] = [
         icon: Clock,
         preferredPlacement: 'right',
         activeTabRequired: 'transfers',
-        usedFor: 'Tracks physical consignment status in real time: "Pending" (awaiting warehouse picking/dispatch), "Approved" / "In-Transit" (goods loaded onto delivery truck en route), and "Completed" (delivered and acknowledged by destination branch).',
+        usedFor:
+            'Tracks physical consignment status in real time: "Pending" (awaiting warehouse picking/dispatch), "Approved" / "In-Transit" (goods loaded onto delivery truck en route), and "Completed" (delivered and acknowledged by destination branch).',
         capabilities: [
             '3-Stage Real-Time Logistics Lifecycle',
             'Color-Coded Status Badges (Amber / Blue / Green)',
@@ -821,7 +838,8 @@ const sections: TourSection[] = [
         icon: CheckCircle2,
         preferredPlacement: 'left',
         activeTabRequired: 'transfers',
-        usedFor: 'Destination verification button. When physical delivery vehicles arrive at the satellite branch, the receiving clerk inspects the physical cartons and clicks "Receive & Stock" to finalize the transfer and credit local shelf inventory.',
+        usedFor:
+            'Destination verification button. When physical delivery vehicles arrive at the satellite branch, the receiving clerk inspects the physical cartons and clicks "Receive & Stock" to finalize the transfer and credit local shelf inventory.',
         capabilities: [
             'Instant Destination Inventory Crediting',
             'Automatic Transfer Completion Timestamping',
@@ -831,7 +849,7 @@ const sections: TourSection[] = [
         howToUse: [
             'Inspect goods upon physical arrival at your branch store.',
             'Click "Receive & Stock" to acknowledge physical delivery.',
-            'The units immediately become available for checkout at this branch\'s POS cash registers.',
+            "The units immediately become available for checkout at this branch's POS cash registers.",
         ],
         proTip: 'As soon as "Receive & Stock" is clicked, local cashier barcode guns can immediately ring up the newly arrived items at checkout.',
         actionLabel: 'View Transfers Workspace',
@@ -853,7 +871,7 @@ watch(
             internalStep.value = newStep;
             updateTargetPosition();
         }
-    }
+    },
 );
 
 const currentSection = computed(() => {
@@ -1028,7 +1046,7 @@ watch(
             window.removeEventListener('keydown', handleKeyDown);
         }
     },
-    { immediate: true }
+    { immediate: true },
 );
 
 onMounted(() => {
@@ -1286,15 +1304,9 @@ const speechBubbleTail = computed(() => {
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
         >
-            <div
-                v-if="open"
-                class="fixed inset-0 z-50 pointer-events-none select-none font-sans"
-            >
+            <div v-if="open" class="pointer-events-none fixed inset-0 z-50 select-none font-sans">
                 <!-- SVG Dimming Backdrop with Cutout Hole -->
-                <svg
-                    class="absolute inset-0 w-full h-full pointer-events-none transition-all duration-300"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
+                <svg class="pointer-events-none absolute inset-0 h-full w-full transition-all duration-300" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <!-- Cutout Mask Hole -->
                         <mask id="stock-guide-mask">
@@ -1327,7 +1339,7 @@ const speechBubbleTail = computed(() => {
                 <!-- Clickable Spotlight Hole: clicking highlighted area advances tour -->
                 <div
                     v-if="targetRect"
-                    class="absolute pointer-events-auto cursor-pointer z-40"
+                    class="pointer-events-auto absolute z-40 cursor-pointer"
                     :style="{
                         top: `${targetRect.top - 4}px`,
                         left: `${targetRect.left - 4}px`,
@@ -1341,7 +1353,7 @@ const speechBubbleTail = computed(() => {
                 <!-- Glowing Target Boundary Ring -->
                 <div
                     v-if="targetRect"
-                    class="absolute pointer-events-none transition-all duration-300 ease-out border-2 border-primary shadow-[0_0_35px_rgba(16,185,129,0.55)] ring-4 ring-primary/30"
+                    class="pointer-events-none absolute border-2 border-primary shadow-[0_0_35px_rgba(16,185,129,0.55)] ring-4 ring-primary/30 transition-all duration-300 ease-out"
                     :style="{
                         top: `${targetRect.top - 8}px`,
                         left: `${targetRect.left - 8}px`,
@@ -1352,25 +1364,15 @@ const speechBubbleTail = computed(() => {
                 ></div>
 
                 <!-- Guided Callout Text Bubble (Speech bubble dialog pointing directly to target) -->
-                <div
-                    ref="cardRef"
-                    class="absolute z-50 pointer-events-auto transition-all duration-300 ease-out"
-                    :style="cardStyle"
-                    @click.stop
-                >
+                <div ref="cardRef" class="pointer-events-auto absolute z-50 transition-all duration-300 ease-out" :style="cardStyle" @click.stop>
                     <!-- Speech Bubble Tail: Top (points UP to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'top'"
-                        class="absolute -top-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -top-3.5 z-30"
                         :style="{ left: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="24" height="15" viewBox="0 0 24 15" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,15 L 12,0 L 24,15"
-                                class="fill-muted/95 stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,15 L 12,0 L 24,15" class="fill-muted/95 stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="1" y="14" width="22" height="3" class="fill-muted/95" />
                         </svg>
                     </div>
@@ -1378,16 +1380,11 @@ const speechBubbleTail = computed(() => {
                     <!-- Speech Bubble Tail: Bottom (points DOWN to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'bottom'"
-                        class="absolute -bottom-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -bottom-3.5 z-30"
                         :style="{ left: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="24" height="15" viewBox="0 0 24 15" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,0 L 12,15 L 24,0"
-                                class="fill-muted/80 stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,0 L 12,15 L 24,0" class="fill-muted/80 stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="1" y="-2" width="22" height="3" class="fill-muted/80" />
                         </svg>
                     </div>
@@ -1395,16 +1392,11 @@ const speechBubbleTail = computed(() => {
                     <!-- Speech Bubble Tail: Left (points LEFT to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'left'"
-                        class="absolute -left-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -left-3.5 z-30"
                         :style="{ top: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="15" height="24" viewBox="0 0 15 24" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 15,0 L 0,12 L 15,24"
-                                class="fill-card stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 15,0 L 0,12 L 15,24" class="fill-card stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="14" y="1" width="3" height="22" class="fill-card" />
                         </svg>
                     </div>
@@ -1412,47 +1404,53 @@ const speechBubbleTail = computed(() => {
                     <!-- Speech Bubble Tail: Right (points RIGHT to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'right'"
-                        class="absolute -right-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -right-3.5 z-30"
                         :style="{ top: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="15" height="24" viewBox="0 0 15 24" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,0 L 15,12 L 0,24"
-                                class="fill-card stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,0 L 15,12 L 0,24" class="fill-card stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="-2" y="1" width="3" height="22" class="fill-card" />
                         </svg>
                     </div>
 
                     <!-- Text Bubble Container Card -->
-                    <div class="rounded-2xl border-2 border-border bg-card shadow-2xl overflow-hidden text-card-foreground flex flex-col max-h-[calc(100vh-80px)] ring-1 ring-black/10 dark:ring-white/15">
+                    <div
+                        class="flex max-h-[calc(100vh-80px)] flex-col overflow-hidden rounded-2xl border-2 border-border bg-card text-card-foreground shadow-2xl ring-1 ring-black/10 dark:ring-white/15"
+                    >
                         <!-- Card Header -->
-                        <div class="px-4 py-3 bg-muted/80 border-b border-border flex items-center justify-between shrink-0">
-                            <div class="flex items-center gap-3 min-w-0 flex-1">
-                                <div class="size-8 rounded-lg bg-primary/15 text-primary border border-primary/25 flex items-center justify-center font-bold text-xs shadow-2xs shrink-0">
+                        <div class="flex shrink-0 items-center justify-between border-b border-border bg-muted/80 px-4 py-3">
+                            <div class="flex min-w-0 flex-1 items-center gap-3">
+                                <div
+                                    class="shadow-2xs flex size-8 shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/15 text-xs font-bold text-primary"
+                                >
                                     <component :is="currentSection.icon" class="size-4.5" />
                                 </div>
                                 <div class="min-w-0 flex-1">
-                                    <div class="flex items-center gap-2 flex-wrap">
+                                    <div class="flex flex-wrap items-center gap-2">
                                         <Badge
                                             variant="outline"
-                                            class="text-[9.5px] px-2 py-0.5 h-4.5 border-primary/40 bg-primary/10 text-primary uppercase font-mono font-bold shrink-0"
+                                            class="h-4.5 shrink-0 border-primary/40 bg-primary/10 px-2 py-0.5 font-mono text-[9.5px] font-bold uppercase text-primary"
                                         >
-                                            {{ currentSection.id === 'start' ? 'ORIENTATION' : `Part ${currentSection.stepNumber}/${sections.length - 1}` }}
+                                            {{
+                                                currentSection.id === 'start'
+                                                    ? 'ORIENTATION'
+                                                    : `Part ${currentSection.stepNumber}/${sections.length - 1}`
+                                            }}
                                         </Badge>
                                         <Badge
                                             variant="outline"
-                                            :class="['text-[9px] px-1.5 py-0.5 font-mono uppercase font-bold shrink-0', currentTabCategory.badgeColor]"
+                                            :class="[
+                                                'shrink-0 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase',
+                                                currentTabCategory.badgeColor,
+                                            ]"
                                         >
                                             {{ currentTabCategory.label }}
                                         </Badge>
-                                        <span class="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-wider truncate">
+                                        <span class="truncate text-[10px] font-bold uppercase tracking-wider text-muted-foreground sm:text-[11px]">
                                             {{ currentSection.tag }}
                                         </span>
                                     </div>
-                                    <h3 class="text-sm sm:text-[15px] font-bold text-foreground leading-snug mt-0.5">
+                                    <h3 class="mt-0.5 text-sm font-bold leading-snug text-foreground sm:text-[15px]">
                                         {{ currentSection.title }}
                                     </h3>
                                 </div>
@@ -1464,7 +1462,7 @@ const speechBubbleTail = computed(() => {
                                 variant="ghost"
                                 size="sm"
                                 @click="close"
-                                class="h-7 px-2 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/80 shrink-0 gap-1 rounded-lg ml-2 cursor-pointer"
+                                class="ml-2 h-7 shrink-0 cursor-pointer gap-1 rounded-lg px-2 text-xs font-semibold text-muted-foreground hover:bg-muted/80 hover:text-foreground"
                                 title="Exit Tour (Esc)"
                             >
                                 <span>Exit</span>
@@ -1473,28 +1471,28 @@ const speechBubbleTail = computed(() => {
                         </div>
 
                         <!-- Tab Category Quick-Jump Bar -->
-                        <div class="px-3 py-1.5 bg-muted/40 border-b border-border flex items-center gap-1.5 overflow-x-auto scrollbar-none shrink-0">
-                            <span class="text-[10px] uppercase tracking-wider font-bold text-muted-foreground shrink-0 mr-0.5">
-                                Tab Guides:
-                            </span>
+                        <div class="scrollbar-none flex shrink-0 items-center gap-1.5 overflow-x-auto border-b border-border bg-muted/40 px-3 py-1.5">
+                            <span class="mr-0.5 shrink-0 text-[10px] font-bold uppercase tracking-wider text-muted-foreground"> Tab Guides: </span>
                             <button
                                 v-for="t in tabCategories"
                                 :key="t.key"
                                 type="button"
                                 @click="jumpToTabCategory(t.key)"
                                 :class="[
-                                    'px-2 py-1 rounded-md text-[11px] font-semibold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer border',
+                                    'flex shrink-0 cursor-pointer items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-semibold transition-all',
                                     currentTabCategory.key === t.key
-                                        ? 'bg-primary text-primary-foreground border-primary shadow-xs font-bold'
-                                        : 'bg-card text-muted-foreground hover:text-foreground hover:bg-muted/80 border-border/80'
+                                        ? 'shadow-xs border-primary bg-primary font-bold text-primary-foreground'
+                                        : 'border-border/80 bg-card text-muted-foreground hover:bg-muted/80 hover:text-foreground',
                                 ]"
                             >
                                 <component :is="t.icon" class="size-3.5" />
                                 <span>{{ t.label }}</span>
                                 <span
                                     :class="[
-                                        'text-[9px] px-1 py-0.2 rounded-full font-mono',
-                                        currentTabCategory.key === t.key ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'
+                                        'py-0.2 rounded-full px-1 font-mono text-[9px]',
+                                        currentTabCategory.key === t.key
+                                            ? 'bg-primary-foreground/20 text-primary-foreground'
+                                            : 'bg-muted text-muted-foreground',
                                     ]"
                                 >
                                     {{ t.count }}
@@ -1503,14 +1501,14 @@ const speechBubbleTail = computed(() => {
                         </div>
 
                         <!-- Card Body -->
-                        <div class="p-3.5 space-y-3 overflow-y-auto max-h-[min(420px,calc(100vh-230px))] text-xs">
+                        <div class="max-h-[min(420px,calc(100vh-230px))] space-y-3 overflow-y-auto p-3.5 text-xs">
                             <!-- Purpose & Function -->
                             <div class="space-y-1.5">
-                                <div class="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-primary">
+                                <div class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-primary sm:text-xs">
                                     <Info class="size-3.5" />
                                     <span>Purpose & Function:</span>
                                 </div>
-                                <p class="text-xs sm:text-[13px] text-foreground font-normal leading-relaxed">
+                                <p class="text-xs font-normal leading-relaxed text-foreground sm:text-[13px]">
                                     {{ currentSection.usedFor }}
                                 </p>
 
@@ -1519,16 +1517,16 @@ const speechBubbleTail = computed(() => {
                                     <span
                                         v-for="cap in currentSection.capabilities"
                                         :key="cap"
-                                        class="inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-md font-semibold bg-muted/80 border border-border/80 text-foreground shadow-2xs"
+                                        class="shadow-2xs inline-flex items-center gap-1.5 rounded-md border border-border/80 bg-muted/80 px-2 py-0.5 text-[10px] font-semibold text-foreground"
                                     >
-                                        <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
+                                        <span class="size-1.5 shrink-0 rounded-full bg-primary"></span>
                                         <span>{{ cap }}</span>
                                     </span>
                                 </div>
                             </div>
 
                             <!-- Guidance Steps -->
-                            <div class="p-2.5 rounded-xl bg-muted/40 border border-border/80 space-y-2">
+                            <div class="space-y-2 rounded-xl border border-border/80 bg-muted/40 p-2.5">
                                 <span class="text-[10px] font-bold uppercase tracking-wider text-foreground/70">How to use:</span>
                                 <div class="space-y-2">
                                     <div
@@ -1536,10 +1534,12 @@ const speechBubbleTail = computed(() => {
                                         :key="idx"
                                         class="flex items-start gap-2 text-[11.5px] text-foreground"
                                     >
-                                        <div class="size-4.5 rounded-full bg-primary text-primary-foreground font-mono font-bold text-[9px] flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                                        <div
+                                            class="size-4.5 shadow-2xs mt-0.5 flex shrink-0 items-center justify-center rounded-full bg-primary font-mono text-[9px] font-bold text-primary-foreground"
+                                        >
                                             {{ idx + 1 }}
                                         </div>
-                                        <span class="leading-relaxed font-normal text-foreground/95 flex-1 break-words">
+                                        <span class="flex-1 break-words font-normal leading-relaxed text-foreground/95">
                                             {{ step }}
                                         </span>
                                     </div>
@@ -1547,12 +1547,14 @@ const speechBubbleTail = computed(() => {
                             </div>
 
                             <!-- Pro Tip -->
-                            <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-950 dark:text-amber-100 space-y-1">
-                                <span class="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-300 text-[10px] uppercase tracking-wide">
-                                    <Zap class="size-3 text-amber-600 dark:text-amber-400 fill-amber-500/30 shrink-0" />
+                            <div class="space-y-1 rounded-xl border border-amber-500/30 bg-amber-500/10 p-2.5 text-amber-950 dark:text-amber-100">
+                                <span
+                                    class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-amber-900 dark:text-amber-300"
+                                >
+                                    <Zap class="size-3 shrink-0 fill-amber-500/30 text-amber-600 dark:text-amber-400" />
                                     <span>Tip</span>
                                 </span>
-                                <p class="text-[11px] leading-relaxed font-medium">
+                                <p class="text-[11px] font-medium leading-relaxed">
                                     {{ currentSection.proTip }}
                                 </p>
                             </div>
@@ -1562,7 +1564,7 @@ const speechBubbleTail = computed(() => {
                                 <button
                                     type="button"
                                     @click="handleAction"
-                                    class="w-full py-2.5 px-4 rounded-xl bg-primary/15 hover:bg-primary/25 text-primary text-xs sm:text-[13px] font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer border border-primary/30 shadow-2xs active:scale-[0.99]"
+                                    class="shadow-2xs flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/15 px-4 py-2.5 text-xs font-bold text-primary transition-colors hover:bg-primary/25 active:scale-[0.99] sm:text-[13px]"
                                 >
                                     <span>{{ currentSection.actionLabel }}</span>
                                     <ArrowRight class="size-4 shrink-0" />
@@ -1571,13 +1573,13 @@ const speechBubbleTail = computed(() => {
                         </div>
 
                         <!-- Footer Navigation -->
-                        <div class="px-4 py-3 bg-muted/70 border-t border-border flex items-center justify-between shrink-0">
+                        <div class="flex shrink-0 items-center justify-between border-t border-border bg-muted/70 px-4 py-3">
                             <!-- Prev Button -->
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                class="h-8 text-xs px-3 gap-1 text-muted-foreground hover:text-foreground font-semibold cursor-pointer"
+                                class="h-8 cursor-pointer gap-1 px-3 text-xs font-semibold text-muted-foreground hover:text-foreground"
                                 :disabled="internalStep === 0"
                                 @click="prevStep"
                             >
@@ -1587,10 +1589,10 @@ const speechBubbleTail = computed(() => {
 
                             <!-- Current Step Badge / Dots -->
                             <div class="flex flex-col items-center justify-center gap-0.5">
-                                <span class="text-[11px] font-mono font-bold text-foreground">
+                                <span class="font-mono text-[11px] font-bold text-foreground">
                                     {{ currentTabCategory.label }}: {{ currentStepInCat }} of {{ currentTabCategory.count }}
                                 </span>
-                                <span class="text-[9.5px] font-mono text-muted-foreground">
+                                <span class="font-mono text-[9.5px] text-muted-foreground">
                                     Overall Step {{ internalStep + 1 }} / {{ sections.length }}
                                 </span>
                             </div>
@@ -1599,10 +1601,12 @@ const speechBubbleTail = computed(() => {
                             <Button
                                 type="button"
                                 size="sm"
-                                class="h-8 text-xs px-3.5 gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-xs cursor-pointer"
+                                class="shadow-xs h-8 cursor-pointer gap-1.5 bg-primary px-3.5 text-xs font-bold text-primary-foreground hover:bg-primary/90"
                                 @click="nextStep"
                             >
-                                <span>{{ currentSection.id === 'start' ? 'Start Tour' : internalStep === sections.length - 1 ? 'Done' : 'Next' }}</span>
+                                <span>{{
+                                    currentSection.id === 'start' ? 'Start Tour' : internalStep === sections.length - 1 ? 'Done' : 'Next'
+                                }}</span>
                                 <ArrowRight v-if="internalStep < sections.length - 1" class="size-3.5" />
                                 <Check v-else class="size-3.5" />
                             </Button>

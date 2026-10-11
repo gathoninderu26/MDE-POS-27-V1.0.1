@@ -20,7 +20,7 @@ class ExpenseController extends Controller
             ->with(['branch', 'user'])
             ->latest('date')
             ->get()
-            ->map(fn($e) => [
+            ->map(fn ($e) => [
                 'id' => $e->id,
                 'title' => $e->title,
                 'category' => $e->category,

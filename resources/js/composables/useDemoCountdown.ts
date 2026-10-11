@@ -1,6 +1,6 @@
+import { useTenant } from '@/composables/useTenant';
 import { usePage } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { useTenant } from '@/composables/useTenant';
 
 export function useDemoCountdown() {
     const page = usePage();
@@ -27,9 +27,7 @@ export function useDemoCountdown() {
         if (!isDemo.value) return null;
 
         const serverExpires =
-            (page.props as any)?.demo?.expires_at ||
-            (page.props as any)?.tenant?.expires_at ||
-            (currentTenant.value as any)?.expiresAt;
+            (page.props as any)?.demo?.expires_at || (page.props as any)?.tenant?.expires_at || (currentTenant.value as any)?.expiresAt;
 
         if (serverExpires) {
             const parsed = new Date(serverExpires).getTime();

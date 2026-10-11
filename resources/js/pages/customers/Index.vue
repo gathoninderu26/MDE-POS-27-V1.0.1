@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import DataTable from '@/components/ui/DataTable.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
+import DataTable from '@/components/ui/DataTable.vue';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,7 +11,7 @@ import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { CreditCard, DollarSign, Mail, Phone, Plus, Trash2, UserCheck, Users } from 'lucide-vue-next';
+import { Plus, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 const props = defineProps<{
@@ -53,28 +53,32 @@ const newCust = ref({
 });
 
 const handleCreateCustomer = () => {
-    router.post('/customers', {
-        name: newCust.value.name,
-        phone: newCust.value.phone,
-        email: newCust.value.email,
-        group: newCust.value.group,
-        credit_limit: newCust.value.credit_limit,
-        notes: newCust.value.notes,
-    }, {
-        onSuccess: () => {
-            newCustomerModal.value = false;
-            success('Customer Created', `Account for ${newCust.value.name} registered.`);
-            newCust.value = {
-                name: '',
-                phone: '',
-                email: '',
-                group: 'Retail',
-                credit_limit: 0,
-                notes: '',
-            };
+    router.post(
+        '/customers',
+        {
+            name: newCust.value.name,
+            phone: newCust.value.phone,
+            email: newCust.value.email,
+            group: newCust.value.group,
+            credit_limit: newCust.value.credit_limit,
+            notes: newCust.value.notes,
         },
-        onError: (errs) => error('Failed', Object.values(errs)[0] as string),
-    });
+        {
+            onSuccess: () => {
+                newCustomerModal.value = false;
+                success('Customer Created', `Account for ${newCust.value.name} registered.`);
+                newCust.value = {
+                    name: '',
+                    phone: '',
+                    email: '',
+                    group: 'Retail',
+                    credit_limit: 0,
+                    notes: '',
+                };
+            },
+            onError: (errs) => error('Failed', Object.values(errs)[0] as string),
+        },
+    );
 };
 
 const openPayModal = (c: any) => {
@@ -86,15 +90,19 @@ const openPayModal = (c: any) => {
 const handleRecordCustomerPayment = () => {
     if (!selectedCust.value) return;
 
-    router.post(`/customers/${selectedCust.value.id}/payment`, {
-        amount: paymentReceived.value,
-    }, {
-        onSuccess: () => {
-            payCreditModal.value = false;
-            success('Payment Received', `Recorded ${formatCurrency(paymentReceived.value)} collected from ${selectedCust.value.name}.`);
+    router.post(
+        `/customers/${selectedCust.value.id}/payment`,
+        {
+            amount: paymentReceived.value,
         },
-        onError: (errs) => error('Payment Failed', Object.values(errs)[0] as string),
-    });
+        {
+            onSuccess: () => {
+                payCreditModal.value = false;
+                success('Payment Received', `Recorded ${formatCurrency(paymentReceived.value)} collected from ${selectedCust.value.name}.`);
+            },
+            onError: (errs) => error('Payment Failed', Object.values(errs)[0] as string),
+        },
+    );
 };
 
 const deleteConfirmOpen = ref(false);
@@ -125,17 +133,17 @@ const confirmDeleteCustomer = () => {
     <Head title="Customer Directory" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
+        <div class="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
             <!-- Header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h2 class="text-2xl font-bold text-foreground">Customer Accounts & Credit</h2>
-                    <p class="text-xs text-muted-foreground mt-0.5">
+                    <p class="mt-0.5 text-xs text-muted-foreground">
                         Manage retail, VIP, wholesale, and corporate customer credit lines and payments.
                     </p>
                 </div>
 
-                <Button size="sm" class="h-9 text-xs gap-1.5 bg-primary" @click="newCustomerModal = true">
+                <Button size="sm" class="h-9 gap-1.5 bg-primary text-xs" @click="newCustomerModal = true">
                     <Plus class="size-3.5" />
                     New Customer Account
                 </Button>
@@ -160,9 +168,7 @@ const confirmDeleteCustomer = () => {
                 </template>
 
                 <template #cell-group="{ row }">
-                    <Badge
-                        :variant="row.group === 'Wholesale' ? 'info' : row.group === 'VIP' ? 'warning' : 'outline'"
-                    >
+                    <Badge :variant="row.group === 'Wholesale' ? 'info' : row.group === 'VIP' ? 'warning' : 'outline'">
                         {{ row.group }}
                     </Badge>
                 </template>
@@ -172,12 +178,7 @@ const confirmDeleteCustomer = () => {
                 </template>
 
                 <template #cell-currentBalance="{ row }">
-                    <span
-                        :class="[
-                            'font-mono font-bold',
-                            row.currentBalance > 0 ? 'text-amber-600' : 'text-emerald-600',
-                        ]"
-                    >
+                    <span :class="['font-mono font-bold', row.currentBalance > 0 ? 'text-amber-600' : 'text-emerald-600']">
                         {{ formatCurrency(row.currentBalance) }}
                     </span>
                 </template>
@@ -187,7 +188,7 @@ const confirmDeleteCustomer = () => {
                         <Button
                             v-if="row.currentBalance > 0"
                             size="sm"
-                            class="h-7 text-xs bg-emerald-600 hover:bg-emerald-700"
+                            class="h-7 bg-emerald-600 text-xs hover:bg-emerald-700"
                             @click="openPayModal(row)"
                         >
                             Collect Payment
@@ -222,7 +223,7 @@ const confirmDeleteCustomer = () => {
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <Label class="text-xs">Phone Number</Label>
-                            <Input v-model="newCust.phone" placeholder="+254 7XX XXX XXX" class="mt-1 text-xs font-mono" />
+                            <Input v-model="newCust.phone" placeholder="+254 7XX XXX XXX" class="mt-1 font-mono text-xs" />
                         </div>
                         <div>
                             <Label class="text-xs">Email Address</Label>
@@ -242,7 +243,7 @@ const confirmDeleteCustomer = () => {
                         </div>
                         <div>
                             <Label class="text-xs">Credit Limit (KES)</Label>
-                            <Input v-model.number="newCust.credit_limit" type="number" class="mt-1 text-xs font-mono font-bold" />
+                            <Input v-model.number="newCust.credit_limit" type="number" class="mt-1 font-mono text-xs font-bold" />
                         </div>
                     </div>
 
@@ -285,7 +286,11 @@ const confirmDeleteCustomer = () => {
             title="Delete Customer Account"
             description="Are you sure you want to permanently delete this customer record? All linked contact information and historical ledger tags will be removed."
             :item-name="customerToDelete ? `${customerToDelete.name} (${customerToDelete.phone || 'No phone'})` : undefined"
-            :warning-note="customerToDelete && customerToDelete.currentBalance > 0 ? `Caution: This customer has an active outstanding balance of ${formatCurrency(customerToDelete.currentBalance)}. Deleting the account will complicate ledger credit tracking.` : undefined"
+            :warning-note="
+                customerToDelete && customerToDelete.currentBalance > 0
+                    ? `Caution: This customer has an active outstanding balance of ${formatCurrency(customerToDelete.currentBalance)}. Deleting the account will complicate ledger credit tracking.`
+                    : undefined
+            "
             confirm-text="Yes, Delete Customer"
             :loading="isDeletingCustomer"
             @confirm="confirmDeleteCustomer"

@@ -30,27 +30,27 @@ class TenantUserController extends Controller
                 WHEN 'Accountant' THEN 7
                 ELSE 8 END")
             ->get()
-            ->map(fn($u) => [
-                'id'         => $u->id,
-                'name'       => $u->name,
-                'email'      => $u->email,
-                'role'       => $u->role,
-                'phone'      => $u->phone,
-                'status'     => $u->status ?? 'Active',
+            ->map(fn ($u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'email' => $u->email,
+                'role' => $u->role,
+                'phone' => $u->phone,
+                'status' => $u->status ?? 'Active',
                 'created_at' => $u->created_at?->toDateString(),
                 'last_login' => $u->updated_at?->diffForHumans(),
             ]);
 
         return Inertia::render('super-admin/TenantUsers', [
             'tenant' => [
-                'id'            => $tenant->id,
-                'name'          => $tenant->name,
-                'slug'          => $tenant->slug,
+                'id' => $tenant->id,
+                'name' => $tenant->name,
+                'slug' => $tenant->slug,
                 'subdomain_url' => $tenant->getSubdomainUrl('/login'),
-                'email'         => $tenant->email,
+                'email' => $tenant->email,
                 'business_type' => $tenant->business_type,
-                'plan'          => $tenant->plan,
-                'status'        => $tenant->status,
+                'plan' => $tenant->plan,
+                'status' => $tenant->status,
             ],
             'users' => $users,
         ]);
@@ -62,22 +62,22 @@ class TenantUserController extends Controller
     public function store(Request $request, Tenant $tenant): RedirectResponse
     {
         $validated = $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email',
-            'role'     => 'required|in:Owner,Administrator,Manager,Supervisor,Cashier,Inventory Manager,Accountant',
-            'phone'    => 'nullable|string|max:20',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'role' => 'required|in:Owner,Administrator,Manager,Supervisor,Cashier,Inventory Manager,Accountant',
+            'phone' => 'nullable|string|max:20',
             'password' => 'required|string|min:8',
         ]);
 
         User::create([
-            'name'             => $validated['name'],
-            'email'            => $validated['email'],
-            'password'         => Hash::make($validated['password']),
-            'tenant_id'        => $tenant->id,
-            'role'             => $validated['role'],
-            'phone'            => $validated['phone'] ?? null,
-            'is_super_admin'   => false,
-            'status'           => 'Active',
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'tenant_id' => $tenant->id,
+            'role' => $validated['role'],
+            'phone' => $validated['phone'] ?? null,
+            'is_super_admin' => false,
+            'status' => 'Active',
             'email_verified_at' => now(),
         ]);
 
@@ -93,9 +93,9 @@ class TenantUserController extends Controller
         abort_unless($user->tenant_id === $tenant->id, 403, 'User does not belong to this tenant.');
 
         $validated = $request->validate([
-            'name'   => 'sometimes|string|max:255',
-            'role'   => 'sometimes|in:Owner,Administrator,Manager,Supervisor,Cashier,Inventory Manager,Accountant',
-            'phone'  => 'nullable|string|max:20',
+            'name' => 'sometimes|string|max:255',
+            'role' => 'sometimes|in:Owner,Administrator,Manager,Supervisor,Cashier,Inventory Manager,Accountant',
+            'phone' => 'nullable|string|max:20',
             'status' => 'sometimes|in:Active,Suspended',
         ]);
 

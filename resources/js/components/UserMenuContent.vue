@@ -30,7 +30,7 @@ const page = usePage();
     </DropdownMenuGroup>
     <DropdownMenuSeparator />
     <DropdownMenuItem v-if="(page.props.auth as any)?.is_impersonating" :as-child="true">
-        <Link class="block w-full text-amber-600 dark:text-amber-400 font-medium" method="post" href="/super-admin/stop-impersonating" as="button">
+        <Link class="block w-full font-medium text-amber-600 dark:text-amber-400" method="post" href="/super-admin/stop-impersonating" as="button">
             <ShieldCheck class="mr-2 h-4 w-4" />
             Exit Impersonation
         </Link>

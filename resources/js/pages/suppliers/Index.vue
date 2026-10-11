@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import DataTable from '@/components/ui/DataTable.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
+import DataTable from '@/components/ui/DataTable.vue';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,7 +11,7 @@ import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { Building, DollarSign, Mail, Phone, Plus, Trash2, Truck } from 'lucide-vue-next';
+import { Plus, Trash2, Truck } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 const props = defineProps<{
@@ -57,29 +57,33 @@ const isPayingSupplier = ref(false);
 
 const handleCreateSupplier = () => {
     isSavingSupplier.value = true;
-    router.post('/suppliers', {
-        name: newSupp.value.name,
-        contact_person: newSupp.value.contact_person,
-        phone: newSupp.value.phone,
-        email: newSupp.value.email,
-        address: newSupp.value.address,
-        notes: newSupp.value.notes,
-    }, {
-        onSuccess: () => {
-            newSupplierModal.value = false;
-            success('Supplier Created', `Supplier ${newSupp.value.name} registered.`);
-            newSupp.value = {
-                name: '',
-                contact_person: '',
-                phone: '',
-                email: '',
-                address: '',
-                notes: '',
-            };
+    router.post(
+        '/suppliers',
+        {
+            name: newSupp.value.name,
+            contact_person: newSupp.value.contact_person,
+            phone: newSupp.value.phone,
+            email: newSupp.value.email,
+            address: newSupp.value.address,
+            notes: newSupp.value.notes,
         },
-        onError: (errs) => error('Failed', Object.values(errs)[0] as string),
-        onFinish: () => (isSavingSupplier.value = false),
-    });
+        {
+            onSuccess: () => {
+                newSupplierModal.value = false;
+                success('Supplier Created', `Supplier ${newSupp.value.name} registered.`);
+                newSupp.value = {
+                    name: '',
+                    contact_person: '',
+                    phone: '',
+                    email: '',
+                    address: '',
+                    notes: '',
+                };
+            },
+            onError: (errs) => error('Failed', Object.values(errs)[0] as string),
+            onFinish: () => (isSavingSupplier.value = false),
+        },
+    );
 };
 
 const openPayModal = (s: any) => {
@@ -92,16 +96,20 @@ const handleRecordPayment = () => {
     if (!selectedSupp.value) return;
 
     isPayingSupplier.value = true;
-    router.post(`/suppliers/${selectedSupp.value.id}/payment`, {
-        amount: payAmount.value,
-    }, {
-        onSuccess: () => {
-            paySupplierModal.value = false;
-            success('Payment Recorded', `Recorded ${formatCurrency(payAmount.value)} paid to ${selectedSupp.value.name}.`);
+    router.post(
+        `/suppliers/${selectedSupp.value.id}/payment`,
+        {
+            amount: payAmount.value,
         },
-        onError: (errs) => error('Payment Failed', Object.values(errs)[0] as string),
-        onFinish: () => (isPayingSupplier.value = false),
-    });
+        {
+            onSuccess: () => {
+                paySupplierModal.value = false;
+                success('Payment Recorded', `Recorded ${formatCurrency(payAmount.value)} paid to ${selectedSupp.value.name}.`);
+            },
+            onError: (errs) => error('Payment Failed', Object.values(errs)[0] as string),
+            onFinish: () => (isPayingSupplier.value = false),
+        },
+    );
 };
 
 const deleteConfirmOpen = ref(false);
@@ -132,17 +140,17 @@ const confirmDeleteSupplier = () => {
     <Head title="Supplier Management" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
+        <div class="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
             <!-- Header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h2 class="text-2xl font-bold text-foreground">Vendors & Wholesale Suppliers</h2>
-                    <p class="text-xs text-muted-foreground mt-0.5">
+                    <p class="mt-0.5 text-xs text-muted-foreground">
                         Directory of FMCG distributors, millers, bakeries, pharmaceutical labs, and trade payables.
                     </p>
                 </div>
 
-                <Button size="sm" class="h-9 text-xs gap-1.5 bg-primary" @click="newSupplierModal = true">
+                <Button size="sm" class="h-9 gap-1.5 bg-primary text-xs" @click="newSupplierModal = true">
                     <Plus class="size-3.5" />
                     New Supplier
                 </Button>
@@ -158,7 +166,7 @@ const confirmDeleteSupplier = () => {
                 <template #cell-name="{ row }">
                     <div>
                         <div class="font-bold text-foreground">{{ row.name }}</div>
-                        <div class="text-[11px] text-muted-foreground flex items-center gap-1">
+                        <div class="flex items-center gap-1 text-[11px] text-muted-foreground">
                             <Truck class="size-3" />
                             <span>{{ row.contactPerson }}</span>
                         </div>
@@ -177,12 +185,7 @@ const confirmDeleteSupplier = () => {
                 </template>
 
                 <template #cell-outstandingBalance="{ row }">
-                    <span
-                        :class="[
-                            'font-mono font-bold',
-                            row.outstandingBalance > 0 ? 'text-rose-600' : 'text-emerald-600',
-                        ]"
-                    >
+                    <span :class="['font-mono font-bold', row.outstandingBalance > 0 ? 'text-rose-600' : 'text-emerald-600']">
                         {{ formatCurrency(row.outstandingBalance) }}
                     </span>
                 </template>
@@ -195,12 +198,7 @@ const confirmDeleteSupplier = () => {
 
                 <template #cell-actions="{ row }">
                     <div class="flex items-center justify-end gap-1.5">
-                        <Button
-                            v-if="row.outstandingBalance > 0"
-                            size="sm"
-                            class="h-7 text-xs bg-primary"
-                            @click="openPayModal(row)"
-                        >
+                        <Button v-if="row.outstandingBalance > 0" size="sm" class="h-7 bg-primary text-xs" @click="openPayModal(row)">
                             Record Payment
                         </Button>
                         <span v-else class="text-xs text-muted-foreground">Settled ✓</span>
@@ -237,7 +235,7 @@ const confirmDeleteSupplier = () => {
                         </div>
                         <div>
                             <Label class="text-xs">Phone Number</Label>
-                            <Input v-model="newSupp.phone" placeholder="+254 7XX XXX XXX" class="mt-1 text-xs font-mono" />
+                            <Input v-model="newSupp.phone" placeholder="+254 7XX XXX XXX" class="mt-1 font-mono text-xs" />
                         </div>
                     </div>
 
@@ -291,7 +289,11 @@ const confirmDeleteSupplier = () => {
             title="Delete Vendor / Supplier"
             description="Are you sure you want to permanently delete this supplier account? All associated vendor records and supply links will be removed."
             :item-name="supplierToDelete ? `${supplierToDelete.name} (${supplierToDelete.phone || 'No phone'})` : undefined"
-            :warning-note="supplierToDelete && supplierToDelete.outstandingBalance > 0 ? `Caution: There is an active outstanding payable balance of ${formatCurrency(supplierToDelete.outstandingBalance)} recorded for this vendor. Settle all open bills first to avoid discrepancies.` : undefined"
+            :warning-note="
+                supplierToDelete && supplierToDelete.outstandingBalance > 0
+                    ? `Caution: There is an active outstanding payable balance of ${formatCurrency(supplierToDelete.outstandingBalance)} recorded for this vendor. Settle all open bills first to avoid discrepancies.`
+                    : undefined
+            "
             confirm-text="Yes, Delete Supplier"
             :loading="isDeletingSupplier"
             @confirm="confirmDeleteSupplier"

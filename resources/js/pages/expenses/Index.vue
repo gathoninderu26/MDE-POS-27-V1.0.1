@@ -5,13 +5,13 @@ import DataTable from '@/components/ui/DataTable.vue';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { formatCurrency, formatDateOnly } from '@/composables/useCurrency';
+import { formatCurrency } from '@/composables/useCurrency';
 import { useFeatures } from '@/composables/useFeatures';
 import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { CircleDollarSign, Plus, Receipt } from 'lucide-vue-next';
+import { Plus } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 const props = defineProps<{
@@ -29,7 +29,7 @@ const { success, error } = useToast();
 
 const expensesList = computed(() => {
     if (props.expenses && props.expenses.length > 0) {
-        return props.expenses.map(e => ({
+        return props.expenses.map((e) => ({
             id: `EXP-${e.id}`,
             date: e.date,
             category: e.category,
@@ -66,29 +66,33 @@ const newExp = ref({
 });
 
 const handleRecordExpense = () => {
-    router.post('/expenses', {
-        title: newExp.value.title || newExp.value.description || newExp.value.category,
-        category: newExp.value.category,
-        amount: newExp.value.amount,
-        date: new Date().toISOString().substring(0, 10),
-        payment_method: newExp.value.paymentMethod,
-        branch_id: newExp.value.branch_id,
-        description: newExp.value.description,
-    }, {
-        onSuccess: () => {
-            newExpenseModal.value = false;
-            success('Expense Recorded', `${formatCurrency(newExp.value.amount)} recorded.`);
-            newExp.value = {
-                title: '',
-                category: 'Electricity / Utilities',
-                description: '',
-                amount: 1000,
-                paymentMethod: 'M-Pesa Till',
-                branch_id: null,
-            };
+    router.post(
+        '/expenses',
+        {
+            title: newExp.value.title || newExp.value.description || newExp.value.category,
+            category: newExp.value.category,
+            amount: newExp.value.amount,
+            date: new Date().toISOString().substring(0, 10),
+            payment_method: newExp.value.paymentMethod,
+            branch_id: newExp.value.branch_id,
+            description: newExp.value.description,
         },
-        onError: (errs) => error('Failed', Object.values(errs)[0] as string),
-    });
+        {
+            onSuccess: () => {
+                newExpenseModal.value = false;
+                success('Expense Recorded', `${formatCurrency(newExp.value.amount)} recorded.`);
+                newExp.value = {
+                    title: '',
+                    category: 'Electricity / Utilities',
+                    description: '',
+                    amount: 1000,
+                    paymentMethod: 'M-Pesa Till',
+                    branch_id: null,
+                };
+            },
+            onError: (errs) => error('Failed', Object.values(errs)[0] as string),
+        },
+    );
 };
 </script>
 
@@ -96,17 +100,17 @@ const handleRecordExpense = () => {
     <Head title="Expense Tracking" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
+        <div class="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
             <!-- Header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h2 class="text-2xl font-bold text-foreground">Expenses & Petty Cash</h2>
-                    <p class="text-xs text-muted-foreground mt-0.5">
+                    <p class="mt-0.5 text-xs text-muted-foreground">
                         Record branch operating overheads (rent, electricity, salaries, transport, maintenance).
                     </p>
                 </div>
 
-                <Button size="sm" class="h-9 text-xs gap-1.5 bg-primary" @click="newExpenseModal = true">
+                <Button size="sm" class="h-9 gap-1.5 bg-primary text-xs" @click="newExpenseModal = true">
                     <Plus class="size-3.5" />
                     Record Expense
                 </Button>
@@ -165,7 +169,7 @@ const handleRecordExpense = () => {
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <Label class="text-xs">Amount (KES)</Label>
-                            <Input v-model.number="newExp.amount" type="number" class="mt-1 text-xs font-mono font-bold" />
+                            <Input v-model.number="newExp.amount" type="number" class="mt-1 font-mono text-xs font-bold" />
                         </div>
                         <div>
                             <Label class="text-xs">Payment Method</Label>

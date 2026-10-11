@@ -16,8 +16,6 @@ import {
     Crown,
     Database,
     ExternalLink,
-    FileSpreadsheet,
-    Lock,
     Mail,
     MessageSquare,
     Package,
@@ -30,7 +28,6 @@ import {
     Smartphone,
     Sparkles,
     Store,
-    Truck,
     Upload,
     UserCheck,
     Users,
@@ -192,7 +189,8 @@ const demoDataModes: DemoDataMode[] = [
         id: 'own',
         label: 'Demo without Mock Data (Clean slate â€” start fresh with your own products & sales)',
         badge: 'Clean Slate Sandbox',
-        description: 'Clean slate environment without sample records. Perfect for testing setup with your own business inventory and staff from scratch.',
+        description:
+            'Clean slate environment without sample records. Perfect for testing setup with your own business inventory and staff from scratch.',
     },
 ];
 
@@ -288,7 +286,10 @@ watch(userPhone, (newVal) => {
 
 // Navigate to existing store subdomain
 const navigateToTenant = (slug: string) => {
-    const cleanSlug = slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+    const cleanSlug = slug
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9-]/g, '');
     if (!cleanSlug) {
         inputError.value = 'Please enter a valid store subdomain identifier.';
         return;
@@ -404,8 +405,8 @@ const copySubdomainLink = async () => {
 };
 
 const launchDemoTerminal = (overrideSlug?: string, overrideRole?: string) => {
-    const slug = (typeof overrideSlug === 'string' && overrideSlug.trim()) ? overrideSlug.trim() : effectiveDemoSlug.value;
-    const role = (typeof overrideRole === 'string' && overrideRole.trim()) ? overrideRole.trim() : currentSelectedRole.value.id;
+    const slug = typeof overrideSlug === 'string' && overrideSlug.trim() ? overrideSlug.trim() : effectiveDemoSlug.value;
+    const role = typeof overrideRole === 'string' && overrideRole.trim() ? overrideRole.trim() : currentSelectedRole.value.id;
     const days = currentEffectiveDays.value;
     const dataMode = selectedDataMode.value;
     loadingTenant.value = `${slug}-${role}`;
@@ -544,21 +545,26 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
 <template>
     <Head title="Client Store Login — MDE Enterprise POS" />
 
-    <div class="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary selection:text-primary-foreground relative overflow-hidden">
+    <div
+        class="relative flex min-h-screen flex-col overflow-hidden bg-background text-foreground selection:bg-primary selection:text-primary-foreground"
+    >
         <!-- Subtle Ambient Background Glows -->
-        <div class="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 size-[650px] rounded-full bg-primary/10 blur-3xl -z-10"></div>
-        <div class="pointer-events-none absolute bottom-0 right-10 size-[450px] rounded-full bg-emerald-500/5 blur-3xl -z-10"></div>
+        <div class="pointer-events-none absolute -top-40 left-1/2 -z-10 size-[650px] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"></div>
+        <div class="pointer-events-none absolute bottom-0 right-10 -z-10 size-[450px] rounded-full bg-emerald-500/5 blur-3xl"></div>
 
         <!-- Top Navigation Bar -->
-        <header class="border-b border-border/70 bg-card/60 backdrop-blur-md px-4 lg:px-8 py-3.5 flex items-center justify-between">
+        <header class="flex items-center justify-between border-b border-border/70 bg-card/60 px-4 py-3.5 backdrop-blur-md lg:px-8">
             <div class="flex items-center gap-3">
-                <div class="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground font-black text-base shadow-sm">
+                <div class="flex size-9 items-center justify-center rounded-xl bg-primary text-base font-black text-primary-foreground shadow-sm">
                     MDE
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
-                        <span class="text-sm font-extrabold tracking-tight leading-none text-foreground">MDE Point of Sale</span>
-                        <Badge variant="outline" class="text-[10px] px-1.5 py-0 font-mono text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
+                        <span class="text-sm font-extrabold leading-none tracking-tight text-foreground">MDE Point of Sale</span>
+                        <Badge
+                            variant="outline"
+                            class="border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0 font-mono text-[10px] text-emerald-600 dark:text-emerald-400"
+                        >
                             v1.0.1
                         </Badge>
                     </div>
@@ -567,65 +573,72 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
             </div>
 
             <div class="flex items-center gap-2 text-xs">
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-medium text-[11px]">
-                    <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span
+                    class="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400"
+                >
+                    <span class="size-1.5 animate-pulse rounded-full bg-emerald-500"></span>
                     Terminal Cluster Active
                 </span>
             </div>
         </header>
 
         <!-- Main Content Area -->
-        <main class="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 max-w-xl mx-auto w-full space-y-5">
+        <main class="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center space-y-5 p-4 sm:p-6 lg:p-8">
             <!-- Header Title -->
-            <div class="text-center space-y-1.5 w-full">
-                <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[11px] font-bold backdrop-blur-sm">
+            <div class="w-full space-y-1.5 text-center">
+                <div
+                    class="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-0.5 text-[11px] font-bold text-primary backdrop-blur-sm"
+                >
                     <Sparkles class="size-3" />
                     <span>Instant Demo Access &amp; Merchant Terminal</span>
                 </div>
-                <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
-                    Client Store Terminal Login
-                </h1>
-                <p class="text-xs sm:text-sm text-muted-foreground">
-                    Enter your merchant subdomain or toggle open a demo sandbox evaluation below.
-                </p>
+                <h1 class="text-2xl font-black tracking-tight text-foreground sm:text-3xl">Client Store Terminal Login</h1>
+                <p class="text-xs text-muted-foreground sm:text-sm">Enter your merchant subdomain or toggle open a demo sandbox evaluation below.</p>
             </div>
 
             <!-- Unified Card Container -->
-            <div class="w-full rounded-2xl border border-border/60 bg-card shadow-2xl overflow-hidden">
+            <div class="w-full overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl">
                 <!-- Client Store Subdomain — visible when demo is closed -->
-                <div v-show="!isDemoSectionOpen" class="p-5 sm:p-6 space-y-3.5 bg-card border-t border-border/60">
-                    <div class="flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                <div v-show="!isDemoSectionOpen" class="space-y-3.5 border-t border-border/60 bg-card p-5 sm:p-6">
+                    <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground">
                         <span class="flex items-center gap-1.5 text-foreground">
                             <Building2 class="size-3.5 text-primary" />
                             <span>Client Store Subdomain</span>
                         </span>
-                        <Badge variant="outline" class="text-[10px] font-bold text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10 gap-1">
+                        <Badge
+                            variant="outline"
+                            class="gap-1 border-amber-500/30 bg-amber-500/10 text-[10px] font-bold text-amber-600 dark:text-amber-400"
+                        >
                             <Clock class="size-2.5" />
                             Coming Soon
                         </Badge>
                     </div>
 
                     <div class="space-y-3">
-                        <div class="flex items-center rounded-xl border border-input/60 bg-muted/40 shadow-inner overflow-hidden opacity-80 cursor-not-allowed">
+                        <div
+                            class="flex cursor-not-allowed items-center overflow-hidden rounded-xl border border-input/60 bg-muted/40 opacity-80 shadow-inner"
+                        >
                             <div class="pl-3.5 pr-1 text-muted-foreground/60">
                                 <Store class="size-4" />
                             </div>
                             <input
                                 disabled
                                 placeholder="your-store-subdomain"
-                                class="flex-1 px-2.5 py-2.5 text-xs bg-transparent outline-none font-mono text-muted-foreground cursor-not-allowed placeholder:text-muted-foreground/40 select-none"
+                                class="flex-1 cursor-not-allowed select-none bg-transparent px-2.5 py-2.5 font-mono text-xs text-muted-foreground outline-none placeholder:text-muted-foreground/40"
                             />
-                            <div class="px-3 py-2.5 bg-muted/70 border-l border-border/60 text-xs text-muted-foreground/70 font-mono select-none cursor-not-allowed">
+                            <div
+                                class="cursor-not-allowed select-none border-l border-border/60 bg-muted/70 px-3 py-2.5 font-mono text-xs text-muted-foreground/70"
+                            >
                                 .{{ displayDomainSuffix }}
                             </div>
                         </div>
 
-                        <div class="p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs space-y-2.5">
+                        <div class="space-y-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-xs">
                             <div class="flex items-start gap-2.5">
-                                <Sparkles class="size-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                                <Sparkles class="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
                                 <div class="space-y-1">
-                                    <h4 class="font-bold text-foreground text-xs leading-tight">Self-Service Merchant Subdomains Launching Soon!</h4>
-                                    <p class="text-[11px] text-muted-foreground leading-relaxed">
+                                    <h4 class="text-xs font-bold leading-tight text-foreground">Self-Service Merchant Subdomains Launching Soon!</h4>
+                                    <p class="text-[11px] leading-relaxed text-muted-foreground">
                                         Join our early-access waitlist for priority setup and launch discounts.
                                     </p>
                                 </div>
@@ -633,7 +646,7 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                             <Button
                                 type="button"
                                 size="sm"
-                                class="w-full h-8 text-xs font-bold gap-1.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white shadow-xs cursor-pointer"
+                                class="shadow-xs h-8 w-full cursor-pointer gap-1.5 bg-gradient-to-r from-amber-600 to-amber-500 text-xs font-bold text-white hover:from-amber-700 hover:to-amber-600"
                                 @click="showWaitlistModal = true"
                             >
                                 <Clock class="size-3.5" />
@@ -648,26 +661,31 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                     id="demo-sandbox-section"
                     type="button"
                     @click="isDemoSectionOpen = !isDemoSectionOpen"
-                    class="w-full flex items-center justify-between px-5 py-3.5 bg-muted/20 hover:bg-muted/40 border-b border-border/50 text-left cursor-pointer transition-colors select-none group"
+                    class="group flex w-full cursor-pointer select-none items-center justify-between border-b border-border/50 bg-muted/20 px-5 py-3.5 text-left transition-colors hover:bg-muted/40"
                 >
                     <div class="flex items-center gap-2.5">
-                        <div class="size-6 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                        <div
+                            class="flex size-6 shrink-0 items-center justify-center rounded-md border border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                        >
                             <Zap class="size-3.5" />
                         </div>
                         <div>
-                            <span class="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
+                            <span class="flex items-center gap-2 text-xs font-bold text-foreground transition-colors group-hover:text-primary">
                                 <span>Try a Demo Sandbox Account</span>
-                                <Badge variant="outline" class="text-[9px] font-mono text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10">
+                                <Badge
+                                    variant="outline"
+                                    class="border-amber-500/30 bg-amber-500/10 font-mono text-[9px] text-amber-600 dark:text-amber-400"
+                                >
                                     Evaluation
                                 </Badge>
                             </span>
-                            <span class="text-[10px] text-muted-foreground block">
+                            <span class="block text-[10px] text-muted-foreground">
                                 Pre-configured supermarket &amp; wholesale test environments
                             </span>
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="text-[10px] font-medium text-muted-foreground hidden sm:inline">
+                        <span class="hidden text-[10px] font-medium text-muted-foreground sm:inline">
                             {{ isDemoSectionOpen ? 'Hide' : 'Configure Demo' }}
                         </span>
                         <ChevronDown
@@ -680,60 +698,66 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                 </button>
 
                 <!-- Demo Configuration Form (scrollable) -->
-                <div v-show="isDemoSectionOpen" class="p-5 sm:p-6 bg-card/50 space-y-4 max-h-[60vh] overflow-y-auto overscroll-contain scrollbar-thin">
-
-
-
+                <div
+                    v-show="isDemoSectionOpen"
+                    class="scrollbar-thin max-h-[60vh] space-y-4 overflow-y-auto overscroll-contain bg-card/50 p-5 sm:p-6"
+                >
                     <!-- Prominent Non-Production Sandbox Disclaimer Notice -->
-                    <div class="p-3 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-950 dark:text-amber-200 text-xs flex items-start gap-2.5 shadow-sm">
-                        <AlertTriangle class="size-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+                    <div
+                        class="flex items-start gap-2.5 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-950 shadow-sm dark:text-amber-200"
+                    >
+                        <AlertTriangle class="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
                         <div class="space-y-0.5 leading-snug">
-                            <span class="font-bold text-[11px] block text-amber-800 dark:text-amber-300">
+                            <span class="block text-[11px] font-bold text-amber-800 dark:text-amber-300">
                                 Important Notice: Demo Account Sandbox Only
                             </span>
                             <p class="text-[10px] text-amber-900/85 dark:text-amber-300/85">
-                                This demo account is an isolated evaluation environment preloaded with mock products and test data. <strong>It cannot be used as a real live business account</strong> or for recording actual fiscal/commercial sales. All mock transactions are temporary and periodically refreshed.
+                                This demo account is an isolated evaluation environment preloaded with mock products and test data.
+                                <strong>It cannot be used as a real live business account</strong> or for recording actual fiscal/commercial sales.
+                                All mock transactions are temporary and periodically refreshed.
                             </p>
                         </div>
                     </div>
 
                     <!-- Notification of Active Demo Subdomain (When Activated) -->
                     <div v-if="isDemoActivated" class="space-y-4">
-                        <div class="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 space-y-3">
+                        <div class="space-y-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
                             <div class="flex items-start gap-3">
-                                <div class="size-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                                <div class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500 text-white">
                                     <CheckCircle2 class="size-5" />
                                 </div>
-                                <div class="flex-1 min-w-0">
+                                <div class="min-w-0 flex-1">
                                     <div class="flex items-center gap-2">
-                                        <h3 class="text-sm font-bold text-foreground">
-                                            Demo Subdomain Provisioned & Ready
-                                        </h3>
-                                        <Badge class="bg-emerald-600 text-white text-[9px] uppercase tracking-wider font-bold">
-                                            Active
-                                        </Badge>
+                                        <h3 class="text-sm font-bold text-foreground">Demo Subdomain Provisioned & Ready</h3>
+                                        <Badge class="bg-emerald-600 text-[9px] font-bold uppercase tracking-wider text-white"> Active </Badge>
                                     </div>
-                                    <p class="text-xs text-muted-foreground mt-0.5">
-                                        Your access has been activated for <span class="font-bold text-foreground">{{ currentEffectiveDays }} day(s)</span> (expires {{ calculatedExpiryFormatted }}).
+                                    <p class="mt-0.5 text-xs text-muted-foreground">
+                                        Your access has been activated for
+                                        <span class="font-bold text-foreground">{{ currentEffectiveDays }} day(s)</span> (expires
+                                        {{ calculatedExpiryFormatted }}).
                                     </p>
                                 </div>
                             </div>
 
                             <!-- Dedicated Subdomain Display Box -->
-                            <div class="p-2.5 rounded-lg bg-background/90 border border-emerald-500/20 space-y-2">
+                            <div class="space-y-2 rounded-lg border border-emerald-500/20 bg-background/90 p-2.5">
                                 <div class="flex items-center justify-between text-[11px] text-muted-foreground">
-                                    <span class="font-semibold uppercase tracking-wider text-[10px]">Access Subdomain URL:</span>
-                                    <span class="font-mono text-emerald-600 dark:text-emerald-400 font-bold">KES {{ calculatedTotalPrice }} Paid</span>
+                                    <span class="text-[10px] font-semibold uppercase tracking-wider">Access Subdomain URL:</span>
+                                    <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400"
+                                        >KES {{ calculatedTotalPrice }} Paid</span
+                                    >
                                 </div>
-                                <div class="flex items-center justify-between gap-2 p-1.5 rounded-md bg-muted/40 border border-border/70 font-mono text-xs">
-                                    <span class="text-foreground font-bold truncate pl-1">
+                                <div
+                                    class="flex items-center justify-between gap-2 rounded-md border border-border/70 bg-muted/40 p-1.5 font-mono text-xs"
+                                >
+                                    <span class="truncate pl-1 font-bold text-foreground">
                                         {{ generatedDemoSubdomain }}
                                     </span>
                                     <Button
                                         type="button"
                                         variant="ghost"
                                         size="sm"
-                                        class="h-6 px-2 text-[11px] font-bold gap-1 cursor-pointer shrink-0"
+                                        class="h-6 shrink-0 cursor-pointer gap-1 px-2 text-[11px] font-bold"
                                         @click="copySubdomainLink"
                                     >
                                         <component :is="isCopied ? Check : Copy" class="size-3 text-primary" />
@@ -741,9 +765,16 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                                     </Button>
                                 </div>
 
-                                <div class="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
-                                    <span>Role: <strong class="text-foreground">{{ currentSelectedRole.title }}</strong></span>
-                                    <span>Account: <strong class="text-foreground">{{ currentSelectedDemo.name }} ({{ selectedDataMode === 'mock' ? 'Mock Data' : 'Clean Slate' }})</strong></span>
+                                <div class="flex items-center justify-between pt-1 text-[11px] text-muted-foreground">
+                                    <span
+                                        >Role: <strong class="text-foreground">{{ currentSelectedRole.title }}</strong></span
+                                    >
+                                    <span
+                                        >Account:
+                                        <strong class="text-foreground"
+                                            >{{ currentSelectedDemo.name }} ({{ selectedDataMode === 'mock' ? 'Mock Data' : 'Clean Slate' }})</strong
+                                        ></span
+                                    >
                                 </div>
                             </div>
 
@@ -753,20 +784,22 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                                     type="button"
                                     @click="() => launchDemoTerminal()"
                                     :disabled="loadingTenant !== null"
-                                    class="w-full h-10 text-xs font-bold gap-2 cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+                                    class="h-10 w-full cursor-pointer gap-2 bg-primary text-xs font-bold text-primary-foreground shadow-sm hover:bg-primary/90"
                                 >
                                     <Sparkles class="size-3.5" />
                                     <span>
-                                        {{ loadingTenant ? 'Launching Terminal...' : `Launch Demo as ${currentSelectedRole.title.split(' ')[0]} Now` }}
+                                        {{
+                                            loadingTenant ? 'Launching Terminal...' : `Launch Demo as ${currentSelectedRole.title.split(' ')[0]} Now`
+                                        }}
                                     </span>
-                                    <ArrowRight class="size-3.5 ml-auto" />
+                                    <ArrowRight class="ml-auto size-3.5" />
                                 </Button>
 
-                                <div class="flex items-center justify-between text-xs pt-0.5">
+                                <div class="flex items-center justify-between pt-0.5 text-xs">
                                     <button
                                         type="button"
                                         @click="navigateToTenant(effectiveDemoSlug)"
-                                        class="text-muted-foreground hover:text-foreground text-[11px] inline-flex items-center gap-1 cursor-pointer"
+                                        class="inline-flex cursor-pointer items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
                                     >
                                         <ExternalLink class="size-3" />
                                         <span>Visit Subdomain Login</span>
@@ -775,7 +808,7 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                                     <button
                                         type="button"
                                         @click="resetDemoForm"
-                                        class="text-primary hover:underline text-[11px] inline-flex items-center gap-1 cursor-pointer"
+                                        class="inline-flex cursor-pointer items-center gap-1 text-[11px] text-primary hover:underline"
                                     >
                                         <RotateCcw class="size-3" />
                                         <span>Change / Test Another Demo</span>
@@ -784,24 +817,23 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                             </div>
 
                             <!-- Satisfied with Demo? Contact System Administrator Callout -->
-                            <div class="rounded-xl border border-primary/20 bg-primary/[0.04] p-3.5 space-y-2 pt-3">
+                            <div class="space-y-2 rounded-xl border border-primary/20 bg-primary/[0.04] p-3.5 pt-3">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-xs font-bold text-foreground flex items-center gap-1.5">
+                                    <span class="flex items-center gap-1.5 text-xs font-bold text-foreground">
                                         <ShieldCheck class="size-3.5 text-primary" />
                                         <span>Satisfied with your demo evaluation?</span>
                                     </span>
-                                    <Badge variant="outline" class="text-[9px] border-primary/30 text-primary font-mono">
-                                        Live Production
-                                    </Badge>
+                                    <Badge variant="outline" class="border-primary/30 font-mono text-[9px] text-primary"> Live Production </Badge>
                                 </div>
-                                <p class="text-[11px] text-muted-foreground leading-relaxed">
-                                    Ready for a real production store? Contact the System Administrator to provision your permanent database, custom store domain, and production tills.
+                                <p class="text-[11px] leading-relaxed text-muted-foreground">
+                                    Ready for a real production store? Contact the System Administrator to provision your permanent database, custom
+                                    store domain, and production tills.
                                 </p>
                                 <Button
                                     type="button"
                                     variant="outline"
                                     size="sm"
-                                    class="w-full h-8 text-xs font-bold gap-2 border-primary/40 hover:bg-primary/10 text-primary cursor-pointer mt-1"
+                                    class="mt-1 h-8 w-full cursor-pointer gap-2 border-primary/40 text-xs font-bold text-primary hover:bg-primary/10"
                                     @click="showContactAdminModal = true"
                                 >
                                     <PhoneCall class="size-3.5" />
@@ -812,43 +844,37 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                     </div>
 
                     <!-- STK Push Waiting Prompt State -->
-                    <div v-else-if="stkPromptSent" class="rounded-xl border border-emerald-500/40 bg-emerald-500/[0.04] p-5 text-center space-y-3.5">
-                        <div class="relative mx-auto size-12 flex items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
-                            <div class="absolute inset-0 rounded-full border-2 border-emerald-500 animate-ping opacity-25"></div>
+                    <div v-else-if="stkPromptSent" class="space-y-3.5 rounded-xl border border-emerald-500/40 bg-emerald-500/[0.04] p-5 text-center">
+                        <div class="relative mx-auto flex size-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
+                            <div class="absolute inset-0 animate-ping rounded-full border-2 border-emerald-500 opacity-25"></div>
                             <Smartphone class="size-6" />
                         </div>
 
                         <div class="space-y-1">
-                            <h4 class="text-xs font-bold text-foreground">
-                                M-Pesa STK Push Sent to {{ mpesaNumber }}
-                            </h4>
-                            <p class="text-[11px] text-muted-foreground leading-relaxed">
-                                Enter your <strong class="text-foreground">M-Pesa PIN</strong> on your mobile device to authorize payment of <strong class="text-emerald-600 dark:text-emerald-400 font-mono">KES {{ calculatedTotalPrice }}</strong>.
+                            <h4 class="text-xs font-bold text-foreground">M-Pesa STK Push Sent to {{ mpesaNumber }}</h4>
+                            <p class="text-[11px] leading-relaxed text-muted-foreground">
+                                Enter your <strong class="text-foreground">M-Pesa PIN</strong> on your mobile device to authorize payment of
+                                <strong class="font-mono text-emerald-600 dark:text-emerald-400">KES {{ calculatedTotalPrice }}</strong
+                                >.
                             </p>
                         </div>
 
-                        <div class="flex items-center justify-center gap-1.5 text-[11px] font-mono text-muted-foreground">
+                        <div class="flex items-center justify-center gap-1.5 font-mono text-[11px] text-muted-foreground">
                             <Clock class="size-3 animate-spin text-emerald-600" />
                             <span>Awaiting PIN prompt response ({{ stkCountdown }}s)...</span>
                         </div>
 
-                        <div class="pt-2 flex items-center justify-center gap-2">
+                        <div class="flex items-center justify-center gap-2 pt-2">
                             <Button
                                 type="button"
                                 size="sm"
                                 @click="completeDemoActivation"
-                                class="h-8 px-3 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                                class="h-8 cursor-pointer bg-emerald-600 px-3 text-xs font-bold text-white hover:bg-emerald-700"
                             >
-                                <CheckCircle2 class="size-3 mr-1" />
+                                <CheckCircle2 class="mr-1 size-3" />
                                 <span>Simulate PIN Confirmation</span>
                             </Button>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                @click="stkPromptSent = false"
-                                class="h-8 text-xs cursor-pointer"
-                            >
+                            <Button type="button" variant="outline" size="sm" @click="stkPromptSent = false" class="h-8 cursor-pointer text-xs">
                                 <span>Cancel</span>
                             </Button>
                         </div>
@@ -856,15 +882,14 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
 
                     <!-- Professional Demo Dropdowns & Details Form -->
                     <form v-else @submit.prevent="triggerMpesaStkPush" class="space-y-3.5">
-
                         <!-- 1. Demo Business Selection â€” Card Selector -->
                         <div class="space-y-1.5">
                             <div class="flex items-center justify-between text-xs">
-                                <label class="font-bold text-muted-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                                <label class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                                     <Store class="size-3 text-primary" />
                                     <span>Select Business Demo</span>
                                 </label>
-                                <Badge variant="outline" :class="['text-[9px] font-bold uppercase px-1.5 py-0', currentSelectedDemo.badge_color]">
+                                <Badge variant="outline" :class="['px-1.5 py-0 text-[9px] font-bold uppercase', currentSelectedDemo.badge_color]">
                                     {{ currentSelectedDemo.business_type }}
                                 </Badge>
                             </div>
@@ -876,37 +901,34 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                                     type="button"
                                     @click="selectedDemoSlug = demo.slug"
                                     :class="[
-                                        'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left cursor-pointer transition-all',
+                                        'flex w-full cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all',
                                         selectedDemoSlug === demo.slug
                                             ? 'border-primary bg-primary/[0.04] shadow-sm'
                                             : 'border-border/60 bg-background hover:border-border hover:bg-muted/30',
                                     ]"
                                 >
-                                    <div :class="[
-                                        'size-7 rounded-lg flex items-center justify-center shrink-0 text-[10px] font-black transition-colors',
-                                        selectedDemoSlug === demo.slug
-                                            ? 'bg-primary text-primary-foreground'
-                                            : 'bg-muted text-muted-foreground',
-                                    ]">
+                                    <div
+                                        :class="[
+                                            'flex size-7 shrink-0 items-center justify-center rounded-lg text-[10px] font-black transition-colors',
+                                            selectedDemoSlug === demo.slug ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground',
+                                        ]"
+                                    >
                                         <Store class="size-3.5" />
                                     </div>
-                                    <div class="flex-1 min-w-0">
+                                    <div class="min-w-0 flex-1">
                                         <div class="flex items-center gap-1.5">
-                                            <span class="text-xs font-bold text-foreground truncate">{{ demo.name }}</span>
-                                            <Badge variant="outline" :class="['text-[9px] px-1 py-0 shrink-0', demo.badge_color]">
+                                            <span class="truncate text-xs font-bold text-foreground">{{ demo.name }}</span>
+                                            <Badge variant="outline" :class="['shrink-0 px-1 py-0 text-[9px]', demo.badge_color]">
                                                 {{ demo.business_type }}
                                             </Badge>
                                         </div>
-                                        <p class="text-[10px] text-muted-foreground truncate font-mono">{{ demo.tagline }}</p>
+                                        <p class="truncate font-mono text-[10px] text-muted-foreground">{{ demo.tagline }}</p>
                                     </div>
-                                    <Check
-                                        v-if="selectedDemoSlug === demo.slug"
-                                        class="size-3.5 text-primary shrink-0"
-                                    />
+                                    <Check v-if="selectedDemoSlug === demo.slug" class="size-3.5 shrink-0 text-primary" />
                                 </button>
                             </div>
 
-                            <div class="flex items-center justify-between text-[10px] text-muted-foreground px-1 font-mono">
+                            <div class="flex items-center justify-between px-1 font-mono text-[10px] text-muted-foreground">
                                 <span>Target: {{ generatedDemoSubdomain }}</span>
                                 <span class="text-primary/80">{{ currentSelectedDemo.tagline }}</span>
                             </div>
@@ -914,12 +936,14 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
 
                         <!-- 2. Demo Data Mode â€” Card Selector -->
                         <div class="space-y-1.5">
-                            <div class="flex items-center gap-1.5 flex-wrap text-xs">
-                                <label class="font-bold text-muted-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                            <div class="flex flex-wrap items-center gap-1.5 text-xs">
+                                <label class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                                     <Database class="size-3 text-primary" />
                                     <span>Select Demo Data Mode</span>
                                 </label>
-                                <span class="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                                <span
+                                    class="inline-flex items-center gap-0.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-emerald-600 dark:text-emerald-400"
+                                >
                                     <Check class="size-2.5" />
                                     Recommended: No Mock Data
                                 </span>
@@ -932,7 +956,7 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                                     type="button"
                                     @click="selectedDataMode = mode.id"
                                     :class="[
-                                        'w-full flex items-start gap-3 px-3 py-2.5 rounded-xl border text-left cursor-pointer transition-all',
+                                        'flex w-full cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5 text-left transition-all',
                                         selectedDataMode === mode.id
                                             ? mode.id === 'own'
                                                 ? 'border-emerald-500/50 bg-emerald-500/[0.05] shadow-sm'
@@ -940,35 +964,37 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                                             : 'border-border/60 bg-background hover:border-border hover:bg-muted/30',
                                     ]"
                                 >
-                                    <div :class="[
-                                        'size-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 transition-colors',
-                                        selectedDataMode === mode.id
-                                            ? mode.id === 'own'
-                                                ? 'bg-emerald-500 text-white'
-                                                : 'bg-primary text-primary-foreground'
-                                            : 'bg-muted text-muted-foreground',
-                                    ]">
+                                    <div
+                                        :class="[
+                                            'mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg transition-colors',
+                                            selectedDataMode === mode.id
+                                                ? mode.id === 'own'
+                                                    ? 'bg-emerald-500 text-white'
+                                                    : 'bg-primary text-primary-foreground'
+                                                : 'bg-muted text-muted-foreground',
+                                        ]"
+                                    >
                                         <Package v-if="mode.id === 'mock'" class="size-3.5" />
                                         <Upload v-else class="size-3.5" />
                                     </div>
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex items-center gap-1.5 flex-wrap">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex flex-wrap items-center gap-1.5">
                                             <span class="text-xs font-bold text-foreground">{{ mode.badge }}</span>
                                             <Badge
                                                 v-if="mode.id === 'own'"
                                                 variant="outline"
-                                                class="text-[9px] px-1 py-0 shrink-0 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                                                class="shrink-0 border-emerald-500/30 bg-emerald-500/10 px-1 py-0 text-[9px] text-emerald-600 dark:text-emerald-400"
                                             >
                                                 Recommended
                                             </Badge>
                                         </div>
-                                        <p class="text-[10px] text-muted-foreground leading-snug mt-0.5">{{ mode.description }}</p>
+                                        <p class="mt-0.5 text-[10px] leading-snug text-muted-foreground">{{ mode.description }}</p>
                                     </div>
                                     <Check
                                         v-if="selectedDataMode === mode.id"
                                         :class="[
-                                            'size-3.5 shrink-0 mt-0.5',
-                                            mode.id === 'own' ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary'
+                                            'mt-0.5 size-3.5 shrink-0',
+                                            mode.id === 'own' ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary',
                                         ]"
                                     />
                                 </button>
@@ -976,9 +1002,9 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                         </div>
 
                         <!-- 3. Contact Fields (Email & Phone) -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                             <div class="space-y-1">
-                                <label class="text-[11px] font-semibold text-foreground flex items-center gap-1">
+                                <label class="flex items-center gap-1 text-[11px] font-semibold text-foreground">
                                     <Mail class="size-3 text-muted-foreground" />
                                     <span>Valid Email</span>
                                 </label>
@@ -986,15 +1012,15 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                                     v-model="userEmail"
                                     type="email"
                                     placeholder="name@company.com"
-                                    class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-input bg-background outline-none focus:ring-2 focus:ring-primary focus:border-primary text-foreground placeholder:text-muted-foreground/60 transition-all"
+                                    class="w-full rounded-xl border border-input bg-background px-2.5 py-1.5 text-xs text-foreground outline-none transition-all placeholder:text-muted-foreground/60 focus:border-primary focus:ring-2 focus:ring-primary"
                                 />
-                                <p v-if="formErrors.email" class="text-[10px] text-destructive font-medium">
+                                <p v-if="formErrors.email" class="text-[10px] font-medium text-destructive">
                                     {{ formErrors.email }}
                                 </p>
                             </div>
 
                             <div class="space-y-1">
-                                <label class="text-[11px] font-semibold text-foreground flex items-center gap-1">
+                                <label class="flex items-center gap-1 text-[11px] font-semibold text-foreground">
                                     <Phone class="size-3 text-muted-foreground" />
                                     <span>Phone Number</span>
                                 </label>
@@ -1002,9 +1028,9 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                                     v-model="userPhone"
                                     type="tel"
                                     placeholder="0712 345 678"
-                                    class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-input bg-background outline-none focus:ring-2 focus:ring-primary focus:border-primary text-foreground placeholder:text-muted-foreground/60 transition-all"
+                                    class="w-full rounded-xl border border-input bg-background px-2.5 py-1.5 text-xs text-foreground outline-none transition-all placeholder:text-muted-foreground/60 focus:border-primary focus:ring-2 focus:ring-primary"
                                 />
-                                <p v-if="formErrors.phone" class="text-[10px] text-destructive font-medium">
+                                <p v-if="formErrors.phone" class="text-[10px] font-medium text-destructive">
                                     {{ formErrors.phone }}
                                 </p>
                             </div>
@@ -1012,12 +1038,14 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
 
                         <!-- 3. User Persona â€” Card Selector -->
                         <div class="space-y-1.5">
-                            <div class="flex items-center gap-1.5 flex-wrap text-xs">
-                                <label class="font-bold text-muted-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                            <div class="flex flex-wrap items-center gap-1.5 text-xs">
+                                <label class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                                     <Users class="size-3 text-primary" />
                                     <span>Select Demo User Persona</span>
                                 </label>
-                                <span class="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/30">
+                                <span
+                                    class="inline-flex items-center gap-0.5 rounded-full border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary"
+                                >
                                     <Crown class="size-2.5" />
                                     Recommended: Owner
                                 </span>
@@ -1030,40 +1058,37 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                                     type="button"
                                     @click="selectedRoleId = role.id"
                                     :class="[
-                                        'w-full flex items-start gap-3 px-3 py-2.5 rounded-xl border text-left cursor-pointer transition-all',
+                                        'flex w-full cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5 text-left transition-all',
                                         selectedRoleId === role.id
                                             ? 'border-primary bg-primary/[0.04] shadow-sm'
                                             : 'border-border/60 bg-background hover:border-border hover:bg-muted/30',
                                     ]"
                                 >
-                                    <div :class="[
-                                        'size-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 transition-colors',
-                                        selectedRoleId === role.id
-                                            ? 'bg-primary text-primary-foreground'
-                                            : 'bg-muted text-muted-foreground',
-                                    ]">
+                                    <div
+                                        :class="[
+                                            'mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg transition-colors',
+                                            selectedRoleId === role.id ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground',
+                                        ]"
+                                    >
                                         <Crown v-if="role.id === 'Owner'" class="size-3.5" />
                                         <UserCheck v-else-if="role.id === 'Manager'" class="size-3.5" />
                                         <ShoppingCart v-else-if="role.id === 'Cashier'" class="size-3.5" />
                                         <Boxes v-else class="size-3.5" />
                                     </div>
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex items-center gap-1.5 flex-wrap">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex flex-wrap items-center gap-1.5">
                                             <span class="text-xs font-bold text-foreground">{{ role.title }}</span>
                                             <Badge
                                                 v-if="role.id === 'Owner'"
                                                 variant="outline"
-                                                class="text-[9px] px-1 py-0 shrink-0 bg-primary/10 text-primary border-primary/30"
+                                                class="shrink-0 border-primary/30 bg-primary/10 px-1 py-0 text-[9px] text-primary"
                                             >
                                                 Recommended
                                             </Badge>
                                         </div>
-                                        <p class="text-[10px] text-muted-foreground leading-snug mt-0.5">{{ role.description }}</p>
+                                        <p class="mt-0.5 text-[10px] leading-snug text-muted-foreground">{{ role.description }}</p>
                                     </div>
-                                    <Check
-                                        v-if="selectedRoleId === role.id"
-                                        class="size-3.5 text-primary shrink-0 mt-0.5"
-                                    />
+                                    <Check v-if="selectedRoleId === role.id" class="mt-0.5 size-3.5 shrink-0 text-primary" />
                                 </button>
                             </div>
                         </div>
@@ -1071,83 +1096,77 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                         <!-- 4. Demo Period Dropdown & Dynamic Price -->
                         <div class="space-y-1.5">
                             <div class="flex items-center justify-between text-xs">
-                                <label class="font-bold text-muted-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                                <label class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                                     <Calendar class="size-3 text-primary" />
                                     <span>Demo Period</span>
                                 </label>
-                                <span class="text-[10px] font-mono text-muted-foreground">
-                                    Valid until {{ calculatedExpiryFormatted }}
-                                </span>
+                                <span class="font-mono text-[10px] text-muted-foreground"> Valid until {{ calculatedExpiryFormatted }} </span>
                             </div>
 
                             <div class="relative">
                                 <select
                                     v-model="selectedPeriodId"
-                                    class="w-full px-3 py-2 text-xs rounded-xl border border-input bg-background outline-none focus:ring-2 focus:ring-primary focus:border-primary text-foreground appearance-none pr-8 cursor-pointer shadow-sm transition-all"
+                                    class="w-full cursor-pointer appearance-none rounded-xl border border-input bg-background px-3 py-2 pr-8 text-xs text-foreground shadow-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary"
                                 >
-                                    <option
-                                        v-for="period in demoPeriods"
-                                        :key="period.id"
-                                        :value="period.id"
-                                    >
+                                    <option v-for="period in demoPeriods" :key="period.id" :value="period.id">
                                         {{ period.label }}
                                     </option>
                                 </select>
-                                <ChevronDown class="size-3.5 text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                <ChevronDown class="pointer-events-none absolute right-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
                             </div>
 
                             <!-- Custom days inline row -->
-                            <div v-if="selectedPeriodId === 'custom'" class="flex items-center gap-2 pt-1 px-1">
+                            <div v-if="selectedPeriodId === 'custom'" class="flex items-center gap-2 px-1 pt-1">
                                 <span class="text-[11px] text-muted-foreground">Enter number of days:</span>
                                 <input
                                     v-model.number="customDays"
                                     type="number"
                                     min="1"
                                     max="90"
-                                    class="w-16 px-2 py-1 text-xs rounded border border-input bg-background text-foreground font-mono"
+                                    class="w-16 rounded border border-input bg-background px-2 py-1 font-mono text-xs text-foreground"
                                 />
                                 <span class="text-[11px] text-muted-foreground">days</span>
                             </div>
                         </div>
 
                         <!-- 5. Compact Price & Summary Strip -->
-                        <div class="p-2.5 rounded-xl border border-primary/20 bg-primary/[0.04] flex items-center justify-between text-xs">
+                        <div class="flex items-center justify-between rounded-xl border border-primary/20 bg-primary/[0.04] p-2.5 text-xs">
                             <div>
-                                <span class="text-[10px] text-muted-foreground block">Calculated Demo Fee ({{ currentEffectiveDays }} Days):</span>
+                                <span class="block text-[10px] text-muted-foreground">Calculated Demo Fee ({{ currentEffectiveDays }} Days):</span>
                                 <span class="font-bold text-foreground">{{ currentSelectedDemo.name }}</span>
                             </div>
                             <div class="text-right">
-                                <span class="text-base font-black text-primary font-mono tracking-tight">
-                                    KES {{ calculatedTotalPrice }}
-                                </span>
+                                <span class="font-mono text-base font-black tracking-tight text-primary"> KES {{ calculatedTotalPrice }} </span>
                             </div>
                         </div>
 
                         <!-- 6. M-Pesa Prompt Mobile Number -->
                         <div class="space-y-1">
-                            <label class="text-[11px] font-semibold text-foreground flex items-center justify-between">
+                            <label class="flex items-center justify-between text-[11px] font-semibold text-foreground">
                                 <span class="flex items-center gap-1">
                                     <Smartphone class="size-3 text-emerald-600 dark:text-emerald-400" />
                                     <span>M-Pesa Number for Prompt</span>
                                 </span>
-                                <span class="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">M-PESA STK</span>
+                                <span class="font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400">M-PESA STK</span>
                             </label>
 
-                            <div class="flex items-center rounded-xl border border-input bg-background shadow-sm overflow-hidden focus-within:ring-2 focus-within:ring-emerald-500 focus-within:border-emerald-500 transition-all">
-                                <div class="pl-3 pr-2 text-emerald-600 font-bold text-xs">
-                                    KE
-                                </div>
+                            <div
+                                class="flex items-center overflow-hidden rounded-xl border border-input bg-background shadow-sm transition-all focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500"
+                            >
+                                <div class="pl-3 pr-2 text-xs font-bold text-emerald-600">KE</div>
                                 <input
                                     v-model="mpesaNumber"
                                     type="tel"
                                     placeholder="07XX XXX XXX or 254..."
-                                    class="flex-1 px-2 py-2 text-xs bg-transparent outline-none font-mono text-foreground placeholder:text-muted-foreground/60"
+                                    class="flex-1 bg-transparent px-2 py-2 font-mono text-xs text-foreground outline-none placeholder:text-muted-foreground/60"
                                 />
-                                <div class="px-2.5 py-1 bg-emerald-500/10 text-emerald-600 text-[9px] font-bold uppercase rounded mr-1.5 border border-emerald-500/20">
+                                <div
+                                    class="mr-1.5 rounded border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[9px] font-bold uppercase text-emerald-600"
+                                >
                                     STK Push
                                 </div>
                             </div>
-                            <p v-if="formErrors.mpesa" class="text-[10px] text-destructive font-medium">
+                            <p v-if="formErrors.mpesa" class="text-[10px] font-medium text-destructive">
                                 {{ formErrors.mpesa }}
                             </p>
                         </div>
@@ -1155,19 +1174,19 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                         <!-- Submit Button -->
                         <Button
                             type="submit"
-                            class="w-full h-10 text-xs font-bold gap-2 cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm mt-1"
+                            class="mt-1 h-10 w-full cursor-pointer gap-2 bg-emerald-600 text-xs font-bold text-white shadow-sm hover:bg-emerald-700"
                         >
                             <Smartphone class="size-3.5" />
                             <span>Prompt M-Pesa STK Push (KES {{ calculatedTotalPrice }})</span>
                         </Button>
 
                         <!-- Satisfied with Demo Option to Contact Admin -->
-                        <div class="pt-2 border-t border-border/50 flex items-center justify-between text-[11px] text-muted-foreground">
+                        <div class="flex items-center justify-between border-t border-border/50 pt-2 text-[11px] text-muted-foreground">
                             <span>Satisfied with testing? Ready for a live account?</span>
                             <button
                                 type="button"
                                 @click="showContactAdminModal = true"
-                                class="text-primary hover:underline font-semibold cursor-pointer inline-flex items-center gap-1"
+                                class="inline-flex cursor-pointer items-center gap-1 font-semibold text-primary hover:underline"
                             >
                                 <span>Contact System Admin</span>
                                 <ArrowRight class="size-3" />
@@ -1175,10 +1194,7 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                         </div>
                     </form>
                 </div>
-
-
             </div>
-
         </main>
 
         <!-- Interactive Contact System Administrator Modal -->
@@ -1192,30 +1208,29 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
         >
             <div
                 v-if="showContactAdminModal"
-                class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm"
                 @click.self="showContactAdminModal = false"
             >
-                <div class="w-full max-w-md rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-2xl space-y-4 relative">
+                <div class="relative w-full max-w-md space-y-4 rounded-2xl border border-border/80 bg-card p-5 shadow-2xl sm:p-6">
                     <!-- Close button -->
                     <button
                         type="button"
                         @click="showContactAdminModal = false"
-                        class="absolute right-4 top-4 size-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 flex items-center justify-center cursor-pointer transition-colors"
+                        class="absolute right-4 top-4 flex size-7 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
                     >
                         <X class="size-4" />
                     </button>
 
                     <!-- Header -->
                     <div class="space-y-1">
-                        <div class="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider">
+                        <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
                             <ShieldCheck class="size-4" />
                             <span>Central Production Onboarding</span>
                         </div>
-                        <h3 class="text-lg font-bold text-foreground">
-                            Contact System Administrator
-                        </h3>
-                        <p class="text-xs text-muted-foreground leading-relaxed">
-                            Ready to move from evaluation to a permanent merchant account? Contact our systems administrator to activate your live store.
+                        <h3 class="text-lg font-bold text-foreground">Contact System Administrator</h3>
+                        <p class="text-xs leading-relaxed text-muted-foreground">
+                            Ready to move from evaluation to a permanent merchant account? Contact our systems administrator to activate your live
+                            store.
                         </p>
                     </div>
 
@@ -1225,14 +1240,14 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                             href="https://wa.me/254712345678?text=Hello%20MDE%20Admin,%20I%20have%20evaluated%20the%20demo%20and%20am%20satisfied.%20I%20would%20like%20to%20set%20up%20a%20live%20production%20account."
                             target="_blank"
                             rel="noopener"
-                            class="flex items-center justify-between p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10 transition-colors text-xs font-medium cursor-pointer"
+                            class="flex cursor-pointer items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 text-xs font-medium transition-colors hover:bg-emerald-500/10"
                         >
                             <div class="flex items-center gap-2.5 text-foreground">
-                                <div class="size-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center">
+                                <div class="flex size-8 items-center justify-center rounded-lg bg-emerald-500 text-white">
                                     <MessageSquare class="size-4" />
                                 </div>
                                 <div>
-                                    <span class="font-bold block text-emerald-700 dark:text-emerald-400">Direct WhatsApp Support</span>
+                                    <span class="block font-bold text-emerald-700 dark:text-emerald-400">Direct WhatsApp Support</span>
                                     <span class="text-[11px] text-muted-foreground">Instant chat with lead administrator</span>
                                 </div>
                             </div>
@@ -1241,15 +1256,15 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
 
                         <a
                             href="tel:+254712345678"
-                            class="flex items-center justify-between p-3 rounded-xl border border-border/80 bg-background hover:bg-muted/40 transition-colors text-xs font-medium cursor-pointer"
+                            class="flex cursor-pointer items-center justify-between rounded-xl border border-border/80 bg-background p-3 text-xs font-medium transition-colors hover:bg-muted/40"
                         >
                             <div class="flex items-center gap-2.5 text-foreground">
-                                <div class="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                                <div class="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                     <PhoneCall class="size-4" />
                                 </div>
                                 <div>
-                                    <span class="font-bold block">Telephone Admin Hotline</span>
-                                    <span class="text-[11px] text-muted-foreground font-mono">+254 712 345 678</span>
+                                    <span class="block font-bold">Telephone Admin Hotline</span>
+                                    <span class="font-mono text-[11px] text-muted-foreground">+254 712 345 678</span>
                                 </div>
                             </div>
                             <ArrowRight class="size-3.5 text-muted-foreground" />
@@ -1257,15 +1272,15 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
 
                         <a
                             href="mailto:admin@mdepos.co.ke?subject=Production%20Store%20Setup%20Request"
-                            class="flex items-center justify-between p-3 rounded-xl border border-border/80 bg-background hover:bg-muted/40 transition-colors text-xs font-medium cursor-pointer"
+                            class="flex cursor-pointer items-center justify-between rounded-xl border border-border/80 bg-background p-3 text-xs font-medium transition-colors hover:bg-muted/40"
                         >
                             <div class="flex items-center gap-2.5 text-foreground">
-                                <div class="size-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center">
+                                <div class="flex size-8 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                                     <Mail class="size-4" />
                                 </div>
                                 <div>
-                                    <span class="font-bold block">Official Administration Email</span>
-                                    <span class="text-[11px] text-muted-foreground font-mono">admin@mdepos.co.ke</span>
+                                    <span class="block font-bold">Official Administration Email</span>
+                                    <span class="font-mono text-[11px] text-muted-foreground">admin@mdepos.co.ke</span>
                                 </div>
                             </div>
                             <ArrowRight class="size-3.5 text-muted-foreground" />
@@ -1273,28 +1288,32 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                     </div>
 
                     <!-- Callback Request Form -->
-                    <div class="pt-2 border-t border-border/70 space-y-2.5">
-                        <div v-if="callbackRequested" class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2">
+                    <div class="space-y-2.5 border-t border-border/70 pt-2">
+                        <div
+                            v-if="callbackRequested"
+                            class="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-700 dark:text-emerald-300"
+                        >
                             <CheckCircle2 class="size-4 shrink-0 text-emerald-600" />
-                            <span>Callback request sent! Our System Administrator will contact you at {{ userPhone || 'your contact number' }} shortly.</span>
+                            <span
+                                >Callback request sent! Our System Administrator will contact you at
+                                {{ userPhone || 'your contact number' }} shortly.</span
+                            >
                         </div>
 
                         <div v-else class="space-y-2">
-                            <label class="text-[11px] font-semibold text-foreground block">
-                                Or Request an Administrator Callback:
-                            </label>
+                            <label class="block text-[11px] font-semibold text-foreground"> Or Request an Administrator Callback: </label>
                             <div class="flex gap-2">
                                 <input
                                     v-model="userPhone"
                                     type="tel"
                                     placeholder="Your phone number"
-                                    class="flex-1 px-2.5 py-1.5 text-xs rounded-xl border border-input bg-background outline-none focus:ring-2 focus:ring-primary focus:border-primary text-foreground placeholder:text-muted-foreground/60 font-mono"
+                                    class="flex-1 rounded-xl border border-input bg-background px-2.5 py-1.5 font-mono text-xs text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary focus:ring-2 focus:ring-primary"
                                     @keydown.enter.prevent="submitAdminInquiry"
                                 />
                                 <Button
                                     type="button"
                                     size="sm"
-                                    class="h-8 text-xs font-bold gap-1.5 cursor-pointer shrink-0"
+                                    class="h-8 shrink-0 cursor-pointer gap-1.5 text-xs font-bold"
                                     :loading="isSubmittingInquiry"
                                     @click="submitAdminInquiry"
                                 >
@@ -1302,7 +1321,7 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                                     <span>Request Setup</span>
                                 </Button>
                             </div>
-                            <p v-if="inquiryError" class="text-[10px] text-destructive font-medium">
+                            <p v-if="inquiryError" class="text-[10px] font-medium text-destructive">
                                 {{ inquiryError }}
                             </p>
                         </div>
@@ -1313,7 +1332,7 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                         type="button"
                         variant="ghost"
                         size="sm"
-                        class="w-full text-xs text-muted-foreground cursor-pointer"
+                        class="w-full cursor-pointer text-xs text-muted-foreground"
                         @click="closeContactAdminModal"
                     >
                         <span>Close Window</span>
@@ -1333,32 +1352,36 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
         >
             <div
                 v-if="showWaitlistModal"
-                class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm"
                 @click.self="resetWaitlistModal"
             >
-                <div class="w-full max-w-md rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-2xl space-y-4 relative">
+                <div class="relative w-full max-w-md space-y-4 rounded-2xl border border-border/80 bg-card p-5 shadow-2xl sm:p-6">
                     <!-- Close button -->
                     <button
                         type="button"
                         @click="resetWaitlistModal"
-                        class="absolute right-4 top-4 size-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 flex items-center justify-center cursor-pointer transition-colors"
+                        class="absolute right-4 top-4 flex size-7 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
                     >
                         <X class="size-4" />
                     </button>
 
                     <!-- Success State -->
-                    <div v-if="waitlistSubmitted" class="text-center py-4 space-y-3">
-                        <div class="size-12 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 flex items-center justify-center mx-auto">
+                    <div v-if="waitlistSubmitted" class="space-y-3 py-4 text-center">
+                        <div
+                            class="mx-auto flex size-12 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-600"
+                        >
                             <CheckCircle2 class="size-6" />
                         </div>
                         <div class="space-y-1">
                             <h3 class="text-base font-bold text-foreground">You're on the Priority Waitlist!</h3>
-                            <p class="text-xs text-muted-foreground max-w-xs mx-auto">
-                                Thank you, <strong class="text-foreground">{{ waitlistForm.fullName || waitlistForm.businessName }}</strong>. We'll email you at <span class="font-mono text-foreground">{{ waitlistForm.email }}</span> the moment self-service merchant onboarding goes live.
+                            <p class="mx-auto max-w-xs text-xs text-muted-foreground">
+                                Thank you, <strong class="text-foreground">{{ waitlistForm.fullName || waitlistForm.businessName }}</strong
+                                >. We'll email you at <span class="font-mono text-foreground">{{ waitlistForm.email }}</span> the moment self-service
+                                merchant onboarding goes live.
                             </p>
                         </div>
-                        <div class="p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs space-y-1.5 text-left">
-                            <span class="font-bold text-foreground flex items-center gap-1.5">
+                        <div class="space-y-1.5 rounded-xl border border-primary/20 bg-primary/5 p-3 text-left text-xs">
+                            <span class="flex items-center gap-1.5 font-bold text-foreground">
                                 <Zap class="size-3.5 text-primary" />
                                 <span>Try out our live demos while you wait!</span>
                             </span>
@@ -1370,10 +1393,15 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                             <Button
                                 type="button"
                                 size="sm"
-                                class="w-full bg-primary text-primary-foreground font-bold"
-                                @click="() => { resetWaitlistModal(); scrollToDemos(); }"
+                                class="w-full bg-primary font-bold text-primary-foreground"
+                                @click="
+                                    () => {
+                                        resetWaitlistModal();
+                                        scrollToDemos();
+                                    }
+                                "
                             >
-                                <Sparkles class="size-3.5 mr-1" />
+                                <Sparkles class="mr-1 size-3.5" />
                                 Explore Interactive Demos Now
                             </Button>
                         </div>
@@ -1382,45 +1410,43 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                     <!-- Registration Form -->
                     <div v-else class="space-y-4">
                         <div class="space-y-1">
-                            <div class="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-bold text-xs uppercase tracking-wider">
+                            <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
                                 <Clock class="size-4" />
                                 <span>Priority Onboarding</span>
                             </div>
-                            <h3 class="text-lg font-bold text-foreground">
-                                Register for Early Access Waitlist
-                            </h3>
-                            <p class="text-xs text-muted-foreground leading-relaxed">
+                            <h3 class="text-lg font-bold text-foreground">Register for Early Access Waitlist</h3>
+                            <p class="text-xs leading-relaxed text-muted-foreground">
                                 Be among the first merchants to receive a custom subdomain, dedicated database, and automated onboarding.
                             </p>
                         </div>
 
                         <form @submit.prevent="handleWaitlistSubmit" class="space-y-3">
                             <div>
-                                <label class="text-[11px] font-semibold text-foreground block mb-1">Business / Store Name *</label>
+                                <label class="mb-1 block text-[11px] font-semibold text-foreground">Business / Store Name *</label>
                                 <input
                                     v-model="waitlistForm.businessName"
                                     type="text"
                                     required
                                     placeholder="e.g. Highlands Supermarket Ltd"
-                                    class="w-full px-3 py-2 text-xs rounded-xl border border-input bg-background text-foreground outline-none focus:ring-2 focus:ring-primary"
+                                    class="w-full rounded-xl border border-input bg-background px-3 py-2 text-xs text-foreground outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
 
                             <div class="grid grid-cols-2 gap-2.5">
                                 <div>
-                                    <label class="text-[11px] font-semibold text-foreground block mb-1">Contact Person Name</label>
+                                    <label class="mb-1 block text-[11px] font-semibold text-foreground">Contact Person Name</label>
                                     <input
                                         v-model="waitlistForm.fullName"
                                         type="text"
                                         placeholder="e.g. Sarah Kimani"
-                                        class="w-full px-3 py-2 text-xs rounded-xl border border-input bg-background text-foreground outline-none focus:ring-2 focus:ring-primary"
+                                        class="w-full rounded-xl border border-input bg-background px-3 py-2 text-xs text-foreground outline-none focus:ring-2 focus:ring-primary"
                                     />
                                 </div>
                                 <div>
-                                    <label class="text-[11px] font-semibold text-foreground block mb-1">Business Type</label>
+                                    <label class="mb-1 block text-[11px] font-semibold text-foreground">Business Type</label>
                                     <select
                                         v-model="waitlistForm.businessType"
-                                        class="w-full px-2.5 py-2 text-xs rounded-xl border border-input bg-background text-foreground outline-none focus:ring-2 focus:ring-primary cursor-pointer"
+                                        class="w-full cursor-pointer rounded-xl border border-input bg-background px-2.5 py-2 text-xs text-foreground outline-none focus:ring-2 focus:ring-primary"
                                     >
                                         <option value="Supermarket">Supermarket / FMCG</option>
                                         <option value="Wholesale">Wholesale & Distribution</option>
@@ -1434,38 +1460,36 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
 
                             <div class="grid grid-cols-2 gap-2.5">
                                 <div>
-                                    <label class="text-[11px] font-semibold text-foreground block mb-1">Work Email *</label>
+                                    <label class="mb-1 block text-[11px] font-semibold text-foreground">Work Email *</label>
                                     <input
                                         v-model="waitlistForm.email"
                                         type="email"
                                         required
                                         placeholder="admin@mystore.co.ke"
-                                        class="w-full px-3 py-2 text-xs rounded-xl border border-input bg-background text-foreground outline-none focus:ring-2 focus:ring-primary"
+                                        class="w-full rounded-xl border border-input bg-background px-3 py-2 text-xs text-foreground outline-none focus:ring-2 focus:ring-primary"
                                     />
                                 </div>
                                 <div>
-                                    <label class="text-[11px] font-semibold text-foreground block mb-1">Phone / WhatsApp</label>
+                                    <label class="mb-1 block text-[11px] font-semibold text-foreground">Phone / WhatsApp</label>
                                     <input
                                         v-model="waitlistForm.phone"
                                         type="tel"
                                         placeholder="+254 7XX XXX XXX"
-                                        class="w-full px-3 py-2 text-xs rounded-xl border border-input bg-background text-foreground font-mono outline-none focus:ring-2 focus:ring-primary"
+                                        class="w-full rounded-xl border border-input bg-background px-3 py-2 font-mono text-xs text-foreground outline-none focus:ring-2 focus:ring-primary"
                                     />
                                 </div>
                             </div>
 
-                            <p v-if="waitlistError" class="text-[10px] text-destructive font-medium">
+                            <p v-if="waitlistError" class="text-[10px] font-medium text-destructive">
                                 {{ waitlistError }}
                             </p>
 
-                            <div class="pt-2 flex items-center justify-end gap-2">
-                                <Button type="button" variant="ghost" size="sm" @click="resetWaitlistModal">
-                                    Cancel
-                                </Button>
+                            <div class="flex items-center justify-end gap-2 pt-2">
+                                <Button type="button" variant="ghost" size="sm" @click="resetWaitlistModal"> Cancel </Button>
                                 <Button
                                     type="submit"
                                     size="sm"
-                                    class="bg-amber-600 hover:bg-amber-700 text-white font-bold"
+                                    class="bg-amber-600 font-bold text-white hover:bg-amber-700"
                                     :loading="isSubmittingWaitlist"
                                 >
                                     Join Priority Waitlist
@@ -1478,7 +1502,7 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
         </Transition>
 
         <!-- Minimal Footer -->
-        <footer class="border-t border-border/70 bg-card/60 py-4 px-4 text-center text-xs text-muted-foreground">
+        <footer class="border-t border-border/70 bg-card/60 px-4 py-4 text-center text-xs text-muted-foreground">
             <p>© 2026 MDE Software Systems. Multi-Tenant Retail Point of Sale & Inventory Platform.</p>
         </footer>
     </div>

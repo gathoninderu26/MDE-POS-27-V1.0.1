@@ -5,20 +5,23 @@ import { useBusinessTerms } from '@/composables/useBusinessTerms';
 import type { CompletedSale } from '@/composables/useCart';
 import { formatCurrency, formatDateTime } from '@/composables/useCurrency';
 import { useToast } from '@/composables/useToast';
-import { CheckCircle2, Download, Mail, Pill, Printer, Truck, Utensils, X } from 'lucide-vue-next';
+import { CheckCircle2, Download, Mail, Printer } from 'lucide-vue-next';
 
 import { computed, onUnmounted, watch } from 'vue';
 
-const props = withDefaults(defineProps<{
-    open: boolean;
-    sale: CompletedSale | null;
-    kraPin?: string;
-    phone?: string;
-    address?: string;
-    autoPrint?: boolean;
-}>(), {
-    autoPrint: false,
-});
+const props = withDefaults(
+    defineProps<{
+        open: boolean;
+        sale: CompletedSale | null;
+        kraPin?: string;
+        phone?: string;
+        address?: string;
+        autoPrint?: boolean;
+    }>(),
+    {
+        autoPrint: false,
+    },
+);
 
 const emit = defineEmits<{
     (e: 'update:open', val: boolean): void;
@@ -49,7 +52,7 @@ watch(
         } else {
             window.removeEventListener('keydown', handleReceiptKeydown);
         }
-    }
+    },
 );
 
 onUnmounted(() => {
@@ -61,17 +64,50 @@ const { success } = useToast();
 
 // Standard Code 39 vector barcode generator for the receipt number
 const CODE39_MAP: Record<string, string> = {
-    '0': '000110100', '1': '100100001', '2': '001100001', '3': '101100000',
-    '4': '000110001', '5': '100110000', '6': '001110000', '7': '000100101',
-    '8': '100100100', '9': '001100100', 'A': '100001001', 'B': '001001001',
-    'C': '101001000', 'D': '000011001', 'E': '100011000', 'F': '001011000',
-    'G': '000001101', 'H': '100001100', 'I': '001001100', 'J': '000011100',
-    'K': '100000011', 'L': '001000011', 'M': '101000010', 'N': '000010011',
-    'O': '100010010', 'P': '001010010', 'Q': '000000111', 'R': '100000110',
-    'S': '001000110', 'T': '000010110', 'U': '110000001', 'V': '011000001',
-    'W': '111000000', 'X': '010010001', 'Y': '110010000', 'Z': '011010000',
-    '-': '010000101', '.': '110000100', ' ': '011000100', '$': '010101000',
-    '/': '010100010', '+': '010001010', '%': '000101010', '*': '010010100',
+    '0': '000110100',
+    '1': '100100001',
+    '2': '001100001',
+    '3': '101100000',
+    '4': '000110001',
+    '5': '100110000',
+    '6': '001110000',
+    '7': '000100101',
+    '8': '100100100',
+    '9': '001100100',
+    A: '100001001',
+    B: '001001001',
+    C: '101001000',
+    D: '000011001',
+    E: '100011000',
+    F: '001011000',
+    G: '000001101',
+    H: '100001100',
+    I: '001001100',
+    J: '000011100',
+    K: '100000011',
+    L: '001000011',
+    M: '101000010',
+    N: '000010011',
+    O: '100010010',
+    P: '001010010',
+    Q: '000000111',
+    R: '100000110',
+    S: '001000110',
+    T: '000010110',
+    U: '110000001',
+    V: '011000001',
+    W: '111000000',
+    X: '010010001',
+    Y: '110010000',
+    Z: '011010000',
+    '-': '010000101',
+    '.': '110000100',
+    ' ': '011000100',
+    $: '010101000',
+    '/': '010100010',
+    '+': '010001010',
+    '%': '000101010',
+    '*': '010010100',
 };
 
 const barcodeSvg = computed(() => {
@@ -121,34 +157,41 @@ const handleDownload = () => {
 
 <template>
     <Dialog :open="open" spinnerText="Generating Receipt..." @update:open="(v) => emit('update:open', v)">
-        <DialogContent class="w-[95vw] sm:max-w-md p-0 max-h-[92vh] flex flex-col overflow-hidden bg-background print:border-none print:shadow-none print:bg-transparent print:p-0 print:m-0 print:max-h-none print:overflow-visible print:w-auto print:max-w-none print:static print:transform-none">
-            <DialogHeader class="px-4 sm:px-6 pt-4 sm:pt-5 pb-3 border-b border-border/70 flex flex-row items-center justify-between shrink-0 print:hidden">
+        <DialogContent
+            class="flex max-h-[92vh] w-[95vw] flex-col overflow-hidden bg-background p-0 sm:max-w-md print:static print:m-0 print:max-h-none print:w-auto print:max-w-none print:transform-none print:overflow-visible print:border-none print:bg-transparent print:p-0 print:shadow-none"
+        >
+            <DialogHeader
+                class="flex shrink-0 flex-row items-center justify-between border-b border-border/70 px-4 pb-3 pt-4 sm:px-6 sm:pt-5 print:hidden"
+            >
                 <div>
-                    <DialogTitle class="text-base font-bold flex items-center gap-2">
+                    <DialogTitle class="flex items-center gap-2 text-base font-bold">
                         <CheckCircle2 class="size-5 text-emerald-500" />
                         Transaction Completed
                     </DialogTitle>
-                    <p class="text-xs text-muted-foreground mt-0.5">{{ terms.receiptTitle }} # {{ sale?.receiptNumber }}</p>
+                    <p class="mt-0.5 text-xs text-muted-foreground">{{ terms.receiptTitle }} # {{ sale?.receiptNumber }}</p>
                 </div>
             </DialogHeader>
 
             <!-- Printable Thermal Receipt (80mm styling) -->
-            <div class="px-3 sm:px-6 py-4 overflow-y-auto print:max-h-none print:p-0 print:overflow-visible flex-1">
-                <div id="thermal-receipt" class="mx-auto bg-card border border-border/70 p-4 sm:p-5 rounded-lg shadow-sm font-mono text-xs space-y-3 text-card-foreground">
+            <div class="flex-1 overflow-y-auto px-3 py-4 sm:px-6 print:max-h-none print:overflow-visible print:p-0">
+                <div
+                    id="thermal-receipt"
+                    class="mx-auto space-y-3 rounded-lg border border-border/70 bg-card p-4 font-mono text-xs text-card-foreground shadow-sm sm:p-5"
+                >
                     <!-- Business Header -->
-                    <div class="text-center space-y-0.5 border-b border-dashed border-border/90 pb-3">
-                        <h4 class="text-sm font-black uppercase tracking-wider font-sans">{{ sale?.tenantName }}</h4>
+                    <div class="space-y-0.5 border-b border-dashed border-border/90 pb-3 text-center">
+                        <h4 class="font-sans text-sm font-black uppercase tracking-wider">{{ sale?.tenantName }}</h4>
                         <p class="text-[11px] text-muted-foreground">{{ sale?.branchName }}</p>
                         <p v-if="address" class="text-[11px] text-muted-foreground">{{ address }}</p>
                         <p v-if="phone" class="text-[11px] text-muted-foreground">Tel: {{ phone }}</p>
                         <p class="text-[11px] font-semibold text-foreground">Customer: {{ sale?.customer?.name || 'Walk-in Customer' }}</p>
-                        <p class="text-[11px] font-bold tracking-widest uppercase font-mono mt-1 text-foreground">
+                        <p class="mt-1 font-mono text-[11px] font-bold uppercase tracking-widest text-foreground">
                             {{ terms.receiptTitle }}
                         </p>
                     </div>
 
                     <!-- Meta Details & Vertical Specific Meta -->
-                    <div class="text-[11px] space-y-0.5 border-b border-dashed border-border/90 pb-2">
+                    <div class="space-y-0.5 border-b border-dashed border-border/90 pb-2 text-[11px]">
                         <div class="flex justify-between">
                             <span class="text-muted-foreground">Doc Number:</span>
                             <span class="font-bold">{{ sale?.receiptNumber }}</span>
@@ -168,7 +211,7 @@ const handleDownload = () => {
 
                         <!-- Pharmacy Specific Fields on Receipt -->
                         <template v-if="terms.showPrescriptions && sale?.rxNumber">
-                            <div class="flex justify-between text-teal-600 dark:text-teal-400 font-semibold">
+                            <div class="flex justify-between font-semibold text-teal-600 dark:text-teal-400">
                                 <span>Rx Number:</span>
                                 <span>{{ sale.rxNumber }}</span>
                             </div>
@@ -180,7 +223,7 @@ const handleDownload = () => {
 
                         <!-- Hardware Specific Fields on Receipt -->
                         <template v-if="terms.showDimensionsAndSite && sale?.deliverySite">
-                            <div class="flex justify-between text-amber-600 dark:text-amber-400 font-semibold">
+                            <div class="flex justify-between font-semibold text-amber-600 dark:text-amber-400">
                                 <span>Delivery Site:</span>
                                 <span>{{ sale.deliverySite }}</span>
                             </div>
@@ -188,15 +231,37 @@ const handleDownload = () => {
 
                         <!-- Restaurant Specific Fields on Receipt -->
                         <template v-if="terms.showTableManagement && sale?.tableNumber">
-                            <div class="flex justify-between text-orange-600 dark:text-orange-400 font-semibold">
+                            <div class="flex justify-between font-semibold text-orange-600 dark:text-orange-400">
                                 <span>Table / Area:</span>
                                 <span>{{ sale.tableNumber }} ({{ sale.guestCount || 2 }} Guests)</span>
                             </div>
                         </template>
 
-                        <div v-if="sale?.mpesaCode || sale?.payments?.some((p) => p.method === 'M-Pesa' || p.method?.toLowerCase().includes('mpesa') || p.method?.toLowerCase().includes('till') || p.method?.toLowerCase().includes('paybill'))" class="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold">
+                        <div
+                            v-if="
+                                sale?.mpesaCode ||
+                                sale?.payments?.some(
+                                    (p) =>
+                                        p.method === 'M-Pesa' ||
+                                        p.method?.toLowerCase().includes('mpesa') ||
+                                        p.method?.toLowerCase().includes('till') ||
+                                        p.method?.toLowerCase().includes('paybill'),
+                                )
+                            "
+                            class="flex justify-between font-bold text-emerald-600 dark:text-emerald-400"
+                        >
                             <span>M-Pesa Code:</span>
-                            <span class="font-mono">{{ sale?.mpesaCode || sale?.payments?.find((p) => p.method === 'M-Pesa' || p.method?.toLowerCase().includes('mpesa') || p.method?.toLowerCase().includes('till') || p.method?.toLowerCase().includes('paybill'))?.reference || 'CONFIRMED' }}</span>
+                            <span class="font-mono">{{
+                                sale?.mpesaCode ||
+                                sale?.payments?.find(
+                                    (p) =>
+                                        p.method === 'M-Pesa' ||
+                                        p.method?.toLowerCase().includes('mpesa') ||
+                                        p.method?.toLowerCase().includes('till') ||
+                                        p.method?.toLowerCase().includes('paybill'),
+                                )?.reference ||
+                                'CONFIRMED'
+                            }}</span>
                         </div>
                     </div>
 
@@ -204,32 +269,30 @@ const handleDownload = () => {
                     <div class="border-b border-dashed border-border/90 pb-2">
                         <table class="w-full text-[11px]">
                             <thead>
-                                <tr class="text-muted-foreground border-b border-border/40">
-                                    <th class="text-left pb-1 font-semibold">{{ terms.itemLabel }}</th>
-                                    <th class="text-center pb-1 font-semibold">Qty</th>
-                                    <th class="text-right pb-1 font-semibold">Price</th>
-                                    <th class="text-right pb-1 font-semibold">Total</th>
+                                <tr class="border-b border-border/40 text-muted-foreground">
+                                    <th class="pb-1 text-left font-semibold">{{ terms.itemLabel }}</th>
+                                    <th class="pb-1 text-center font-semibold">Qty</th>
+                                    <th class="pb-1 text-right font-semibold">Price</th>
+                                    <th class="pb-1 text-right font-semibold">Total</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border/30">
                                 <tr v-for="item in sale?.items || []" :key="item.product.id" class="py-1">
-                                    <td class="py-1 max-w-[130px]">
-                                        <div class="font-sans font-medium text-[11px]">{{ item.product.name }}</div>
+                                    <td class="max-w-[130px] py-1">
+                                        <div class="font-sans text-[11px] font-medium">{{ item.product.name }}</div>
                                         <!-- Pharmacy dosage instructions -->
-                                        <div v-if="item.product.dosage" class="text-[9px] text-teal-600 dark:text-teal-400 italic">
+                                        <div v-if="item.product.dosage" class="text-[9px] italic text-teal-600 dark:text-teal-400">
                                             Dosage: {{ item.product.dosage }}
                                         </div>
                                         <!-- Electronics serial warranty -->
-                                        <div v-if="item.product.serialNumber" class="text-[9px] text-violet-600 font-mono">
+                                        <div v-if="item.product.serialNumber" class="font-mono text-[9px] text-violet-600">
                                             S/N: {{ item.product.serialNumber }} ({{ item.product.warrantyMonths }}m wty)
                                         </div>
-                                        <div v-if="item.discountPercent > 0" class="text-[9px] text-amber-600">
-                                            Disc: {{ item.discountPercent }}%
-                                        </div>
+                                        <div v-if="item.discountPercent > 0" class="text-[9px] text-amber-600">Disc: {{ item.discountPercent }}%</div>
                                     </td>
-                                    <td class="text-center py-1 font-mono">{{ item.quantity }}</td>
-                                    <td class="text-right py-1 font-mono">{{ formatCurrency(item.unitPrice) }}</td>
-                                    <td class="text-right py-1 font-mono font-medium">
+                                    <td class="py-1 text-center font-mono">{{ item.quantity }}</td>
+                                    <td class="py-1 text-right font-mono">{{ formatCurrency(item.unitPrice) }}</td>
+                                    <td class="py-1 text-right font-mono font-medium">
                                         {{ formatCurrency(item.quantity * item.unitPrice * (1 - item.discountPercent / 100)) }}
                                     </td>
                                 </tr>
@@ -238,7 +301,7 @@ const handleDownload = () => {
                     </div>
 
                     <!-- Summary & Tax Breakdown -->
-                    <div class="text-[11px] space-y-1 border-b border-dashed border-border/90 pb-2 font-mono">
+                    <div class="space-y-1 border-b border-dashed border-border/90 pb-2 font-mono text-[11px]">
                         <div class="flex justify-between text-muted-foreground">
                             <span>Subtotal:</span>
                             <span>{{ formatCurrency(sale?.subtotal || 0) }}</span>
@@ -251,24 +314,32 @@ const handleDownload = () => {
                             <span>VAT (16% Incl.):</span>
                             <span>{{ formatCurrency(sale?.taxAmount || 0) }}</span>
                         </div>
-                        <div class="flex justify-between text-sm font-bold pt-1 border-t border-border/40 font-sans">
+                        <div class="flex justify-between border-t border-border/40 pt-1 font-sans text-sm font-bold">
                             <span>TOTAL PAID:</span>
                             <span class="text-primary">{{ formatCurrency(sale?.total || 0) }}</span>
                         </div>
                     </div>
 
                     <!-- Payments & Change -->
-                    <div class="text-[11px] space-y-1 border-b border-dashed border-border/90 pb-2 font-mono">
+                    <div class="space-y-1 border-b border-dashed border-border/90 pb-2 font-mono text-[11px]">
                         <div v-for="(p, idx) in sale?.payments || []" :key="idx" class="space-y-0.5">
                             <div class="flex justify-between">
                                 <span class="text-muted-foreground">Payment ({{ p.method }}):</span>
                                 <span>{{ formatCurrency(p.amount) }}</span>
                             </div>
-                            <div v-if="p.method === 'M-Pesa' || p.method?.toLowerCase().includes('mpesa') || p.method?.toLowerCase().includes('till') || p.method?.toLowerCase().includes('paybill')" class="flex justify-between text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+                            <div
+                                v-if="
+                                    p.method === 'M-Pesa' ||
+                                    p.method?.toLowerCase().includes('mpesa') ||
+                                    p.method?.toLowerCase().includes('till') ||
+                                    p.method?.toLowerCase().includes('paybill')
+                                "
+                                class="flex justify-between text-[10px] font-bold text-emerald-600 dark:text-emerald-400"
+                            >
                                 <span>M-Pesa Code:</span>
                                 <span class="font-mono">{{ p.reference || sale?.mpesaCode || 'CONFIRMED' }}</span>
                             </div>
-                            <div v-else-if="p.reference" class="flex justify-between text-[10px] text-muted-foreground font-mono">
+                            <div v-else-if="p.reference" class="flex justify-between font-mono text-[10px] text-muted-foreground">
                                 <span>Ref / Auth:</span>
                                 <span>{{ p.reference }}</span>
                             </div>
@@ -280,29 +351,19 @@ const handleDownload = () => {
                     </div>
 
                     <!-- Footer & KRA / Industry Legal Notes -->
-                    <div class="text-center pt-2 space-y-1.5 text-muted-foreground text-[10px]">
+                    <div class="space-y-1.5 pt-2 text-center text-[10px] text-muted-foreground">
                         <p class="font-sans font-semibold text-foreground">Thank you for your business!</p>
-                        
-                        <p v-if="terms.showPrescriptions">
-                            Please complete entire course of prescribed antibiotics. Keep out of reach of children.
-                        </p>
+
+                        <p v-if="terms.showPrescriptions">Please complete entire course of prescribed antibiotics. Keep out of reach of children.</p>
                         <p v-else-if="terms.showDimensionsAndSite">
                             Verify material specifications and dimensions upon dispatch before signing delivery note.
                         </p>
-                        <p v-else-if="terms.showSerialWarranty">
-                            Please retain this invoice with serial numbers for manufacturer warranty claims.
-                        </p>
-                        <p v-else>
-                            Goods once sold cannot be returned without original receipt.
-                        </p>
+                        <p v-else-if="terms.showSerialWarranty">Please retain this invoice with serial numbers for manufacturer warranty claims.</p>
+                        <p v-else>Goods once sold cannot be returned without original receipt.</p>
 
                         <!-- Thermal Barcode for Scanner Lookup -->
-                        <div class="pt-2 flex flex-col items-center justify-center select-none">
-                            <svg
-                                :viewBox="`0 0 ${barcodeSvg.totalWidth} 40`"
-                                class="w-full max-w-[210px] h-9 mx-auto"
-                                preserveAspectRatio="none"
-                            >
+                        <div class="flex select-none flex-col items-center justify-center pt-2">
+                            <svg :viewBox="`0 0 ${barcodeSvg.totalWidth} 40`" class="mx-auto h-9 w-full max-w-[210px]" preserveAspectRatio="none">
                                 <rect
                                     v-for="(bar, idx) in barcodeSvg.bars"
                                     :key="idx"
@@ -313,7 +374,7 @@ const handleDownload = () => {
                                     fill="#000000"
                                 />
                             </svg>
-                            <div class="font-mono text-[9px] tracking-[0.22em] font-bold text-center mt-1 text-foreground">
+                            <div class="mt-1 text-center font-mono text-[9px] font-bold tracking-[0.22em] text-foreground">
                                 {{ sale?.receiptNumber }}
                             </div>
                         </div>
@@ -322,7 +383,7 @@ const handleDownload = () => {
             </div>
 
             <!-- Modal Action Buttons -->
-            <DialogFooter class="px-6 py-3.5 bg-muted/40 border-t border-border/70 flex sm:justify-between items-center gap-2 print:hidden">
+            <DialogFooter class="flex items-center gap-2 border-t border-border/70 bg-muted/40 px-6 py-3.5 sm:justify-between print:hidden">
                 <div class="flex items-center gap-1.5">
                     <Button variant="outline" size="sm" class="h-8 gap-1.5 text-xs" @click="handleEmail">
                         <Mail class="size-3.5" />
@@ -335,10 +396,8 @@ const handleDownload = () => {
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" class="h-8 text-xs" @click="emit('update:open', false)">
-                        Close (C)
-                    </Button>
-                    <Button size="sm" class="h-8 gap-1.5 text-xs bg-primary text-primary-foreground font-bold" @click="handlePrint">
+                    <Button variant="ghost" size="sm" class="h-8 text-xs" @click="emit('update:open', false)"> Close (C) </Button>
+                    <Button size="sm" class="h-8 gap-1.5 bg-primary text-xs font-bold text-primary-foreground" @click="handlePrint">
                         <Printer class="size-3.5" />
                         Print Thermal (P)
                     </Button>

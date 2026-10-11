@@ -18,7 +18,7 @@ class CustomerController extends Controller
         $customers = Customer::where('tenant_id', $tenantId)
             ->latest()
             ->get()
-            ->map(fn($c) => [
+            ->map(fn ($c) => [
                 'id' => $c->id,
                 'name' => $c->name,
                 'phone' => $c->phone ?? 'N/A',

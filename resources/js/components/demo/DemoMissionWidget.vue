@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import {
     ArrowLeft,
     ArrowRight,
-    Barcode,
     BookOpen,
     CheckCircle2,
     ChevronDown,
@@ -12,27 +11,16 @@ import {
     Circle,
     Compass,
     CreditCard,
-    Eye,
-    HelpCircle,
     Info,
-    Keyboard,
-    Lock,
     Package,
     PartyPopper,
-    Receipt,
     RotateCcw,
     ScanBarcode,
-    Search,
     ShieldCheck,
-    ShoppingBag,
     ShoppingCart,
     Sparkles,
-    Store,
     Target,
-    UserCheck,
-    UserPlus,
     X,
-    Zap,
 } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
 
@@ -87,7 +75,8 @@ const tourSections = [
         title: '1. Barcode Scanner & Instant Search',
         subtitle: 'Hardware Barcode Guns & Camera Scan',
         icon: ScanBarcode,
-        description: 'Universal product lookup engine connecting physical USB/Bluetooth barcode scanners, mobile camera scanning, and live catalog search. Scanned items auto-commit instantly.',
+        description:
+            'Universal product lookup engine connecting physical USB/Bluetooth barcode scanners, mobile camera scanning, and live catalog search. Scanned items auto-commit instantly.',
         features: [
             'Plug & play USB/Bluetooth barcode guns without software drivers',
             'F2 global hotkey jumps straight to barcode input from anywhere',
@@ -103,7 +92,8 @@ const tourSections = [
         title: '2. Product Grid & Stock Intelligence',
         subtitle: 'Real-Time Inventory & Pricing Tiers',
         icon: Package,
-        description: 'Touch-friendly product tiles showing live inventory quantities, stock depletion warnings, dual pricing tiers (Retail vs Wholesale / Trade), and vertical-specific specs.',
+        description:
+            'Touch-friendly product tiles showing live inventory quantities, stock depletion warnings, dual pricing tiers (Retail vs Wholesale / Trade), and vertical-specific specs.',
         features: [
             'Horizontal category pills for rapid department navigation',
             'Color-coded stock badges (Red <= 5 critical, Amber <= 15 low)',
@@ -119,7 +109,8 @@ const tourSections = [
         title: '3. Active Cart & Customer Profile',
         subtitle: 'Credit Limits & Line Item Discounts',
         icon: ShoppingCart,
-        description: 'Live order ledger for adjusting ordered quantities, applying per-item discounts, tracking customer credit ceilings, insurance co-pay, and parking tickets.',
+        description:
+            'Live order ledger for adjusting ordered quantities, applying per-item discounts, tracking customer credit ceilings, insurance co-pay, and parking tickets.',
         features: [
             'Customer attachment with live store credit limit tracking',
             'Real-time subtotal, 16% tax (VAT), and promotional discount computation',
@@ -135,7 +126,8 @@ const tourSections = [
         title: '4. Fast Checkout & Multi-Tender Bar',
         subtitle: 'Cash, M-Pesa STK & Split Payments',
         icon: CreditCard,
-        description: 'Final transaction settlement engine providing real-time change calculation, automated M-Pesa STK push prompts, credit recording, or split payments across multiple tenders.',
+        description:
+            'Final transaction settlement engine providing real-time change calculation, automated M-Pesa STK push prompts, credit recording, or split payments across multiple tenders.',
         features: [
             'Automated M-Pesa STK push prompt to customer phone in 5s',
             'Quick-tender cash denomination buttons (Exact, KES 500, 1000, 2000)',
@@ -151,7 +143,8 @@ const tourSections = [
         title: '5. Header Controls & Terminal Security',
         subtitle: 'Lockout Mode & Shift Management',
         icon: ShieldCheck,
-        description: 'The top navigation bar displays active branch, cashier ID, live cloud sync status, keyboard hotkeys guide, fullscreen kiosk mode, and supervisor lockout controls.',
+        description:
+            'The top navigation bar displays active branch, cashier ID, live cloud sync status, keyboard hotkeys guide, fullscreen kiosk mode, and supervisor lockout controls.',
         features: [
             'Terminal Lockout mode (requires 4-digit PIN 1234 to prevent cashier tampering)',
             'Keyboard hotkeys reference table for rapid mouse-free operations',
@@ -213,7 +206,7 @@ const persistProgress = () => {
                 isDismissed: isDismissed.value,
                 isCollapsed: isCollapsed.value,
                 activeTab: activeTab.value,
-            })
+            }),
         );
     } catch {
         // Ignore
@@ -229,7 +222,7 @@ watch(
             persistProgress();
         }
     },
-    { immediate: true }
+    { immediate: true },
 );
 
 watch(
@@ -240,7 +233,7 @@ watch(
             persistProgress();
         }
     },
-    { immediate: true }
+    { immediate: true },
 );
 
 watch(
@@ -251,7 +244,7 @@ watch(
             persistProgress();
         }
     },
-    { immediate: true }
+    { immediate: true },
 );
 
 watch(
@@ -262,7 +255,7 @@ watch(
             persistProgress();
         }
     },
-    { immediate: true }
+    { immediate: true },
 );
 
 const tasks = computed(() => [
@@ -340,23 +333,20 @@ onMounted(() => {
 
 <template>
     <!-- Floating Interactive Tutorial Dock (Bottom Left) -->
-    <div
-        v-if="!isDismissed"
-        class="fixed bottom-4 left-4 z-40 max-w-sm w-[94vw] sm:w-[380px] transition-all duration-300 font-sans select-none"
-    >
+    <div v-if="!isDismissed" class="fixed bottom-4 left-4 z-40 w-[94vw] max-w-sm select-none font-sans transition-all duration-300 sm:w-[380px]">
         <!-- Collapsed Floating Pill -->
         <div
             v-if="isCollapsed"
             @click="toggleCollapse"
-            class="flex items-center justify-between gap-3 px-4 py-2.5 rounded-full bg-card/95 border border-primary/40 shadow-xl backdrop-blur-md cursor-pointer hover:border-primary transition-all text-xs"
+            class="flex cursor-pointer items-center justify-between gap-3 rounded-full border border-primary/40 bg-card/95 px-4 py-2.5 text-xs shadow-xl backdrop-blur-md transition-all hover:border-primary"
         >
             <div class="flex items-center gap-2">
-                <div class="size-6 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-[10px]">
+                <div class="flex size-6 items-center justify-center rounded-full bg-primary/15 text-[10px] font-bold text-primary">
                     <Sparkles class="size-3" />
                 </div>
                 <div class="flex items-center gap-1.5 font-bold text-foreground">
                     <span>Interactive POS Guide</span>
-                    <Badge variant="outline" class="text-[10px] px-1.5 py-0 h-4 border-primary/40 text-primary">
+                    <Badge variant="outline" class="h-4 border-primary/40 px-1.5 py-0 text-[10px] text-primary">
                         {{ activeTab === 'tour' ? `Step ${currentTourStep + 1}/5` : `${completedCount}/4 Done` }}
                     </Badge>
                 </div>
@@ -370,26 +360,22 @@ onMounted(() => {
         <!-- Expanded Card -->
         <div
             v-else
-            class="rounded-2xl border border-border/80 bg-card/98 shadow-2xl backdrop-blur-md overflow-hidden text-foreground flex flex-col max-h-[85vh]"
+            class="bg-card/98 flex max-h-[85vh] flex-col overflow-hidden rounded-2xl border border-border/80 text-foreground shadow-2xl backdrop-blur-md"
         >
             <!-- Header -->
-            <div class="px-4 py-3 bg-muted/40 border-b border-border/70 flex items-center justify-between shrink-0">
+            <div class="flex shrink-0 items-center justify-between border-b border-border/70 bg-muted/40 px-4 py-3">
                 <div class="flex items-center gap-2">
-                    <div class="size-7 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-black text-xs shadow-xs">
+                    <div class="shadow-xs flex size-7 items-center justify-center rounded-lg bg-primary text-xs font-black text-primary-foreground">
                         <Compass class="size-3.5" />
                     </div>
                     <div>
                         <div class="flex items-center gap-1.5">
-                            <h4 class="text-xs font-extrabold text-foreground tracking-tight leading-none">
-                                Terminal Interactive Guide
-                            </h4>
-                            <Badge variant="outline" class="text-[9px] px-1 py-0 h-3.5 border-primary/40 text-primary uppercase font-mono">
+                            <h4 class="text-xs font-extrabold leading-none tracking-tight text-foreground">Terminal Interactive Guide</h4>
+                            <Badge variant="outline" class="h-3.5 border-primary/40 px-1 py-0 font-mono text-[9px] uppercase text-primary">
                                 Demo
                             </Badge>
                         </div>
-                        <p class="text-[10px] text-muted-foreground mt-0.5">
-                            Master every section of the frontline checkout station
-                        </p>
+                        <p class="mt-0.5 text-[10px] text-muted-foreground">Master every section of the frontline checkout station</p>
                     </div>
                 </div>
 
@@ -397,7 +383,7 @@ onMounted(() => {
                     <button
                         type="button"
                         @click="toggleCollapse"
-                        class="size-6 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/80 flex items-center justify-center transition-colors cursor-pointer"
+                        class="flex size-6 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground"
                         title="Minimize"
                     >
                         <ChevronDown class="size-3.5" />
@@ -405,7 +391,7 @@ onMounted(() => {
                     <button
                         type="button"
                         @click="dismissWidget"
-                        class="size-6 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/80 flex items-center justify-center transition-colors cursor-pointer"
+                        class="flex size-6 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground"
                         title="Dismiss guide"
                     >
                         <X class="size-3.5" />
@@ -414,15 +400,20 @@ onMounted(() => {
             </div>
 
             <!-- Tab Switcher: Screen Tour vs Hands-On Missions -->
-            <div class="p-1.5 bg-muted/20 border-b border-border/60 flex gap-1 shrink-0">
+            <div class="flex shrink-0 gap-1 border-b border-border/60 bg-muted/20 p-1.5">
                 <button
                     type="button"
-                    @click="() => { activeTab = 'tour'; persistProgress(); }"
+                    @click="
+                        () => {
+                            activeTab = 'tour';
+                            persistProgress();
+                        }
+                    "
                     :class="[
-                        'flex-1 py-1 px-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer',
+                        'flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-all',
                         activeTab === 'tour'
-                            ? 'bg-card text-primary shadow-xs border border-border/60'
-                            : 'text-muted-foreground hover:text-foreground'
+                            ? 'shadow-xs border border-border/60 bg-card text-primary'
+                            : 'text-muted-foreground hover:text-foreground',
                     ]"
                 >
                     <BookOpen class="size-3" />
@@ -432,37 +423,42 @@ onMounted(() => {
 
                 <button
                     type="button"
-                    @click="() => { activeTab = 'missions'; persistProgress(); }"
+                    @click="
+                        () => {
+                            activeTab = 'missions';
+                            persistProgress();
+                        }
+                    "
                     :class="[
-                        'flex-1 py-1 px-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer',
+                        'flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-all',
                         activeTab === 'missions'
-                            ? 'bg-card text-primary shadow-xs border border-border/60'
-                            : 'text-muted-foreground hover:text-foreground'
+                            ? 'shadow-xs border border-border/60 bg-card text-primary'
+                            : 'text-muted-foreground hover:text-foreground',
                     ]"
                 >
                     <Target class="size-3" />
                     <span>Hands-on Tasks</span>
-                    <span class="text-[10px] font-mono opacity-80 font-bold">({{ completedCount }}/4)</span>
+                    <span class="font-mono text-[10px] font-bold opacity-80">({{ completedCount }}/4)</span>
                 </button>
             </div>
 
             <!-- TAB 1: SCREEN TOUR & SECTION EXPLANATIONS -->
-            <div v-if="activeTab === 'tour'" class="p-4 space-y-3 overflow-y-auto">
+            <div v-if="activeTab === 'tour'" class="space-y-3 overflow-y-auto p-4">
                 <!-- Section Header -->
                 <div class="flex items-start gap-2.5">
-                    <div class="size-8 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                    <div
+                        class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary"
+                    >
                         <component :is="currentTour.icon" class="size-4" />
                     </div>
-                    <div class="flex-1 min-w-0">
+                    <div class="min-w-0 flex-1">
                         <div class="flex items-center justify-between">
-                            <h5 class="text-xs font-extrabold text-foreground leading-tight">
+                            <h5 class="text-xs font-extrabold leading-tight text-foreground">
                                 {{ currentTour.title }}
                             </h5>
-                            <span class="text-[10px] font-mono text-muted-foreground">
-                                Step {{ currentTourStep + 1 }}/5
-                            </span>
+                            <span class="font-mono text-[10px] text-muted-foreground"> Step {{ currentTourStep + 1 }}/5 </span>
                         </div>
-                        <p class="text-[11px] font-medium text-primary mt-0.5">
+                        <p class="mt-0.5 text-[11px] font-medium text-primary">
                             {{ currentTour.subtitle }}
                         </p>
                     </div>
@@ -472,36 +468,30 @@ onMounted(() => {
                 <button
                     type="button"
                     @click="emit('open-tour-overlay', currentTourStep)"
-                    class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-primary/15 via-emerald-500/10 to-primary/15 hover:from-primary/25 hover:to-primary/25 border border-primary/30 text-primary text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs active:scale-98"
+                    class="shadow-xs active:scale-98 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/15 via-emerald-500/10 to-primary/15 px-3 py-2 text-xs font-black text-primary transition-all hover:from-primary/25 hover:to-primary/25"
                 >
                     <Sparkles class="size-3.5 animate-pulse" />
                     <span>Spotlight & Mark on Terminal</span>
-                    <span class="text-[10px] font-mono opacity-70">Part {{ currentTourStep + 1 }}/5 &rarr;</span>
+                    <span class="font-mono text-[10px] opacity-70">Part {{ currentTourStep + 1 }}/5 &rarr;</span>
                 </button>
 
                 <!-- Explanation Body -->
-                <p class="text-xs text-muted-foreground leading-relaxed">
+                <p class="text-xs leading-relaxed text-muted-foreground">
                     {{ currentTour.description }}
                 </p>
 
                 <!-- Key Capabilities Checklist -->
-                <div class="p-2.5 rounded-xl bg-muted/40 border border-border/60 space-y-1.5 text-[11px]">
-                    <span class="font-bold text-foreground text-[10px] uppercase tracking-wider block">
-                        Key Capabilities:
-                    </span>
-                    <div
-                        v-for="(feat, fIdx) in currentTour.features"
-                        :key="fIdx"
-                        class="flex items-start gap-2 text-muted-foreground"
-                    >
-                        <div class="size-1.5 rounded-full bg-primary shrink-0 mt-1.5"></div>
+                <div class="space-y-1.5 rounded-xl border border-border/60 bg-muted/40 p-2.5 text-[11px]">
+                    <span class="block text-[10px] font-bold uppercase tracking-wider text-foreground"> Key Capabilities: </span>
+                    <div v-for="(feat, fIdx) in currentTour.features" :key="fIdx" class="flex items-start gap-2 text-muted-foreground">
+                        <div class="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary"></div>
                         <span class="leading-tight text-foreground">{{ feat }}</span>
                     </div>
                 </div>
 
                 <!-- Store Manager Pro Tip Callout -->
-                <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] space-y-1 text-amber-900 dark:text-amber-200">
-                    <span class="font-bold flex items-center gap-1.5 text-amber-800 dark:text-amber-300 text-[10px] uppercase tracking-wide">
+                <div class="space-y-1 rounded-xl border border-amber-500/20 bg-amber-500/10 p-2.5 text-[11px] text-amber-900 dark:text-amber-200">
+                    <span class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-amber-800 dark:text-amber-300">
                         <Info class="size-3" />
                         <span>Store Manager Tip</span>
                     </span>
@@ -515,7 +505,7 @@ onMounted(() => {
                     <button
                         type="button"
                         @click="currentTour.action"
-                        class="w-full py-1.5 px-3 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-primary/20"
+                        class="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-primary/20"
                     >
                         <span>{{ currentTour.actionLabel }}</span>
                         <span>&rarr;</span>
@@ -523,12 +513,12 @@ onMounted(() => {
                 </div>
 
                 <!-- Step Navigation Controls -->
-                <div class="pt-2 flex items-center justify-between border-t border-border/60">
+                <div class="flex items-center justify-between border-t border-border/60 pt-2">
                     <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        class="h-7 text-xs px-2 gap-1 text-muted-foreground"
+                        class="h-7 gap-1 px-2 text-xs text-muted-foreground"
                         :disabled="currentTourStep === 0"
                         @click="prevTourStep"
                     >
@@ -543,8 +533,8 @@ onMounted(() => {
                             :key="idx"
                             type="button"
                             @click="currentTourStep = idx"
-                            class="size-2 rounded-full transition-all cursor-pointer"
-                            :class="idx === currentTourStep ? 'bg-primary w-4' : 'bg-muted-foreground/30 hover:bg-muted-foreground/60'"
+                            class="size-2 cursor-pointer rounded-full transition-all"
+                            :class="idx === currentTourStep ? 'w-4 bg-primary' : 'bg-muted-foreground/30 hover:bg-muted-foreground/60'"
                             :title="`Jump to section ${idx + 1}`"
                         ></button>
                     </div>
@@ -552,7 +542,7 @@ onMounted(() => {
                     <Button
                         type="button"
                         size="sm"
-                        class="h-7 text-xs px-2.5 gap-1 bg-primary text-primary-foreground font-bold"
+                        class="h-7 gap-1 bg-primary px-2.5 text-xs font-bold text-primary-foreground"
                         @click="nextTourStep"
                     >
                         <span>{{ currentTourStep === tourSections.length - 1 ? 'Go to Tasks' : 'Next' }}</span>
@@ -562,37 +552,34 @@ onMounted(() => {
             </div>
 
             <!-- TAB 2: HANDS-ON MISSIONS & CHECKLIST -->
-            <div v-else class="p-3.5 space-y-3 overflow-y-auto">
+            <div v-else class="space-y-3 overflow-y-auto p-3.5">
                 <!-- Animated Progress Bar -->
                 <div class="space-y-1">
                     <div class="flex items-center justify-between text-[11px]">
                         <span class="font-bold text-foreground">Checkout Practice Progress</span>
-                        <span class="font-mono text-primary font-bold">{{ progressPercent }}% ({{ completedCount }}/4)</span>
+                        <span class="font-mono font-bold text-primary">{{ progressPercent }}% ({{ completedCount }}/4)</span>
                     </div>
-                    <div class="h-1.5 w-full bg-muted/60 rounded-full overflow-hidden">
-                        <div
-                            class="h-full bg-primary transition-all duration-500 ease-out"
-                            :style="{ width: `${progressPercent}%` }"
-                        ></div>
+                    <div class="h-1.5 w-full overflow-hidden rounded-full bg-muted/60">
+                        <div class="h-full bg-primary transition-all duration-500 ease-out" :style="{ width: `${progressPercent}%` }"></div>
                     </div>
                 </div>
 
                 <!-- All Missions Completed Celebration -->
-                <div v-if="isAllCompleted" class="p-4 text-center space-y-3 bg-emerald-500/[0.04] rounded-xl border border-emerald-500/25">
-                    <div class="size-11 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-xs">
+                <div v-if="isAllCompleted" class="space-y-3 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.04] p-4 text-center">
+                    <div
+                        class="shadow-xs mx-auto flex size-11 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                    >
                         <PartyPopper class="size-5 animate-bounce" />
                     </div>
                     <div class="space-y-1">
-                        <h5 class="text-xs font-black text-foreground">
-                            Mission Complete! POS Mastered 🎉
-                        </h5>
-                        <p class="text-[11px] text-muted-foreground leading-relaxed">
+                        <h5 class="text-xs font-black text-foreground">Mission Complete! POS Mastered 🎉</h5>
+                        <p class="text-[11px] leading-relaxed text-muted-foreground">
                             You've verified barcode scanning, catalog lookups, customer profile attachments, and thermal receipt generation.
                         </p>
                     </div>
 
-                    <div class="p-2.5 rounded-xl border border-primary/20 bg-primary/[0.05] text-[11px] text-left space-y-1">
-                        <span class="font-bold text-foreground flex items-center gap-1">
+                    <div class="space-y-1 rounded-xl border border-primary/20 bg-primary/[0.05] p-2.5 text-left text-[11px]">
+                        <span class="flex items-center gap-1 font-bold text-foreground">
                             <ShieldCheck class="size-3.5 text-primary" />
                             <span>Ready to launch your real store?</span>
                         </span>
@@ -601,11 +588,11 @@ onMounted(() => {
                         </p>
                     </div>
 
-                    <div class="pt-1 flex items-center gap-2">
+                    <div class="flex items-center gap-2 pt-1">
                         <Button
                             type="button"
                             size="sm"
-                            class="w-full h-8 text-[11px] font-bold bg-primary hover:bg-primary/90 text-primary-foreground"
+                            class="h-8 w-full bg-primary text-[11px] font-bold text-primary-foreground hover:bg-primary/90"
                             as-child
                         >
                             <a href="/#merchant-waitlist-section">
@@ -616,7 +603,7 @@ onMounted(() => {
                             type="button"
                             variant="ghost"
                             size="sm"
-                            class="h-8 px-2.5 text-[11px] text-muted-foreground hover:text-foreground shrink-0"
+                            class="h-8 shrink-0 px-2.5 text-[11px] text-muted-foreground hover:text-foreground"
                             @click="resetMissions"
                             title="Restart checklist"
                         >
@@ -630,30 +617,20 @@ onMounted(() => {
                     <div
                         v-for="(task, index) in tasks"
                         :key="task.id"
-                        class="p-2 rounded-xl transition-colors border"
-                        :class="[
-                            task.done
-                                ? 'bg-emerald-500/[0.05] border-emerald-500/25'
-                                : 'bg-muted/25 border-border/50 hover:border-border'
-                        ]"
+                        class="rounded-xl border p-2 transition-colors"
+                        :class="[task.done ? 'border-emerald-500/25 bg-emerald-500/[0.05]' : 'border-border/50 bg-muted/25 hover:border-border']"
                     >
                         <div class="flex items-start gap-2.5">
-                            <div class="pt-0.5 shrink-0">
-                                <CheckCircle2
-                                    v-if="task.done"
-                                    class="size-4 text-emerald-600 dark:text-emerald-400"
-                                />
-                                <Circle
-                                    v-else
-                                    class="size-4 text-muted-foreground/60"
-                                />
+                            <div class="shrink-0 pt-0.5">
+                                <CheckCircle2 v-if="task.done" class="size-4 text-emerald-600 dark:text-emerald-400" />
+                                <Circle v-else class="size-4 text-muted-foreground/60" />
                             </div>
 
-                            <div class="flex-1 min-w-0">
+                            <div class="min-w-0 flex-1">
                                 <div class="flex items-center justify-between gap-1">
                                     <span
-                                        class="text-xs font-bold leading-none truncate"
-                                        :class="task.done ? 'line-through text-muted-foreground' : 'text-foreground'"
+                                        class="truncate text-xs font-bold leading-none"
+                                        :class="task.done ? 'text-muted-foreground line-through' : 'text-foreground'"
                                     >
                                         {{ index + 1 }}. {{ task.title }}
                                     </span>
@@ -661,13 +638,13 @@ onMounted(() => {
                                     <Badge
                                         v-if="task.done"
                                         variant="outline"
-                                        class="text-[9px] px-1 py-0 border-emerald-500/30 text-emerald-600 bg-emerald-500/10 shrink-0"
+                                        class="shrink-0 border-emerald-500/30 bg-emerald-500/10 px-1 py-0 text-[9px] text-emerald-600"
                                     >
                                         Done
                                     </Badge>
                                 </div>
 
-                                <p class="text-[10px] text-muted-foreground mt-1 leading-snug">
+                                <p class="mt-1 text-[10px] leading-snug text-muted-foreground">
                                     {{ task.description }}
                                 </p>
 
@@ -676,7 +653,7 @@ onMounted(() => {
                                     <button
                                         type="button"
                                         @click="task.action"
-                                        class="inline-flex items-center gap-1 text-[10px] font-bold text-primary hover:underline cursor-pointer"
+                                        class="inline-flex cursor-pointer items-center gap-1 text-[10px] font-bold text-primary hover:underline"
                                     >
                                         <span>{{ task.actionLabel }}</span>
                                         <span>&rarr;</span>
@@ -687,13 +664,9 @@ onMounted(() => {
                     </div>
 
                     <!-- Footer reset link -->
-                    <div class="pt-1 flex items-center justify-between text-[10px] text-muted-foreground">
+                    <div class="flex items-center justify-between pt-1 text-[10px] text-muted-foreground">
                         <span>Practice sandbox session</span>
-                        <button
-                            type="button"
-                            @click="resetMissions"
-                            class="hover:text-foreground inline-flex items-center gap-1 cursor-pointer"
-                        >
+                        <button type="button" @click="resetMissions" class="inline-flex cursor-pointer items-center gap-1 hover:text-foreground">
                             <RotateCcw class="size-2.5" />
                             <span>Reset Checklist</span>
                         </button>

@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Branch;
-use App\Models\ClockSession;
-use App\Models\Sale;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,7 +28,7 @@ class UserController extends Controller
                 $salesProfit = (float) $u->sales()->sum('profit');
                 $avgTicket = $salesCount > 0 ? round($salesTotal / $salesCount, 2) : 0;
 
-                $recentSales = $u->sales()->latest()->take(30)->get()->map(fn($s) => [
+                $recentSales = $u->sales()->latest()->take(30)->get()->map(fn ($s) => [
                     'id' => $s->id,
                     'receipt_number' => $s->receipt_number,
                     'total' => (float) $s->total,
@@ -41,17 +39,17 @@ class UserController extends Controller
                     'created_at' => $s->created_at?->format('d M Y, H:i'),
                     'sale_date' => $s->created_at?->toDateString(),
                     'shift_name' => $s->created_at && $s->created_at->isToday()
-                        ? 'Today (' . $s->created_at->format('d M') . ') - Current Shift'
-                        : ($s->created_at ? $s->created_at->format('d M Y') . ' - Shift Archive' : 'Previous Shift'),
+                        ? 'Today ('.$s->created_at->format('d M').') - Current Shift'
+                        : ($s->created_at ? $s->created_at->format('d M Y').' - Shift Archive' : 'Previous Shift'),
                 ]);
 
-                $clockSessions = $u->clockSessions()->with('branch')->latest()->take(8)->get()->map(fn($cs) => [
+                $clockSessions = $u->clockSessions()->with('branch')->latest()->take(8)->get()->map(fn ($cs) => [
                     'id' => $cs->id,
                     'branch_name' => $cs->branch?->name ?? 'Main Branch',
                     'clocked_in_at' => $cs->clocked_in_at?->format('d M Y, H:i'),
                     'clocked_out_at' => $cs->clocked_out_at ? $cs->clocked_out_at->format('d M Y, H:i') : null,
                     'duration' => $cs->clocked_out_at && $cs->clocked_in_at
-                        ? round($cs->clocked_in_at->diffInMinutes($cs->clocked_out_at) / 60, 1) . ' hrs'
+                        ? round($cs->clocked_in_at->diffInMinutes($cs->clocked_out_at) / 60, 1).' hrs'
                         : 'Active Shift',
                     'status' => $cs->status,
                 ]);
@@ -61,7 +59,7 @@ class UserController extends Controller
                     ->orderBy('last_activity', 'desc')
                     ->take(5)
                     ->get()
-                    ->map(fn($s) => [
+                    ->map(fn ($s) => [
                         'id' => $s->id,
                         'ip_address' => $s->ip_address ?? '127.0.0.1',
                         'user_agent' => $s->user_agent,
@@ -98,22 +96,22 @@ class UserController extends Controller
         $tenant = $this->currentTenant($request);
 
         $validated = $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email',
-            'role'     => 'required|string',
-            'phone'    => 'nullable|string|max:50',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'role' => 'required|string',
+            'phone' => 'nullable|string|max:50',
             'password' => 'required|string|min:8',
         ]);
 
         User::create([
-            'name'              => $validated['name'],
-            'email'             => $validated['email'],
-            'password'          => Hash::make($validated['password']),
-            'role'              => $validated['role'],
-            'phone'             => $validated['phone'] ?? null,
-            'tenant_id'         => $tenant->id,
-            'status'            => 'Active',
-            'is_super_admin'    => false,
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => $validated['role'],
+            'phone' => $validated['phone'] ?? null,
+            'tenant_id' => $tenant->id,
+            'status' => 'Active',
+            'is_super_admin' => false,
             'email_verified_at' => now(),
         ]);
 
@@ -126,15 +124,15 @@ class UserController extends Controller
         abort_unless($user->tenant_id === $tenant->id, 403);
 
         $validated = $request->validate([
-            'name'     => 'sometimes|string|max:255',
-            'email'    => 'sometimes|email|unique:users,email,'.$user->id,
-            'role'     => 'sometimes|string',
-            'phone'    => 'nullable|string|max:50',
-            'status'   => 'sometimes|string|in:Active,Suspended,Archived',
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:users,email,'.$user->id,
+            'role' => 'sometimes|string',
+            'phone' => 'nullable|string|max:50',
+            'status' => 'sometimes|string|in:Active,Suspended,Archived',
             'password' => 'nullable|string|min:8',
         ]);
 
-        if (!empty($validated['password'])) {
+        if (! empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
         } else {
             unset($validated['password']);
@@ -161,6 +159,7 @@ class UserController extends Controller
         $user->save();
 
         $action = $user->status === 'Suspended' ? 'suspended' : 'reactivated';
+
         return back()->with('success', "User \"{$user->name}\" {$action}.");
     }
 
@@ -229,7 +228,7 @@ class UserController extends Controller
                     continue;
                 }
 
-                $roleRaw = !empty($item['role']) ? trim($item['role']) : 'Cashier';
+                $roleRaw = ! empty($item['role']) ? trim($item['role']) : 'Cashier';
                 $roleNormalized = strtolower($roleRaw);
                 if (str_contains($roleNormalized, 'owner') || str_contains($roleNormalized, 'admin') || str_contains($roleNormalized, 'proprietor')) {
                     $role = 'Owner';
@@ -243,8 +242,8 @@ class UserController extends Controller
                     $role = 'Cashier';
                 }
 
-                $phone = !empty($item['phone']) ? trim($item['phone']) : null;
-                $statusRaw = !empty($item['status']) ? strtolower(trim($item['status'])) : 'active';
+                $phone = ! empty($item['phone']) ? trim($item['phone']) : null;
+                $statusRaw = ! empty($item['status']) ? strtolower(trim($item['status'])) : 'active';
                 $status = in_array($statusRaw, ['inactive', 'suspended', 'blocked', 'disabled']) ? 'Suspended' : 'Active';
 
                 $existing = User::where('tenant_id', $tenant->id)->where('email', $email)->first();
@@ -264,14 +263,14 @@ class UserController extends Controller
                     }
                 } else {
                     User::create([
-                        'name'              => $name,
-                        'email'             => $email,
-                        'password'          => Hash::make('Password@2026!'),
-                        'role'              => $role,
-                        'phone'             => $phone,
-                        'tenant_id'         => $tenant->id,
-                        'status'            => $status,
-                        'is_super_admin'    => false,
+                        'name' => $name,
+                        'email' => $email,
+                        'password' => Hash::make('Password@2026!'),
+                        'role' => $role,
+                        'phone' => $phone,
+                        'tenant_id' => $tenant->id,
+                        'status' => $status,
+                        'is_super_admin' => false,
                         'email_verified_at' => now(),
                     ]);
                     $importedCount++;
@@ -279,7 +278,8 @@ class UserController extends Controller
             }
         });
 
-        $msg = "Successfully imported {$importedCount} new staff members" . ($updatedCount > 0 ? " and updated {$updatedCount} existing staff accounts." : ".");
+        $msg = "Successfully imported {$importedCount} new staff members".($updatedCount > 0 ? " and updated {$updatedCount} existing staff accounts." : '.');
+
         return back()->with('success', $msg);
     }
 }

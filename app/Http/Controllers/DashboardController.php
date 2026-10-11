@@ -52,7 +52,7 @@ class DashboardController extends Controller
             ->get();
 
         $totalThirtyDaysSales = $thirtyDaysSales > 0 ? $thirtyDaysSales : 1;
-        $paymentMix = $paymentMethods->map(fn($pm) => [
+        $paymentMix = $paymentMethods->map(fn ($pm) => [
             'method' => $pm->payment_method,
             'amount' => (float) $pm->amount,
             'percent' => round(((float) $pm->amount / $totalThirtyDaysSales) * 100, 1),
@@ -65,7 +65,7 @@ class DashboardController extends Controller
             ->latest()
             ->take(8)
             ->get()
-            ->map(fn($s) => [
+            ->map(fn ($s) => [
                 'id' => $s->id,
                 'receipt_number' => $s->receipt_number,
                 'total' => (float) $s->total,
@@ -81,7 +81,7 @@ class DashboardController extends Controller
             ->where('status', 'Active')
             ->with(['user', 'branch'])
             ->get()
-            ->map(fn($cs) => [
+            ->map(fn ($cs) => [
                 'id' => $cs->id,
                 'name' => $cs->user?->name ?? 'User',
                 'role' => $cs->user?->role ?? 'Staff',
@@ -110,6 +110,7 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($b) use ($branchStockValues, $branchTodaySales) {
                 $salesData = $branchTodaySales->get($b->id);
+
                 return [
                     'id' => $b->id,
                     'name' => $b->name,

@@ -2,9 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Tenant;
-use App\Models\User;
 use App\Models\Product;
+use App\Models\Tenant;
 use Tests\TestCase;
 
 class DemoAccountIsolationTest extends TestCase
@@ -16,6 +15,7 @@ class DemoAccountIsolationTest extends TestCase
         $this->artisan('db:seed', ['--class' => 'TenantSeeder']);
         $this->artisan('db:seed', ['--class' => 'BusinessDataSeeder']);
     }
+
     public function test_mock_and_clean_demo_tenants_are_isolated()
     {
         $mockTenant = Tenant::where('slug', 'nairobi-fresh-mart')->first();

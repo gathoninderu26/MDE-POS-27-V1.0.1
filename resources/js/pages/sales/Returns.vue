@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import DataTable from '@/components/ui/DataTable.vue';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { formatCurrency } from '@/composables/useCurrency';
 import { useFeatures } from '@/composables/useFeatures';
-import { formatCurrency, formatDateTime } from '@/composables/useCurrency';
 import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import { CheckCircle2, RotateCcw, Search, ShoppingBag, Undo2 } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { RotateCcw } from 'lucide-vue-next';
+import { ref } from 'vue';
 
 const props = defineProps<{
     returns?: any[];
@@ -55,12 +54,7 @@ const demoReturnRecords = [
     },
 ];
 
-const returnRecords = ref(
-    props.returns && props.returns.length > 0
-        ? props.returns
-        : (isDemo.value ? demoReturnRecords : [])
-);
-
+const returnRecords = ref(props.returns && props.returns.length > 0 ? props.returns : isDemo.value ? demoReturnRecords : []);
 
 const columns = [
     { key: 'id', label: 'Return #' },
@@ -108,28 +102,24 @@ const handleProcessReturn = () => {
     <Head title="Sales Returns & Refunds" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
+        <div class="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
             <!-- Header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h2 class="text-2xl font-bold text-foreground">Sales Returns & Refunds</h2>
-                    <p class="text-xs text-muted-foreground mt-0.5">
+                    <p class="mt-0.5 text-xs text-muted-foreground">
                         Accept returned items with receipt verification, calculate cash/M-Pesa refunds, and restock inventory.
                     </p>
                 </div>
 
-                <Button size="sm" class="h-9 text-xs gap-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold" @click="newReturnOpen = true">
+                <Button size="sm" class="h-9 gap-1.5 bg-amber-600 text-xs font-bold text-white hover:bg-amber-700" @click="newReturnOpen = true">
                     <RotateCcw class="size-3.5" />
                     Process Return Ticket
                 </Button>
             </div>
 
             <!-- Return Records DataTable -->
-            <DataTable
-                :columns="columns"
-                :data="returnRecords"
-                search-placeholder="Search return # or original receipt..."
-            >
+            <DataTable :columns="columns" :data="returnRecords" search-placeholder="Search return # or original receipt...">
                 <template #cell-id="{ row }">
                     <span class="font-mono font-bold text-primary">{{ row.id }}</span>
                     <div class="text-[10px] text-muted-foreground">{{ row.date }}</div>
@@ -184,9 +174,7 @@ const handleProcessReturn = () => {
 
                     <div class="flex items-center gap-2 pt-1">
                         <input id="restock-cb" v-model="restockItem" type="checkbox" class="rounded border-input text-primary" />
-                        <label for="restock-cb" class="text-xs text-foreground cursor-pointer">
-                            Return item back into available store stock
-                        </label>
+                        <label for="restock-cb" class="cursor-pointer text-xs text-foreground"> Return item back into available store stock </label>
                     </div>
                 </div>
                 <DialogFooter class="gap-2">

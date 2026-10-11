@@ -56,7 +56,7 @@ return new class extends Migration
         });
 
         Schema::table('tenants', function (Blueprint $table) {
-            if (!Schema::hasColumn('tenants', 'settings')) {
+            if (! Schema::hasColumn('tenants', 'settings')) {
                 $table->json('settings')->nullable()->after('custom_modules');
             }
         });

@@ -33,10 +33,10 @@ class Purchase extends Model
     protected function casts(): array
     {
         return [
-            'order_date'   => 'date',
+            'order_date' => 'date',
             'expected_date' => 'date',
-            'total_amount'  => 'decimal:2',
-            'paid_amount'   => 'decimal:2',
+            'total_amount' => 'decimal:2',
+            'paid_amount' => 'decimal:2',
         ];
     }
 
@@ -65,4 +65,3 @@ class Purchase extends Model
         return $this->hasOne(PurchaseInvoice::class)->latestOfMany();
     }
 }
-

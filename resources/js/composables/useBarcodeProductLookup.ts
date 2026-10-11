@@ -26,11 +26,12 @@ function extractCategory(raw?: string): string {
     if (!raw) return '';
     const clean = raw
         .split(/[,>]/)
-        .map(s =>
-            s.trim()
+        .map((s) =>
+            s
+                .trim()
                 .replace(/^en:/i, '')
                 .replace(/-/g, ' ')
-                .replace(/\b\w/g, c => c.toUpperCase()),
+                .replace(/\b\w/g, (c) => c.toUpperCase()),
         )
         .filter(Boolean);
     return clean[clean.length - 1] ?? '';
@@ -47,10 +48,9 @@ function clamp(str: string | undefined, max = 255): string {
 // ─────────────────────────────────────────────────────────────────────────────
 async function tryUpcItemDb(barcode: string): Promise<ProductLookupResult> {
     try {
-        const res = await fetch(
-            `https://api.upcitemdb.com/prod/trial/lookup?upc=${encodeURIComponent(barcode)}`,
-            { signal: AbortSignal.timeout(4000) },
-        );
+        const res = await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${encodeURIComponent(barcode)}`, {
+            signal: AbortSignal.timeout(4000),
+        });
         if (!res.ok) return { found: false };
         const data = await res.json();
         if (data.code !== 'OK' || !Array.isArray(data.items) || data.items.length === 0) {
@@ -78,18 +78,15 @@ async function tryUpcItemDb(barcode: string): Promise<ProductLookupResult> {
 // ─────────────────────────────────────────────────────────────────────────────
 async function tryOpenFoodFacts(barcode: string): Promise<ProductLookupResult> {
     try {
-        const res = await fetch(
-            `https://world.openfoodfacts.org/api/v0/product/${encodeURIComponent(barcode)}.json`,
-            { signal: AbortSignal.timeout(4000) },
-        );
+        const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${encodeURIComponent(barcode)}.json`, {
+            signal: AbortSignal.timeout(4000),
+        });
         if (!res.ok) return { found: false };
         const data = await res.json();
         if (data.status !== 1 || !data.product) return { found: false };
         const p = data.product as Record<string, any>;
         const name = clamp(
-            (p.product_name as string | undefined) ||
-            (p.product_name_en as string | undefined) ||
-            (p.generic_name as string | undefined),
+            (p.product_name as string | undefined) || (p.product_name_en as string | undefined) || (p.generic_name as string | undefined),
         );
         if (!name) return { found: false };
         return {
@@ -97,17 +94,8 @@ async function tryOpenFoodFacts(barcode: string): Promise<ProductLookupResult> {
             source: 'openfoodfacts',
             name,
             brand: clamp(p.brands as string | undefined, 100),
-            category: clamp(
-                extractCategory(
-                    (p.categories as string | undefined) ||
-                    (p.food_groups as string | undefined),
-                ),
-                100,
-            ),
-            description: clamp(
-                (p.generic_name as string | undefined) ||
-                (p.ingredients_text as string | undefined),
-            ),
+            category: clamp(extractCategory((p.categories as string | undefined) || (p.food_groups as string | undefined)), 100),
+            description: clamp((p.generic_name as string | undefined) || (p.ingredients_text as string | undefined)),
             imageUrl: p.image_front_url as string | undefined,
         };
     } catch {
@@ -122,7 +110,7 @@ async function tryBackendLookup(barcode: string): Promise<ProductLookupResult> {
     try {
         const res = await fetch(`/products/barcode-lookup?barcode=${encodeURIComponent(barcode)}`, {
             headers: {
-                'Accept': 'application/json',
+                Accept: 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
             },
             signal: AbortSignal.timeout(8000),
@@ -160,17 +148,14 @@ export function useBarcodeProductLookup() {
      */
     const lookupByBarcode = async (barcode: string): Promise<ProductLookupResult> => {
         if (!barcode || barcode.trim().length < 3) return { found: false };
-        
+
         const cleanCode = barcode.trim();
         isLookingUp.value = true;
         lookupStatus.value = 'checking_public';
 
         try {
             // Stage 1 & 2 in parallel
-            const [upc, off] = await Promise.all([
-                tryUpcItemDb(cleanCode),
-                tryOpenFoodFacts(cleanCode),
-            ]);
+            const [upc, off] = await Promise.all([tryUpcItemDb(cleanCode), tryOpenFoodFacts(cleanCode)]);
 
             if (upc.found) return upc;
             if (off.found) return off;

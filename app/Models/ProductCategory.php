@@ -30,8 +30,8 @@ class ProductCategory extends Model
     {
         return [
             'default_tax_rate' => 'decimal:2',
-            'is_active'        => 'boolean',
-            'sort_order'       => 'integer',
+            'is_active' => 'boolean',
+            'sort_order' => 'integer',
         ];
     }
 

@@ -47,9 +47,9 @@ return [
         // middleware when a demo tenant is resolved. Sessions, cache, and queue always
         // use their own explicitly-configured connections and are NOT affected by this.
         'demo' => [
-            'driver'   => 'sqlite',
+            'driver' => 'sqlite',
             'database' => env('DEMO_DB_PATH', database_path('demo/_template.sqlite')),
-            'prefix'   => '',
+            'prefix' => '',
             'foreign_key_constraints' => true,
             'busy_timeout' => null,
             'journal_mode' => null,

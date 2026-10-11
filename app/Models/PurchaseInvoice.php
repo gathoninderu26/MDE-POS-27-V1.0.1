@@ -41,17 +41,17 @@ class PurchaseInvoice extends Model
     protected function casts(): array
     {
         return [
-            'invoice_date'           => 'date',
-            'subtotal'               => 'decimal:2',
-            'tax_amount'             => 'decimal:2',
-            'total_amount'           => 'decimal:2',
-            'po_expected_total'      => 'decimal:2',
-            'variance_amount'        => 'decimal:2',
-            'qr_metadata'            => 'array',
-            'extracted_items'        => 'array',
-            'reconciliation_matrix'  => 'array',
-            'verified_at'            => 'datetime',
-            'file_size'              => 'integer',
+            'invoice_date' => 'date',
+            'subtotal' => 'decimal:2',
+            'tax_amount' => 'decimal:2',
+            'total_amount' => 'decimal:2',
+            'po_expected_total' => 'decimal:2',
+            'variance_amount' => 'decimal:2',
+            'qr_metadata' => 'array',
+            'extracted_items' => 'array',
+            'reconciliation_matrix' => 'array',
+            'verified_at' => 'datetime',
+            'file_size' => 'integer',
         ];
     }
 

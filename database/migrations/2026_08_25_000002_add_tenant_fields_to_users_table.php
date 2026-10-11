@@ -11,10 +11,10 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             // Tenant isolation: null means super-admin, otherwise scoped to tenant
             $table->foreignId('tenant_id')
-                  ->nullable()
-                  ->constrained('tenants')
-                  ->nullOnDelete()
-                  ->after('id');
+                ->nullable()
+                ->constrained('tenants')
+                ->nullOnDelete()
+                ->after('id');
 
             // Role within tenant context
             $table->string('role')->default('Owner')->after('tenant_id');

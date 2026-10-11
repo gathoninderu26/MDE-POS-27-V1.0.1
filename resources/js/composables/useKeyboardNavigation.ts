@@ -54,18 +54,13 @@ export function isInputFocused(): boolean {
     const active = document.activeElement;
     if (!active) return false;
     const tag = active.tagName.toLowerCase();
-    return (
-        tag === 'input' ||
-        tag === 'textarea' ||
-        tag === 'select' ||
-        (active as HTMLElement).isContentEditable
-    );
+    return tag === 'input' || tag === 'textarea' || tag === 'select' || (active as HTMLElement).isContentEditable;
 }
 
 export function focusSearchInput(): boolean {
     if (typeof document === 'undefined') return false;
     const searchEl = document.querySelector<HTMLInputElement>(
-        'input[type="search"], input[data-search-input], input[id*="search" i], input[placeholder*="search" i], input[placeholder*="filter" i], input[placeholder*="find" i]'
+        'input[type="search"], input[data-search-input], input[id*="search" i], input[placeholder*="search" i], input[placeholder*="filter" i], input[placeholder*="find" i]',
     );
     if (searchEl) {
         searchEl.focus();
@@ -83,7 +78,7 @@ export function triggerNewItem(): boolean {
 
     // Fallback: look for primary create button
     const btn = document.querySelector<HTMLButtonElement | HTMLAnchorElement>(
-        '[data-action="create"], [data-action="new"], [id*="tour-create" i], [id*="create-btn" i], [id*="add-btn" i], button:has(svg.lucide-plus):not([role="dialog"] button)'
+        '[data-action="create"], [data-action="new"], [id*="tour-create" i], [id*="create-btn" i], [id*="add-btn" i], button:has(svg.lucide-plus):not([role="dialog"] button)',
     );
     if (btn) {
         btn.click();
@@ -98,7 +93,7 @@ export function triggerSubmitForm(): boolean {
     if (defaultPrevented) return true;
 
     const dialogSubmit = document.querySelector<HTMLButtonElement>(
-        '[role="dialog"] button[type="submit"], [role="dialog"] .bg-primary:not(:disabled), [role="dialog"] button:has(svg.lucide-check):not(:disabled)'
+        '[role="dialog"] button[type="submit"], [role="dialog"] .bg-primary:not(:disabled), [role="dialog"] button:has(svg.lucide-check):not(:disabled)',
     );
     if (dialogSubmit) {
         dialogSubmit.click();
@@ -179,7 +174,7 @@ export function useKeyboardNavigation() {
             // '[' for Previous Page in pagination
             if (e.key === '[') {
                 const prev = document.querySelector<HTMLButtonElement>(
-                    'button[aria-label*="previous" i], button:has(svg.lucide-chevron-left):not(:disabled)'
+                    'button[aria-label*="previous" i], button:has(svg.lucide-chevron-left):not(:disabled)',
                 );
                 if (prev) {
                     e.preventDefault();
@@ -189,7 +184,7 @@ export function useKeyboardNavigation() {
             // ']' for Next Page in pagination
             else if (e.key === ']') {
                 const next = document.querySelector<HTMLButtonElement>(
-                    'button[aria-label*="next" i], button:has(svg.lucide-chevron-right):not(:disabled)'
+                    'button[aria-label*="next" i], button:has(svg.lucide-chevron-right):not(:disabled)',
                 );
                 if (next) {
                     e.preventDefault();

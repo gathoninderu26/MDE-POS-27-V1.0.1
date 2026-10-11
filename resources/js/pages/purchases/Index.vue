@@ -1,13 +1,17 @@
 <script setup lang="ts">
+import InvoiceExactViewModal from '@/components/purchases/InvoiceExactViewModal.vue';
+import InvoiceReconciliationModal from '@/components/purchases/InvoiceReconciliationModal.vue';
+import InvoiceScannerModal from '@/components/purchases/InvoiceScannerModal.vue';
+import PurchasesGuideOverlay from '@/components/purchases/PurchasesGuideOverlay.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import DataTable from '@/components/ui/DataTable.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
+import DataTable from '@/components/ui/DataTable.vue';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import StatCard from '@/components/ui/StatCard.vue';
-import { formatCurrency, formatDateTime } from '@/composables/useCurrency';
+import { formatCurrency } from '@/composables/useCurrency';
 import { useFeatures } from '@/composables/useFeatures';
 import { useTenant } from '@/composables/useTenant';
 import { useToast } from '@/composables/useToast';
@@ -15,14 +19,9 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import {
-    AlertTriangle,
-    ArrowUpRight,
     Boxes,
     Building2,
-    Calendar,
-    Check,
     CheckCircle2,
-    CheckSquare,
     Clock,
     Compass,
     Download,
@@ -30,32 +29,23 @@ import {
     FileSpreadsheet,
     FileText,
     FileType2,
-    Filter,
     Layers,
     Package,
     PackageCheck,
     Plus,
     Printer,
-    QrCode,
     Receipt,
     RefreshCw,
     Scan,
     ScanLine,
     Search,
-    ShoppingBag,
     Sparkles,
-    Square,
     Trash2,
     Truck,
     User,
-    Wrench,
     X,
 } from 'lucide-vue-next';
-import InvoiceExactViewModal from '@/components/purchases/InvoiceExactViewModal.vue';
-import InvoiceReconciliationModal from '@/components/purchases/InvoiceReconciliationModal.vue';
-import InvoiceScannerModal from '@/components/purchases/InvoiceScannerModal.vue';
-import PurchasesGuideOverlay from '@/components/purchases/PurchasesGuideOverlay.vue';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 interface BulkPurchaseItem {
     product_id: number | null;
@@ -125,7 +115,7 @@ const displayedOrders = computed(() => {
     if (tableSearchQuery.value.trim()) {
         const q = tableSearchQuery.value.toLowerCase().trim();
         list = list.filter((p) => {
-            const refNo = (p.documentType === 'LPO' ? (p.lpoNumber || p.poNumber) : p.poNumber) || '';
+            const refNo = (p.documentType === 'LPO' ? p.lpoNumber || p.poNumber : p.poNumber) || '';
             const supplier = p.supplier || '';
             const branch = p.branch || '';
             const items = p.items || '';
@@ -146,7 +136,7 @@ const displayedOrders = computed(() => {
 
     return list.map((p) => ({
         ...p,
-        refNumber: p.documentType === 'LPO' ? (p.lpoNumber || p.poNumber) : p.poNumber,
+        refNumber: p.documentType === 'LPO' ? p.lpoNumber || p.poNumber : p.poNumber,
     }));
 });
 
@@ -206,15 +196,7 @@ const bulkItems = ref<BulkPurchaseItem[]>([
     },
 ]);
 
-const packageUnits = [
-    'Cartons',
-    'Bales',
-    'Crates',
-    'Sacks / Bags',
-    'Pallets',
-    'Packs',
-    'Pieces / Units',
-];
+const packageUnits = ['Cartons', 'Bales', 'Crates', 'Sacks / Bags', 'Pallets', 'Packs', 'Pieces / Units'];
 
 const updateBulkLineCalculations = (item: BulkPurchaseItem) => {
     item.units_per_pack = Math.max(1, item.units_per_pack || 1);
@@ -298,9 +280,7 @@ const autoPopulateLowStock = () => {
         return;
     }
 
-    const lowStock = props.products.filter(
-        (p) => Number(p.stock_quantity ?? 0) <= Number(p.reorder_level ?? 10),
-    );
+    const lowStock = props.products.filter((p) => Number(p.stock_quantity ?? 0) <= Number(p.reorder_level ?? 10));
 
     if (lowStock.length === 0) {
         info('Stock Optimal', 'All catalog products are currently above their reorder thresholds.');
@@ -522,7 +502,7 @@ const toggleSelectAllReceiveItems = () => {
 const handleConfirmReceiveAndSync = () => {
     if (!receivingPO.value) return;
     const po = receivingPO.value;
-    const refNo = po.documentType === 'LPO' ? (po.lpoNumber || po.poNumber) : po.poNumber;
+    const refNo = po.documentType === 'LPO' ? po.lpoNumber || po.poNumber : po.poNumber;
 
     router.patch(
         `/purchases/${po.id}/receive`,
@@ -534,10 +514,7 @@ const handleConfirmReceiveAndSync = () => {
             preserveScroll: true,
             onSuccess: () => {
                 receiveModalOpen.value = false;
-                success(
-                    'Stock Received & Synced',
-                    `${refNo} verified. Inventory stock automatically adjusted and synchronized.`
-                );
+                success('Stock Received & Synced', `${refNo} verified. Inventory stock automatically adjusted and synchronized.`);
             },
             onError: (errs) => error('Receiving Failed', Object.values(errs)[0] as string),
         },
@@ -545,11 +522,8 @@ const handleConfirmReceiveAndSync = () => {
 };
 
 const handleResyncStock = (po: any) => {
-    const refNo = po.documentType === 'LPO' ? (po.lpoNumber || po.poNumber) : po.poNumber;
-    success(
-        'Inventory Synchronized',
-        `Stock is already up-to-date and synced with ${refNo} (${po.syncedAt || po.orderTime}).`
-    );
+    const refNo = po.documentType === 'LPO' ? po.lpoNumber || po.poNumber : po.poNumber;
+    success('Inventory Synchronized', `Stock is already up-to-date and synced with ${refNo} (${po.syncedAt || po.orderTime}).`);
 };
 
 const deleteConfirmOpen = ref(false);
@@ -564,7 +538,7 @@ const openDeletePO = (po: any) => {
 const confirmDeletePO = () => {
     if (!poToDelete.value) return;
     const po = poToDelete.value;
-    const refNo = po.documentType === 'LPO' ? (po.lpoNumber || po.poNumber) : po.poNumber;
+    const refNo = po.documentType === 'LPO' ? po.lpoNumber || po.poNumber : po.poNumber;
     isDeletingPO.value = true;
 
     router.delete(`/purchases/${po.id}`, {
@@ -669,7 +643,7 @@ const downloadCsv = (po?: any) => {
 
     if (po) {
         const isLPO = po.documentType === 'LPO';
-        const docRef = isLPO ? (po.lpoNumber || po.poNumber) : po.poNumber;
+        const docRef = isLPO ? po.lpoNumber || po.poNumber : po.poNumber;
         filename = `${docRef}_order.csv`;
         const items = getPOStructuredItems(po);
         if (items && items.length > 0) {
@@ -685,15 +659,50 @@ const downloadCsv = (po?: any) => {
                 i.total || i.line_total,
             ]);
         } else {
-            headers = ['Document Type', 'Reference', 'Purpose', 'Supplier / Vendor', 'Branch', 'Items', 'Total Value (KES)', 'Status', 'Date', 'Ordered By'];
-            rows = [[`"${po.documentType || 'PO'}"`, `"${docRef}"`, `"${po.lpoPurpose || 'N/A'}"`, `"${po.supplier}"`, `"${po.branch}"`, `"${(po.items || '').replace(/"/g, '""')}"`, po.amount, `"${po.status}"`, `"${po.date}"`, `"${po.createdByName || 'Admin'}"`]];
+            headers = [
+                'Document Type',
+                'Reference',
+                'Purpose',
+                'Supplier / Vendor',
+                'Branch',
+                'Items',
+                'Total Value (KES)',
+                'Status',
+                'Date',
+                'Ordered By',
+            ];
+            rows = [
+                [
+                    `"${po.documentType || 'PO'}"`,
+                    `"${docRef}"`,
+                    `"${po.lpoPurpose || 'N/A'}"`,
+                    `"${po.supplier}"`,
+                    `"${po.branch}"`,
+                    `"${(po.items || '').replace(/"/g, '""')}"`,
+                    po.amount,
+                    `"${po.status}"`,
+                    `"${po.date}"`,
+                    `"${po.createdByName || 'Admin'}"`,
+                ],
+            ];
         }
     } else {
         filename = `procurement_orders_${new Date().toISOString().slice(0, 10)}.csv`;
-        headers = ['Document Type', 'Reference', 'Purpose', 'Supplier / Vendor', 'Branch', 'Items Description', 'Total Value (KES)', 'Delivery Status', 'Date', 'Ordered By'];
+        headers = [
+            'Document Type',
+            'Reference',
+            'Purpose',
+            'Supplier / Vendor',
+            'Branch',
+            'Items Description',
+            'Total Value (KES)',
+            'Delivery Status',
+            'Date',
+            'Ordered By',
+        ];
         rows = purchaseOrders.value.map((p) => [
             `"${p.documentType || 'PO'}"`,
-            `"${p.documentType === 'LPO' ? (p.lpoNumber || p.poNumber) : p.poNumber}"`,
+            `"${p.documentType === 'LPO' ? p.lpoNumber || p.poNumber : p.poNumber}"`,
             `"${p.lpoPurpose || 'Contract PO'}"`,
             `"${p.supplier}"`,
             `"${p.branch}"`,
@@ -722,7 +731,7 @@ const downloadWord = (po?: any) => {
     const targetPOs = po ? [po] : purchaseOrders.value;
     const businessName = currentTenant.value?.name || 'MDE Retail Systems';
     const isSingle = !!po;
-    const docRef = po ? (po.documentType === 'LPO' ? (po.lpoNumber || po.poNumber) : po.poNumber) : '';
+    const docRef = po ? (po.documentType === 'LPO' ? po.lpoNumber || po.poNumber : po.poNumber) : '';
     const filename = isSingle ? `${docRef}_order.doc` : `procurement_orders_report_${new Date().toISOString().slice(0, 10)}.doc`;
 
     let bodyHtml = '';
@@ -730,7 +739,7 @@ const downloadWord = (po?: any) => {
     targetPOs.forEach((targetPO) => {
         const isLPO = targetPO.documentType === 'LPO';
         const docTitle = isLPO ? 'LOCAL PURCHASE ORDER (LPO)' : 'PURCHASE ORDER (PO)';
-        const refNumber = isLPO ? (targetPO.lpoNumber || targetPO.poNumber) : targetPO.poNumber;
+        const refNumber = isLPO ? targetPO.lpoNumber || targetPO.poNumber : targetPO.poNumber;
         const items = getPOStructuredItems(targetPO);
         bodyHtml += `
             <div style="margin-bottom: 40px; page-break-after: always;">
@@ -747,11 +756,15 @@ const downloadWord = (po?: any) => {
                         <td style="padding: 4px 0;"><strong>Receiving Branch:</strong> ${targetPO.branch}</td>
                         <td style="padding: 4px 0;"><strong>Ordered By:</strong> ${targetPO.createdByName || 'Procurement Officer'}</td>
                     </tr>
-                    ${isLPO ? `
+                    ${
+                        isLPO
+                            ? `
                     <tr>
                         <td style="padding: 4px 0;" colspan="2"><strong>LPO Category / Purpose:</strong> ${targetPO.lpoPurpose || 'Local Procurement'}</td>
                     </tr>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                     <tr>
                         <td style="padding: 4px 0;"><strong>Delivery Status:</strong> ${targetPO.status}</td>
                         <td style="padding: 4px 0;"><strong>Total Value:</strong> KES ${Number(targetPO.amount).toLocaleString()}</td>
@@ -903,9 +916,7 @@ const handleGuideAction = (actionType: string) => {
 
 onMounted(() => {
     // Auto-prompt guide on first visit or when initiated by login
-    const shouldAutoOpen =
-        sessionStorage.getItem('mde_auto_open_guide') === 'true' ||
-        !sessionStorage.getItem('mde_purchases_guide_prompted');
+    const shouldAutoOpen = sessionStorage.getItem('mde_auto_open_guide') === 'true' || !sessionStorage.getItem('mde_purchases_guide_prompted');
 
     if (shouldAutoOpen) {
         sessionStorage.setItem('mde_purchases_guide_prompted', 'true');
@@ -921,25 +932,26 @@ onMounted(() => {
     <Head title="Purchase Orders & Procurement" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
+        <div class="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
             <!-- Header Section with Buttons on the Exact Same Alignment -->
             <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div class="min-w-0">
-                    <h2 class="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
-                        <Truck class="size-6 text-primary shrink-0" />
+                    <h2 class="flex items-center gap-2 text-xl font-bold text-foreground sm:text-2xl">
+                        <Truck class="size-6 shrink-0 text-primary" />
                         <span>Purchase Orders (PO) & Local Purchase Orders (LPO)</span>
                     </h2>
-                    <p class="text-xs text-muted-foreground mt-0.5">
-                        Manage supplier purchase orders, local market purchasing (LPO), packaging units, real-time inventory levels, and automated GRN receipt.
+                    <p class="mt-0.5 text-xs text-muted-foreground">
+                        Manage supplier purchase orders, local market purchasing (LPO), packaging units, real-time inventory levels, and automated GRN
+                        receipt.
                     </p>
                 </div>
 
-                <div id="purchases-tour-actions-header" class="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
+                <div id="purchases-tour-actions-header" class="flex shrink-0 flex-wrap items-center gap-2 sm:flex-nowrap">
                     <Button
                         id="purchases-tour-guide-btn"
                         size="sm"
                         variant="outline"
-                        class="h-9 text-xs gap-1.5 border-primary/40 text-primary bg-primary/10 hover:bg-primary/20 hover:border-primary/60 font-bold shadow-xs whitespace-nowrap cursor-pointer"
+                        class="shadow-xs h-9 cursor-pointer gap-1.5 whitespace-nowrap border-primary/40 bg-primary/10 text-xs font-bold text-primary hover:border-primary/60 hover:bg-primary/20"
                         @click="openGuide(0)"
                         title="Start Interactive Purchases & Orders Walkthrough"
                     >
@@ -950,7 +962,7 @@ onMounted(() => {
                     <Button
                         size="sm"
                         variant="outline"
-                        class="h-9 text-xs gap-1.5 border-border shadow-xs whitespace-nowrap"
+                        class="shadow-xs h-9 gap-1.5 whitespace-nowrap border-border text-xs"
                         @click="openDownloadModal()"
                     >
                         <Download class="size-3.5 text-muted-foreground" />
@@ -960,18 +972,14 @@ onMounted(() => {
                     <Button
                         size="sm"
                         variant="outline"
-                        class="h-9 text-xs gap-1.5 border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 font-semibold shadow-xs whitespace-nowrap"
+                        class="shadow-xs h-9 gap-1.5 whitespace-nowrap border-amber-500/40 bg-amber-500/10 text-xs font-semibold text-amber-600 hover:bg-amber-500/20 dark:text-amber-400"
                         @click="openCreateLPOModal()"
                     >
                         <Receipt class="size-3.5" />
                         <span>New Local PO (LPO)</span>
                     </Button>
 
-                    <Button
-                        size="sm"
-                        class="h-9 text-xs gap-1.5 bg-primary shadow-xs whitespace-nowrap"
-                        @click="openCreatePOModal('bulk')"
-                    >
+                    <Button size="sm" class="shadow-xs h-9 gap-1.5 whitespace-nowrap bg-primary text-xs" @click="openCreatePOModal('bulk')">
                         <Boxes class="size-3.5" />
                         <span>New Bulk Purchase Order</span>
                     </Button>
@@ -1011,77 +1019,89 @@ onMounted(() => {
             </div>
 
             <!-- Tabs & Search Toolbar on the Exact Same Horizontal Alignment -->
-            <div id="purchases-tour-tabs" class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 rounded-xl border border-border bg-card p-2.5 sm:p-3 shadow-xs">
+            <div
+                id="purchases-tour-tabs"
+                class="shadow-xs flex flex-col gap-3 rounded-xl border border-border bg-card p-2.5 sm:p-3 lg:flex-row lg:items-center lg:justify-between"
+            >
                 <!-- Left: Segmented Tab Switcher (ALL / INVOICES / PO / LPO) + Capture/Scan/Upload Button -->
-                <div class="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0">
-                    <div class="inline-flex items-center rounded-lg border border-border bg-muted/40 p-1 text-xs font-semibold gap-1 shrink-0 overflow-x-auto scrollbar-none">
+                <div class="flex shrink-0 flex-wrap items-center gap-2.5 sm:flex-nowrap">
+                    <div
+                        class="scrollbar-none inline-flex shrink-0 items-center gap-1 overflow-x-auto rounded-lg border border-border bg-muted/40 p-1 text-xs font-semibold"
+                    >
                         <!-- 1. All Documents -->
                         <button
                             type="button"
                             :class="[
-                                'px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap',
+                                'flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 transition-all',
                                 activeDocType === 'ALL'
-                                    ? 'bg-background text-foreground shadow-xs font-bold'
-                                    : 'text-muted-foreground hover:text-foreground'
+                                    ? 'shadow-xs bg-background font-bold text-foreground'
+                                    : 'text-muted-foreground hover:text-foreground',
                             ]"
                             @click="activeDocType = 'ALL'"
                         >
                             <Layers class="size-3.5" />
                             <span>All Documents</span>
-                            <span class="rounded-full bg-muted px-1.5 py-0.5 text-[10px] text-foreground font-mono">{{ purchaseOrders.length }}</span>
+                            <span class="rounded-full bg-muted px-1.5 py-0.5 font-mono text-[10px] text-foreground">{{ purchaseOrders.length }}</span>
                         </button>
 
                         <!-- 2. Physical Invoices (Pure Physical Documents & Softcopies, not comparing) -->
                         <button
                             type="button"
                             :class="[
-                                'px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap',
+                                'flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 transition-all',
                                 activeDocType === 'INVOICES'
-                                    ? 'bg-background text-indigo-600 dark:text-indigo-400 shadow-xs font-bold ring-1 ring-indigo-500/20'
-                                    : 'text-muted-foreground hover:text-foreground'
+                                    ? 'shadow-xs bg-background font-bold text-indigo-600 ring-1 ring-indigo-500/20 dark:text-indigo-400'
+                                    : 'text-muted-foreground hover:text-foreground',
                             ]"
                             @click="activeDocType = 'INVOICES'"
                         >
                             <Receipt class="size-3.5 text-indigo-500" />
                             <span>Physical Invoices</span>
-                            <span class="rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 text-[10px] font-mono font-bold">{{ invoicedList.length }}</span>
+                            <span
+                                class="rounded-full bg-indigo-500/10 px-1.5 py-0.5 font-mono text-[10px] font-bold text-indigo-600 dark:text-indigo-400"
+                                >{{ invoicedList.length }}</span
+                            >
                         </button>
 
                         <button
                             type="button"
                             :class="[
-                                'px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap',
+                                'flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 transition-all',
                                 activeDocType === 'PO'
-                                    ? 'bg-background text-sky-600 dark:text-sky-400 shadow-xs font-bold'
-                                    : 'text-muted-foreground hover:text-foreground'
+                                    ? 'shadow-xs bg-background font-bold text-sky-600 dark:text-sky-400'
+                                    : 'text-muted-foreground hover:text-foreground',
                             ]"
                             @click="activeDocType = 'PO'"
                         >
                             <FileText class="size-3.5 text-sky-500" />
                             <span>Purchase Orders (PO)</span>
-                            <span class="rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 px-1.5 py-0.5 text-[10px] font-mono">{{ poList.length }}</span>
+                            <span class="rounded-full bg-sky-500/10 px-1.5 py-0.5 font-mono text-[10px] text-sky-600 dark:text-sky-400">{{
+                                poList.length
+                            }}</span>
                         </button>
 
                         <button
                             type="button"
                             :class="[
-                                'px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap',
+                                'flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 transition-all',
                                 activeDocType === 'LPO'
-                                    ? 'bg-background text-amber-600 dark:text-amber-400 shadow-xs font-bold'
-                                    : 'text-muted-foreground hover:text-foreground'
+                                    ? 'shadow-xs bg-background font-bold text-amber-600 dark:text-amber-400'
+                                    : 'text-muted-foreground hover:text-foreground',
                             ]"
                             @click="activeDocType = 'LPO'"
                         >
                             <Receipt class="size-3.5 text-amber-500" />
                             <span>Local PO (LPO)</span>
-                            <span class="rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 text-[10px] font-mono">{{ lpoList.length }}</span>
+                            <span class="rounded-full bg-amber-500/10 px-1.5 py-0.5 font-mono text-[10px] text-amber-600 dark:text-amber-400">{{
+                                lpoList.length
+                            }}</span>
                         </button>
                     </div>
 
                     <!-- Capture / Scan / Upload Invoice Button on Tab Section -->
                     <Button
                         size="sm"
-                        class="h-9 text-xs gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-xs shrink-0 cursor-pointer whitespace-nowrap"
+                        class="shadow-xs h-9 shrink-0 cursor-pointer gap-1.5 whitespace-nowrap bg-indigo-600 text-xs font-bold text-white hover:bg-indigo-700"
                         @click="openInvoiceScanner(null)"
                         title="Scan, capture or upload a physical supplier invoice"
                     >
@@ -1091,20 +1111,20 @@ onMounted(() => {
                 </div>
 
                 <!-- Right: Prominent Search Bar + Status Filter on the Exact Same Alignment -->
-                <div class="flex flex-1 items-center justify-end gap-2 w-full lg:w-auto">
+                <div class="flex w-full flex-1 items-center justify-end gap-2 lg:w-auto">
                     <!-- Prominent Search Bar -->
-                    <div class="relative flex-1 sm:max-w-md w-full">
+                    <div class="relative w-full flex-1 sm:max-w-md">
                         <Search class="absolute left-3 top-2.5 size-4 text-muted-foreground" />
                         <Input
                             v-model="tableSearchQuery"
                             type="text"
                             placeholder="Search reference, vendor, branch, purpose, items..."
-                            class="h-9 pl-9 pr-8 text-xs bg-muted/20 hover:bg-muted/30 focus:bg-background transition-colors w-full rounded-lg border-border"
+                            class="h-9 w-full rounded-lg border-border bg-muted/20 pl-9 pr-8 text-xs transition-colors hover:bg-muted/30 focus:bg-background"
                         />
                         <button
                             v-if="tableSearchQuery"
                             type="button"
-                            class="absolute right-2.5 top-2 text-muted-foreground hover:text-foreground p-0.5 cursor-pointer"
+                            class="absolute right-2.5 top-2 cursor-pointer p-0.5 text-muted-foreground hover:text-foreground"
                             @click="tableSearchQuery = ''"
                             title="Clear search"
                         >
@@ -1113,10 +1133,10 @@ onMounted(() => {
                     </div>
 
                     <!-- Status Filter Dropdown -->
-                    <div class="flex items-center gap-1.5 shrink-0">
+                    <div class="flex shrink-0 items-center gap-1.5">
                         <select
                             v-model="tableStatusFilter"
-                            class="h-9 text-xs rounded-lg border border-border bg-background px-2.5 py-1 text-foreground focus:outline-hidden focus:ring-1 focus:ring-primary cursor-pointer whitespace-nowrap"
+                            class="focus:outline-hidden h-9 cursor-pointer whitespace-nowrap rounded-lg border border-border bg-background px-2.5 py-1 text-xs text-foreground focus:ring-1 focus:ring-primary"
                         >
                             <option value="ALL">All Statuses</option>
                             <option value="Pending">Pending</option>
@@ -1142,22 +1162,22 @@ onMounted(() => {
                         <div v-if="activeDocType === 'INVOICES'">
                             <button
                                 type="button"
-                                class="inline-flex items-center gap-1.5 font-mono text-xs font-bold text-primary hover:underline cursor-pointer"
+                                class="inline-flex cursor-pointer items-center gap-1.5 font-mono text-xs font-bold text-primary hover:underline"
                                 @click="openPODetail(row)"
                                 title="Click to view purchase order details"
                             >
                                 <Badge
                                     :variant="row.documentType === 'LPO' ? 'outline' : 'secondary'"
                                     :class="[
-                                        'text-[9px] px-1.5 py-0 font-bold uppercase tracking-wider',
+                                        'px-1.5 py-0 text-[9px] font-bold uppercase tracking-wider',
                                         row.documentType === 'LPO'
-                                            ? 'border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10'
-                                            : 'border-sky-500/40 text-sky-600 dark:text-sky-400 bg-sky-500/10'
+                                            ? 'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                            : 'border-sky-500/40 bg-sky-500/10 text-sky-600 dark:text-sky-400',
                                     ]"
                                 >
                                     {{ row.documentType === 'LPO' ? 'LPO' : 'PO' }}
                                 </Badge>
-                                <span>{{ row.documentType === 'LPO' ? (row.lpoNumber || row.poNumber) : row.poNumber }}</span>
+                                <span>{{ row.documentType === 'LPO' ? row.lpoNumber || row.poNumber : row.poNumber }}</span>
                             </button>
                         </div>
                         <div v-else>
@@ -1165,23 +1185,23 @@ onMounted(() => {
                                 <Badge
                                     :variant="row.documentType === 'LPO' ? 'outline' : 'secondary'"
                                     :class="[
-                                        'text-[9px] px-1.5 py-0 font-bold uppercase tracking-wider',
+                                        'px-1.5 py-0 text-[9px] font-bold uppercase tracking-wider',
                                         row.documentType === 'LPO'
-                                            ? 'border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10'
-                                            : 'border-sky-500/40 text-sky-600 dark:text-sky-400 bg-sky-500/10'
+                                            ? 'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                            : 'border-sky-500/40 bg-sky-500/10 text-sky-600 dark:text-sky-400',
                                     ]"
                                 >
                                     {{ row.documentType === 'LPO' ? 'LPO' : 'PO' }}
                                 </Badge>
                                 <span :class="row.documentType === 'LPO' ? 'text-amber-600 dark:text-amber-400' : 'text-primary'">
-                                    {{ row.documentType === 'LPO' ? (row.lpoNumber || row.poNumber) : row.poNumber }}
+                                    {{ row.documentType === 'LPO' ? row.lpoNumber || row.poNumber : row.poNumber }}
                                 </span>
                             </div>
-                            <div class="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5 font-mono">
+                            <div class="mt-0.5 flex items-center gap-1 font-mono text-[10px] text-muted-foreground">
                                 <Clock class="size-3" />
                                 <span>{{ row.orderTime || row.date }}</span>
                             </div>
-                            <div class="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                            <div class="mt-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
                                 <User class="size-3" />
                                 <span>By: {{ row.createdByName || 'Admin' }}</span>
                             </div>
@@ -1191,11 +1211,17 @@ onMounted(() => {
                     <!-- Type & Purpose Column -->
                     <template #cell-lpoPurpose="{ row }">
                         <div>
-                            <div v-if="row.documentType === 'LPO'" class="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
+                            <div
+                                v-if="row.documentType === 'LPO'"
+                                class="inline-flex items-center gap-1 rounded-md border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400"
+                            >
                                 <Receipt class="size-3" />
                                 <span>{{ row.lpoPurpose || 'Local Purchase' }}</span>
                             </div>
-                            <div v-else class="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-md">
+                            <div
+                                v-else
+                                class="inline-flex items-center gap-1 rounded-md bg-muted/40 px-2 py-0.5 text-[11px] font-medium text-muted-foreground"
+                            >
                                 <Boxes class="size-3 text-sky-500" />
                                 <span>Vendor Contract PO</span>
                             </div>
@@ -1205,14 +1231,14 @@ onMounted(() => {
                     <!-- Supplier / Vendor -->
                     <template #cell-supplier="{ row }">
                         <div v-if="activeDocType === 'INVOICES'">
-                            <span class="font-bold text-foreground text-xs">{{ row.supplier }}</span>
-                            <div v-if="row.branch" class="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                            <span class="text-xs font-bold text-foreground">{{ row.supplier }}</span>
+                            <div v-if="row.branch" class="mt-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
                                 <Building2 class="size-3 text-muted-foreground" />
                                 <span>{{ row.branch }}</span>
                             </div>
                         </div>
                         <div v-else>
-                            <span class="font-bold text-foreground text-xs">{{ row.supplier }}</span>
+                            <span class="text-xs font-bold text-foreground">{{ row.supplier }}</span>
                             <div class="text-[10px] text-muted-foreground">Due: {{ row.expectedDate }}</div>
                         </div>
                     </template>
@@ -1228,14 +1254,14 @@ onMounted(() => {
                     <!-- Procurement Summary -->
                     <template #cell-items="{ row }">
                         <div class="max-w-[280px] truncate" :title="row.items">
-                            <span class="text-xs text-foreground font-medium">{{ row.items }}</span>
+                            <span class="text-xs font-medium text-foreground">{{ row.items }}</span>
                         </div>
                     </template>
 
                     <!-- Total Amount -->
                     <template #cell-amount="{ row }">
-                        <span class="font-mono font-bold text-foreground text-xs">
-                            {{ formatCurrency(activeDocType === 'INVOICES' ? (row.invoice?.totalAmount || row.amount) : row.amount) }}
+                        <span class="font-mono text-xs font-bold text-foreground">
+                            {{ formatCurrency(activeDocType === 'INVOICES' ? row.invoice?.totalAmount || row.amount : row.amount) }}
                         </span>
                     </template>
 
@@ -1244,7 +1270,7 @@ onMounted(() => {
                         <div class="flex items-center gap-2 font-mono">
                             <button
                                 type="button"
-                                class="inline-flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 font-bold hover:underline cursor-pointer"
+                                class="inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-indigo-600 hover:underline dark:text-indigo-400"
                                 @click="openExactInvoiceView(row)"
                                 title="Click to view authentic invoice"
                             >
@@ -1253,7 +1279,7 @@ onMounted(() => {
                             </button>
                             <span
                                 v-if="row.invoice?.hasDocument"
-                                class="size-1.5 rounded-full bg-emerald-500 shrink-0"
+                                class="size-1.5 shrink-0 rounded-full bg-emerald-500"
                                 title="Physical document attached"
                             ></span>
                         </div>
@@ -1261,7 +1287,7 @@ onMounted(() => {
 
                     <!-- Invoice Date Column (Physical Invoices Tab) -->
                     <template #cell-date="{ row }">
-                        <div class="text-xs font-mono text-muted-foreground">
+                        <div class="font-mono text-xs text-muted-foreground">
                             {{ row.invoice?.invoiceDate || row.date }}
                         </div>
                     </template>
@@ -1272,14 +1298,14 @@ onMounted(() => {
                             <button
                                 v-if="row.invoice?.hasDocument"
                                 type="button"
-                                class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 px-2 py-0.5 rounded-md border border-emerald-500/20 transition-colors cursor-pointer"
+                                class="inline-flex cursor-pointer items-center gap-1 rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-600 transition-colors hover:bg-emerald-500/20 dark:text-emerald-400"
                                 @click="openExactInvoiceView(row)"
                                 title="View attached document"
                             >
                                 <FileText class="size-3 text-emerald-500" />
                                 <span>Softcopy</span>
                             </button>
-                            <span v-else class="text-xs text-muted-foreground font-mono">—</span>
+                            <span v-else class="font-mono text-xs text-muted-foreground">—</span>
                         </div>
                     </template>
 
@@ -1290,19 +1316,23 @@ onMounted(() => {
                                 v-if="row.invoice"
                                 type="button"
                                 :class="[
-                                    'inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-md border font-semibold transition-colors cursor-pointer',
+                                    'inline-flex cursor-pointer items-center gap-1 rounded-md border px-2 py-0.5 font-mono text-[11px] font-semibold transition-colors',
                                     row.invoice.reconciliationStatus === 'MATCHED'
-                                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
-                                        : 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 hover:bg-indigo-500/20'
+                                        ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 dark:text-emerald-400'
+                                        : 'border-indigo-500/20 bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500/20 dark:text-indigo-400',
                                 ]"
                                 :title="`Click to view exact physical invoice (${row.invoice.invoiceNumber})`"
                                 @click="openExactInvoiceView(row)"
                             >
                                 <Receipt class="size-3 text-indigo-500" />
                                 <span>{{ row.invoice.invoiceNumber }}</span>
-                                <span v-if="row.invoice.hasDocument" class="size-1.5 rounded-full bg-emerald-500" title="Document file attached"></span>
+                                <span
+                                    v-if="row.invoice.hasDocument"
+                                    class="size-1.5 rounded-full bg-emerald-500"
+                                    title="Document file attached"
+                                ></span>
                             </button>
-                            <span v-else class="text-xs text-muted-foreground font-mono">—</span>
+                            <span v-else class="font-mono text-xs text-muted-foreground">—</span>
                         </div>
                     </template>
 
@@ -1311,17 +1341,17 @@ onMounted(() => {
                         <div class="flex flex-col items-center gap-1">
                             <Badge
                                 :variant="row.status === 'Received' ? 'success' : row.status === 'Approved' ? 'info' : 'warning'"
-                                class="text-[10px] py-0.5"
+                                class="py-0.5 text-[10px]"
                             >
                                 {{ row.status === 'Received' ? 'Stock Received' : row.status }}
                             </Badge>
                             <!-- Synced to Stock Indicator -->
                             <div
                                 v-if="row.status === 'Received'"
-                                class="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold"
+                                class="inline-flex items-center gap-1 font-mono text-[10px] font-semibold text-emerald-600 dark:text-emerald-400"
                                 :title="`Stock levels adjusted and synced (${row.syncedAt || row.date})`"
                             >
-                                <RefreshCw class="size-2.5 text-emerald-500 animate-none" />
+                                <RefreshCw class="size-2.5 animate-none text-emerald-500" />
                                 <span>Stock Synced</span>
                             </div>
                         </div>
@@ -1334,7 +1364,7 @@ onMounted(() => {
                             <template v-if="activeDocType === 'INVOICES'">
                                 <Button
                                     size="sm"
-                                    class="h-7 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-xs gap-1.5 shrink-0 px-2.5 cursor-pointer"
+                                    class="shadow-xs h-7 shrink-0 cursor-pointer gap-1.5 bg-indigo-600 px-2.5 text-xs font-semibold text-white hover:bg-indigo-700"
                                     @click="openExactInvoiceView(row)"
                                     title="View physical invoice document and softcopy"
                                 >
@@ -1345,7 +1375,7 @@ onMounted(() => {
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    class="h-7 w-7 p-0 text-muted-foreground hover:text-foreground shrink-0"
+                                    class="h-7 w-7 shrink-0 p-0 text-muted-foreground hover:text-foreground"
                                     @click="openPODetail(row)"
                                     title="View Associated Purchase Order Details"
                                 >
@@ -1359,7 +1389,7 @@ onMounted(() => {
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    class="h-7 w-7 p-0 text-muted-foreground hover:text-foreground shrink-0"
+                                    class="h-7 w-7 shrink-0 p-0 text-muted-foreground hover:text-foreground"
                                     @click="openPODetail(row)"
                                     title="View Purchase Order Details (When, Who, Items)"
                                 >
@@ -1370,7 +1400,7 @@ onMounted(() => {
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    class="h-7 w-7 p-0 text-muted-foreground hover:text-primary shrink-0"
+                                    class="h-7 w-7 shrink-0 p-0 text-muted-foreground hover:text-primary"
                                     @click="openDownloadModal(row)"
                                     title="Download as PDF, Word, or CSV"
                                 >
@@ -1381,7 +1411,7 @@ onMounted(() => {
                                 <Button
                                     v-if="row.status !== 'Received'"
                                     size="sm"
-                                    class="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 font-semibold shadow-xs gap-1 shrink-0 px-2"
+                                    class="shadow-xs h-7 shrink-0 gap-1 bg-emerald-600 px-2 text-xs font-semibold hover:bg-emerald-700"
                                     @click="openReceiveModal(row)"
                                     title="Verify Items & Synchronize into Inventory"
                                 >
@@ -1392,7 +1422,7 @@ onMounted(() => {
                                     v-else
                                     variant="outline"
                                     size="sm"
-                                    class="h-7 text-xs border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 font-semibold gap-1 shrink-0 px-2"
+                                    class="h-7 shrink-0 gap-1 border-emerald-500/30 bg-emerald-500/10 px-2 text-xs font-semibold text-emerald-600 hover:bg-emerald-500/20 dark:text-emerald-400"
                                     @click="handleResyncStock(row)"
                                     title="Stock Synchronized. Click to view status"
                                 >
@@ -1404,7 +1434,7 @@ onMounted(() => {
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    class="h-7 w-7 p-0 text-muted-foreground hover:text-destructive shrink-0"
+                                    class="h-7 w-7 shrink-0 p-0 text-muted-foreground hover:text-destructive"
                                     @click="openDeletePO(row)"
                                     title="Cancel Order"
                                 >
@@ -1421,22 +1451,24 @@ onMounted(() => {
         <!-- MODAL: BULK & STANDARD PURCHASE ORDER BUILDER -->
         <!-- ============================================================ -->
         <Dialog :open="newPOModal" @update:open="(v) => (newPOModal = v)">
-            <DialogContent class="w-[94vw] max-w-5xl max-h-[85vh] overflow-y-auto">
+            <DialogContent class="max-h-[85vh] w-[94vw] max-w-5xl overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle class="text-base font-bold flex items-center gap-2">
+                    <DialogTitle class="flex items-center gap-2 text-base font-bold">
                         <Boxes class="size-5 text-primary" />
                         Create Purchase Order (PO)
                     </DialogTitle>
                 </DialogHeader>
 
                 <!-- Order Mode Tabs -->
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-border pb-2 pt-1 gap-2">
+                <div class="flex flex-col gap-2 border-b border-border pb-2 pt-1 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex rounded-lg border border-border bg-muted/30 p-1 text-xs font-semibold">
                         <button
                             type="button"
                             :class="[
-                                'px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5',
-                                creationMode === 'bulk' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                                'flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-all',
+                                creationMode === 'bulk'
+                                    ? 'shadow-xs bg-primary text-primary-foreground'
+                                    : 'text-muted-foreground hover:text-foreground',
                             ]"
                             @click="creationMode = 'bulk'"
                         >
@@ -1446,8 +1478,10 @@ onMounted(() => {
                         <button
                             type="button"
                             :class="[
-                                'px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5',
-                                creationMode === 'quick' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                                'flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-all',
+                                creationMode === 'quick'
+                                    ? 'shadow-xs bg-primary text-primary-foreground'
+                                    : 'text-muted-foreground hover:text-foreground',
                             ]"
                             @click="creationMode = 'quick'"
                         >
@@ -1460,7 +1494,7 @@ onMounted(() => {
                         v-if="creationMode === 'bulk'"
                         size="sm"
                         variant="outline"
-                        class="h-8 text-[11px] gap-1 bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 font-semibold"
+                        class="h-8 gap-1 border-amber-500/30 bg-amber-500/10 text-[11px] font-semibold text-amber-700 hover:bg-amber-500/20 dark:text-amber-300"
                         @click="autoPopulateLowStock"
                     >
                         <Sparkles class="size-3" />
@@ -1470,12 +1504,12 @@ onMounted(() => {
 
                 <div class="space-y-4 py-2 text-xs">
                     <!-- General Order Details -->
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-muted/20 rounded-xl border border-border/60">
+                    <div class="grid grid-cols-1 gap-3 rounded-xl border border-border/60 bg-muted/20 p-3 sm:grid-cols-3">
                         <div>
                             <Label class="text-xs font-semibold">Supplier / Vendor</Label>
                             <select
                                 v-model="newPO.supplier_id"
-                                class="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs focus:ring-1 focus:ring-primary shadow-xs"
+                                class="shadow-xs mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs focus:ring-1 focus:ring-primary"
                             >
                                 <option :value="null">-- Select Vendor --</option>
                                 <option v-for="s in props.suppliers" :key="s.id" :value="s.id">{{ s.name }}</option>
@@ -1486,7 +1520,7 @@ onMounted(() => {
                             <Label class="text-xs font-semibold">Receiving Branch</Label>
                             <select
                                 v-model="newPO.branch_id"
-                                class="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs focus:ring-1 focus:ring-primary shadow-xs"
+                                class="shadow-xs mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs focus:ring-1 focus:ring-primary"
                             >
                                 <option :value="null">-- Select Branch --</option>
                                 <option v-for="b in props.branches" :key="b.id" :value="b.id">{{ b.name }}</option>
@@ -1495,7 +1529,7 @@ onMounted(() => {
 
                         <div>
                             <Label class="text-xs font-semibold">Expected Delivery Date</Label>
-                            <Input v-model="newPO.expected_date" type="date" class="mt-1 h-9 text-xs font-mono shadow-xs" />
+                            <Input v-model="newPO.expected_date" type="date" class="shadow-xs mt-1 h-9 font-mono text-xs" />
                         </div>
                     </div>
 
@@ -1503,48 +1537,43 @@ onMounted(() => {
                     <div v-if="creationMode === 'bulk'" class="space-y-3">
                         <!-- Lines Table Header & Add Button -->
                         <div class="flex items-center justify-between pt-1">
-                            <span class="font-bold text-foreground flex items-center gap-1.5 text-xs">
+                            <span class="flex items-center gap-1.5 text-xs font-bold text-foreground">
                                 <Package class="size-4 text-primary" />
                                 Procurement Line Items ({{ bulkItems.length }})
                             </span>
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                class="h-8 text-xs gap-1 font-semibold"
-                                @click="addBulkLineItem"
-                            >
+                            <Button size="sm" variant="outline" class="h-8 gap-1 text-xs font-semibold" @click="addBulkLineItem">
                                 <Plus class="size-3.5" />
                                 Add Line Item
                             </Button>
                         </div>
 
                         <!-- Multi-Item Table (All inputs visible and clear) -->
-                        <div class="rounded-xl border border-border bg-card overflow-hidden shadow-xs">
+                        <div class="shadow-xs overflow-hidden rounded-xl border border-border bg-card">
                             <div class="overflow-x-auto">
-                                <table class="w-full text-xs text-left">
-                                    <thead class="bg-muted/60 border-b border-border text-muted-foreground font-semibold">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="border-b border-border bg-muted/60 font-semibold text-muted-foreground">
                                         <tr>
-                                            <th class="p-2.5 min-w-[240px]">Product / Item</th>
-                                            <th class="p-2.5 w-[140px]">Packaging Unit</th>
-                                            <th class="p-2.5 text-center w-[90px]">Units/Pack</th>
-                                            <th class="p-2.5 text-center w-[95px]">Packs Qty</th>
-                                            <th class="p-2.5 text-center w-[85px] bg-muted/30">Current</th>
-                                            <th class="p-2.5 text-center w-[95px]">Order Units</th>
-                                            <th class="p-2.5 text-center w-[95px] bg-emerald-500/10">Projected</th>
-                                            <th class="p-2.5 text-right w-[115px]">Unit Cost (KES)</th>
-                                            <th class="p-2.5 text-right w-[125px]">Subtotal</th>
-                                            <th class="p-2.5 text-center w-[44px]"></th>
+                                            <th class="min-w-[240px] p-2.5">Product / Item</th>
+                                            <th class="w-[140px] p-2.5">Packaging Unit</th>
+                                            <th class="w-[90px] p-2.5 text-center">Units/Pack</th>
+                                            <th class="w-[95px] p-2.5 text-center">Packs Qty</th>
+                                            <th class="w-[85px] bg-muted/30 p-2.5 text-center">Current</th>
+                                            <th class="w-[95px] p-2.5 text-center">Order Units</th>
+                                            <th class="w-[95px] bg-emerald-500/10 p-2.5 text-center">Projected</th>
+                                            <th class="w-[115px] p-2.5 text-right">Unit Cost (KES)</th>
+                                            <th class="w-[125px] p-2.5 text-right">Subtotal</th>
+                                            <th class="w-[44px] p-2.5 text-center"></th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-border/60">
-                                        <tr v-for="(item, idx) in bulkItems" :key="idx" class="hover:bg-muted/20 transition-colors">
+                                        <tr v-for="(item, idx) in bulkItems" :key="idx" class="transition-colors hover:bg-muted/20">
                                             <!-- Product Item Picker -->
                                             <td class="p-2">
                                                 <select
                                                     v-if="props.products && props.products.length > 0"
                                                     :value="item.product_id"
                                                     @change="(e: any) => handleSelectProductForLine(item, Number(e.target.value))"
-                                                    class="h-9 w-full rounded-md border border-input bg-background px-2.5 text-xs font-semibold focus:ring-1 focus:ring-primary shadow-xs"
+                                                    class="shadow-xs h-9 w-full rounded-md border border-input bg-background px-2.5 text-xs font-semibold focus:ring-1 focus:ring-primary"
                                                 >
                                                     <option :value="null">-- Select Catalog Item --</option>
                                                     <option v-for="p in props.products" :key="p.id" :value="p.id">
@@ -1555,7 +1584,7 @@ onMounted(() => {
                                                     v-else
                                                     v-model="item.product_name"
                                                     placeholder="Product description"
-                                                    class="h-9 text-xs font-semibold shadow-xs"
+                                                    class="shadow-xs h-9 text-xs font-semibold"
                                                 />
                                             </td>
 
@@ -1563,7 +1592,7 @@ onMounted(() => {
                                             <td class="p-2">
                                                 <select
                                                     v-model="item.package_unit"
-                                                    class="h-9 w-full rounded-md border border-input bg-background px-2.5 text-xs focus:ring-1 focus:ring-primary shadow-xs"
+                                                    class="shadow-xs h-9 w-full rounded-md border border-input bg-background px-2.5 text-xs focus:ring-1 focus:ring-primary"
                                                 >
                                                     <option v-for="u in packageUnits" :key="u" :value="u">{{ u }}</option>
                                                 </select>
@@ -1576,7 +1605,7 @@ onMounted(() => {
                                                     type="number"
                                                     min="1"
                                                     @input="updateBulkLineCalculations(item)"
-                                                    class="h-9 text-center font-mono text-xs w-full shadow-xs"
+                                                    class="shadow-xs h-9 w-full text-center font-mono text-xs"
                                                 />
                                             </td>
 
@@ -1587,27 +1616,33 @@ onMounted(() => {
                                                     type="number"
                                                     min="1"
                                                     @input="updateBulkLineCalculations(item)"
-                                                    class="h-9 text-center font-mono font-bold text-xs w-full text-primary shadow-xs"
+                                                    class="shadow-xs h-9 w-full text-center font-mono text-xs font-bold text-primary"
                                                 />
                                             </td>
 
                                             <!-- Current Stock -->
                                             <td class="p-2 text-center">
-                                                <div class="h-9 flex items-center justify-center font-mono font-semibold text-xs text-muted-foreground bg-muted/20 rounded-md">
+                                                <div
+                                                    class="flex h-9 items-center justify-center rounded-md bg-muted/20 font-mono text-xs font-semibold text-muted-foreground"
+                                                >
                                                     {{ item.current_stock ?? 0 }}
                                                 </div>
                                             </td>
 
                                             <!-- Order Units (Readonly) -->
                                             <td class="p-2 text-center">
-                                                <div class="h-9 flex items-center justify-center font-mono font-bold text-xs text-foreground bg-muted/10 rounded-md">
+                                                <div
+                                                    class="flex h-9 items-center justify-center rounded-md bg-muted/10 font-mono text-xs font-bold text-foreground"
+                                                >
                                                     +{{ item.total_units }}
                                                 </div>
                                             </td>
 
                                             <!-- Projected Total Units After Receipt -->
                                             <td class="p-2 text-center">
-                                                <div class="h-9 flex items-center justify-center font-mono font-black text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 rounded-md border border-emerald-500/20">
+                                                <div
+                                                    class="flex h-9 items-center justify-center rounded-md border border-emerald-500/20 bg-emerald-500/10 font-mono text-xs font-black text-emerald-700 dark:text-emerald-400"
+                                                >
                                                     {{ item.projected_stock }}
                                                 </div>
                                             </td>
@@ -1619,20 +1654,20 @@ onMounted(() => {
                                                     type="number"
                                                     min="0"
                                                     @input="updateBulkLineCalculations(item)"
-                                                    class="h-9 text-right font-mono text-xs w-full shadow-xs"
+                                                    class="shadow-xs h-9 w-full text-right font-mono text-xs"
                                                 />
                                             </td>
 
                                             <!-- Subtotal -->
                                             <td class="p-2 text-right">
-                                                <div class="h-9 flex items-center justify-end font-mono font-bold text-xs text-foreground pr-1">
+                                                <div class="flex h-9 items-center justify-end pr-1 font-mono text-xs font-bold text-foreground">
                                                     {{ formatCurrency(item.line_total) }}
                                                 </div>
                                             </td>
 
                                             <!-- Delete Row -->
                                             <td class="p-2 text-center">
-                                                <div class="h-9 flex items-center justify-center">
+                                                <div class="flex h-9 items-center justify-center">
                                                     <Button
                                                         type="button"
                                                         variant="ghost"
@@ -1651,12 +1686,12 @@ onMounted(() => {
                             </div>
 
                             <!-- Bottom Row Action -->
-                            <div class="p-2 bg-muted/20 border-t border-border/60 flex items-center justify-between">
+                            <div class="flex items-center justify-between border-t border-border/60 bg-muted/20 p-2">
                                 <Button
                                     type="button"
                                     size="sm"
                                     variant="ghost"
-                                    class="h-7 text-xs gap-1 text-primary hover:text-primary font-semibold"
+                                    class="h-7 gap-1 text-xs font-semibold text-primary hover:text-primary"
                                     @click="addBulkLineItem"
                                 >
                                     <Plus class="size-3.5" />
@@ -1669,30 +1704,30 @@ onMounted(() => {
                         </div>
 
                         <!-- Order Summary Card with Current vs Projected Stock -->
-                        <div class="p-3 bg-muted/30 rounded-xl border border-border flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-muted/30 p-3">
                             <div class="flex flex-wrap items-center gap-4 text-xs">
                                 <div>
                                     <span class="text-muted-foreground">Line Items:</span>
-                                    <span class="font-bold text-foreground ml-1">{{ bulkItems.length }}</span>
+                                    <span class="ml-1 font-bold text-foreground">{{ bulkItems.length }}</span>
                                 </div>
                                 <div>
                                     <span class="text-muted-foreground">Current Stock in Hand:</span>
-                                    <span class="font-mono font-bold text-muted-foreground ml-1">{{ calculatedCurrentStock }} units</span>
+                                    <span class="ml-1 font-mono font-bold text-muted-foreground">{{ calculatedCurrentStock }} units</span>
                                 </div>
                                 <div>
                                     <span class="text-muted-foreground">Order Units:</span>
-                                    <span class="font-mono font-bold text-primary ml-1">+{{ calculatedTotalUnits }} units</span>
+                                    <span class="ml-1 font-mono font-bold text-primary">+{{ calculatedTotalUnits }} units</span>
                                 </div>
                                 <div>
                                     <span class="text-muted-foreground">Projected Warehouse Stock:</span>
-                                    <span class="font-mono font-black text-emerald-600 dark:text-emerald-400 ml-1">
+                                    <span class="ml-1 font-mono font-black text-emerald-600 dark:text-emerald-400">
                                         {{ calculatedProjectedStock }} units
                                     </span>
                                 </div>
                             </div>
                             <div class="text-right">
-                                <span class="text-[11px] text-muted-foreground mr-2">Total Procurement Value:</span>
-                                <span class="text-base font-black text-foreground font-mono">
+                                <span class="mr-2 text-[11px] text-muted-foreground">Total Procurement Value:</span>
+                                <span class="font-mono text-base font-black text-foreground">
                                     {{ formatCurrency(calculatedBulkTotal) }}
                                 </span>
                             </div>
@@ -1712,29 +1747,19 @@ onMounted(() => {
 
                         <div>
                             <Label class="text-xs">Total Order Value (KES)</Label>
-                            <Input
-                                v-model.number="newPO.total_amount"
-                                type="number"
-                                class="mt-1 text-xs font-mono font-bold"
-                            />
+                            <Input v-model.number="newPO.total_amount" type="number" class="mt-1 font-mono text-xs font-bold" />
                         </div>
 
                         <div>
                             <Label class="text-xs">Delivery Instructions / Notes</Label>
-                            <Input
-                                v-model="newPO.notes"
-                                placeholder="e.g. Deliver to Industrial Area Warehouse loading bay 3"
-                                class="mt-1 text-xs"
-                            />
+                            <Input v-model="newPO.notes" placeholder="e.g. Deliver to Industrial Area Warehouse loading bay 3" class="mt-1 text-xs" />
                         </div>
                     </div>
                 </div>
 
                 <DialogFooter class="gap-2 sm:justify-between">
                     <Button variant="ghost" size="sm" @click="newPOModal = false">Cancel</Button>
-                    <Button size="sm" class="bg-primary font-bold" @click="handleCreatePO">
-                        Dispatch Purchase Order
-                    </Button>
+                    <Button size="sm" class="bg-primary font-bold" @click="handleCreatePO"> Dispatch Purchase Order </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -1743,15 +1768,17 @@ onMounted(() => {
         <!-- MODAL: CREATE LOCAL PURCHASE ORDER (LPO) -->
         <!-- ============================================================ -->
         <Dialog :open="newLPOModal" @update:open="(v) => (newLPOModal = v)">
-            <DialogContent class="w-[96vw] sm:max-w-xl max-h-[92vh] overflow-y-auto">
+            <DialogContent class="max-h-[92vh] w-[96vw] overflow-y-auto sm:max-w-xl">
                 <DialogHeader>
-                    <DialogTitle class="text-base font-bold flex items-center gap-2">
-                        <div class="size-8 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                    <DialogTitle class="flex items-center gap-2 text-base font-bold">
+                        <div
+                            class="flex size-8 items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                        >
                             <Receipt class="size-4" />
                         </div>
                         <div>
                             <span>Create Local Purchase Order (LPO)</span>
-                            <p class="text-[11px] text-muted-foreground font-normal mt-0.5">
+                            <p class="mt-0.5 text-[11px] font-normal text-muted-foreground">
                                 Issue an official local purchase order for local market buying, emergency repairs, perishables, or branch supplies.
                             </p>
                         </div>
@@ -1760,12 +1787,12 @@ onMounted(() => {
 
                 <div class="space-y-4 py-2 text-xs">
                     <!-- Reference and Purpose -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div>
                             <Label class="text-xs">Document Reference</Label>
-                            <div class="mt-1 h-9 px-3 rounded-md border border-border bg-muted/30 flex items-center justify-between">
-                                <span class="font-bold text-amber-600 dark:text-amber-400 font-mono">LPO Voucher</span>
-                                <Badge variant="outline" class="text-[9px] border-amber-500/30 text-amber-600 bg-amber-500/10">Auto-assigned</Badge>
+                            <div class="mt-1 flex h-9 items-center justify-between rounded-md border border-border bg-muted/30 px-3">
+                                <span class="font-mono font-bold text-amber-600 dark:text-amber-400">LPO Voucher</span>
+                                <Badge variant="outline" class="border-amber-500/30 bg-amber-500/10 text-[9px] text-amber-600">Auto-assigned</Badge>
                             </div>
                         </div>
 
@@ -1773,7 +1800,7 @@ onMounted(() => {
                             <Label class="text-xs font-semibold">LPO Purpose / Category <span class="text-destructive">*</span></Label>
                             <select
                                 v-model="newLPO.lpo_purpose"
-                                class="mt-1 w-full h-9 text-xs rounded-md border border-border bg-background px-3 text-foreground focus:outline-hidden focus:ring-1 focus:ring-amber-500 cursor-pointer"
+                                class="focus:outline-hidden mt-1 h-9 w-full cursor-pointer rounded-md border border-border bg-background px-3 text-xs text-foreground focus:ring-1 focus:ring-amber-500"
                             >
                                 <option v-for="purpose in lpoPurposes" :key="purpose" :value="purpose">
                                     {{ purpose }}
@@ -1783,12 +1810,12 @@ onMounted(() => {
                     </div>
 
                     <!-- Vendor / Supplier and Branch -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div>
                             <Label class="text-xs">Local Vendor / Merchant</Label>
                             <select
                                 v-model="newLPO.supplier_id"
-                                class="mt-1 w-full h-9 text-xs rounded-md border border-border bg-background px-3 text-foreground focus:outline-hidden focus:ring-1 focus:ring-amber-500 cursor-pointer"
+                                class="focus:outline-hidden mt-1 h-9 w-full cursor-pointer rounded-md border border-border bg-background px-3 text-xs text-foreground focus:ring-1 focus:ring-amber-500"
                             >
                                 <option :value="null">Direct Cash / Local Merchant</option>
                                 <option v-for="s in suppliers" :key="s.id" :value="s.id">
@@ -1801,7 +1828,7 @@ onMounted(() => {
                             <Label class="text-xs">Requesting Branch</Label>
                             <select
                                 v-model="newLPO.branch_id"
-                                class="mt-1 w-full h-9 text-xs rounded-md border border-border bg-background px-3 text-foreground focus:outline-hidden focus:ring-1 focus:ring-amber-500 cursor-pointer"
+                                class="focus:outline-hidden mt-1 h-9 w-full cursor-pointer rounded-md border border-border bg-background px-3 text-xs text-foreground focus:ring-1 focus:ring-amber-500"
                             >
                                 <option :value="null">Main Store / HQ</option>
                                 <option v-for="b in branches" :key="b.id" :value="b.id">
@@ -1812,14 +1839,10 @@ onMounted(() => {
                     </div>
 
                     <!-- Expected Date & Estimated Amount -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div>
                             <Label class="text-xs">Required Delivery Date</Label>
-                            <Input
-                                v-model="newLPO.expected_date"
-                                type="date"
-                                class="mt-1 text-xs"
-                            />
+                            <Input v-model="newLPO.expected_date" type="date" class="mt-1 text-xs" />
                         </div>
 
                         <div>
@@ -1830,7 +1853,7 @@ onMounted(() => {
                                 min="0"
                                 step="100"
                                 placeholder="e.g. 5000"
-                                class="mt-1 text-xs font-mono font-bold"
+                                class="mt-1 font-mono text-xs font-bold"
                             />
                         </div>
                     </div>
@@ -1842,7 +1865,7 @@ onMounted(() => {
                             v-model="newLPO.items_description"
                             rows="3"
                             placeholder="Describe items, specifications, units, or service scope (e.g. 5x 18W Philips LED Batten Tubes, 2 rolls insulated 2.5mm copper cable, emergency electrical rewiring labor)"
-                            class="mt-1 w-full rounded-md border border-border bg-background p-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-1 focus:ring-amber-500"
+                            class="focus:outline-hidden mt-1 w-full rounded-md border border-border bg-background p-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-amber-500"
                         ></textarea>
                     </div>
 
@@ -1859,11 +1882,7 @@ onMounted(() => {
 
                 <DialogFooter class="gap-2 sm:justify-between">
                     <Button variant="ghost" size="sm" @click="newLPOModal = false">Cancel</Button>
-                    <Button
-                        size="sm"
-                        class="bg-amber-600 hover:bg-amber-700 font-bold text-white shadow-xs gap-1.5"
-                        @click="handleCreateLPO"
-                    >
+                    <Button size="sm" class="shadow-xs gap-1.5 bg-amber-600 font-bold text-white hover:bg-amber-700" @click="handleCreateLPO">
                         <Receipt class="size-3.5" />
                         Generate Local Purchase Order
                     </Button>
@@ -1875,44 +1894,45 @@ onMounted(() => {
         <!-- MODAL: GOODS RECEIVING & STOCK ADJUSTMENT SYNC WITH CHECKBOXES -->
         <!-- ============================================================ -->
         <Dialog :open="receiveModalOpen" @update:open="(v) => (receiveModalOpen = v)">
-            <DialogContent class="w-[95vw] sm:max-w-2xl max-h-[92vh] overflow-y-auto">
+            <DialogContent class="max-h-[92vh] w-[95vw] overflow-y-auto sm:max-w-2xl">
                 <DialogHeader>
-                    <DialogTitle class="text-base font-bold flex items-center gap-2">
+                    <DialogTitle class="flex items-center gap-2 text-base font-bold">
                         <RefreshCw class="size-5 text-emerald-600" />
-                        Receive & Synchronize Stock: {{ receivingPO?.documentType === 'LPO' ? (receivingPO?.lpoNumber || receivingPO?.poNumber) : receivingPO?.poNumber }}
+                        Receive & Synchronize Stock:
+                        {{ receivingPO?.documentType === 'LPO' ? receivingPO?.lpoNumber || receivingPO?.poNumber : receivingPO?.poNumber }}
                     </DialogTitle>
                 </DialogHeader>
 
                 <div class="space-y-4 py-2 text-xs">
                     <!-- Purchase Audit Details Card (WHO, WHEN, SUPPLIER) -->
-                    <div class="p-3 bg-muted/40 rounded-xl border border-border/80 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+                    <div class="grid grid-cols-2 gap-2.5 rounded-xl border border-border/80 bg-muted/40 p-3 text-xs sm:grid-cols-4">
                         <div>
-                            <span class="text-muted-foreground text-[10px] block uppercase font-mono">When Ordered</span>
-                            <span class="font-bold text-foreground font-mono">{{ receivingPO?.orderTime || receivingPO?.date }}</span>
+                            <span class="block font-mono text-[10px] uppercase text-muted-foreground">When Ordered</span>
+                            <span class="font-mono font-bold text-foreground">{{ receivingPO?.orderTime || receivingPO?.date }}</span>
                         </div>
                         <div>
-                            <span class="text-muted-foreground text-[10px] block uppercase font-mono">Ordered By</span>
+                            <span class="block font-mono text-[10px] uppercase text-muted-foreground">Ordered By</span>
                             <span class="font-bold text-foreground">{{ receivingPO?.createdByName || 'Procurement Officer' }}</span>
                         </div>
                         <div>
-                            <span class="text-muted-foreground text-[10px] block uppercase font-mono">Vendor / Supplier</span>
-                            <span class="font-bold text-foreground truncate block">{{ receivingPO?.supplier }}</span>
+                            <span class="block font-mono text-[10px] uppercase text-muted-foreground">Vendor / Supplier</span>
+                            <span class="block truncate font-bold text-foreground">{{ receivingPO?.supplier }}</span>
                         </div>
                         <div>
-                            <span class="text-muted-foreground text-[10px] block uppercase font-mono">Receiving Branch</span>
+                            <span class="block font-mono text-[10px] uppercase text-muted-foreground">Receiving Branch</span>
                             <span class="font-bold text-foreground">{{ receivingPO?.branch }}</span>
                         </div>
                     </div>
 
                     <!-- Quick Prompt to Scan Physical Invoice -->
-                    <div class="rounded-xl border border-primary/20 bg-primary/5 p-3 flex items-center justify-between gap-3">
+                    <div class="flex items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
                         <div class="flex items-center gap-2.5">
-                            <div class="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                            <div class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                 <Scan class="size-4" />
                             </div>
                             <div>
-                                <span class="font-bold text-foreground text-xs block">Have a physical supplier invoice?</span>
-                                <span class="text-[11px] text-muted-foreground block">
+                                <span class="block text-xs font-bold text-foreground">Have a physical supplier invoice?</span>
+                                <span class="block text-[11px] text-muted-foreground">
                                     Scan QR code or photo to verify line item prices, detect variances, and store document.
                                 </span>
                             </div>
@@ -1920,8 +1940,11 @@ onMounted(() => {
                         <Button
                             type="button"
                             size="sm"
-                            class="text-xs h-7.5 px-3 font-semibold gap-1.5 shrink-0 bg-primary shadow-xs"
-                            @click="receiveModalOpen = false; openInvoiceScanner(receivingPO);"
+                            class="h-7.5 shadow-xs shrink-0 gap-1.5 bg-primary px-3 text-xs font-semibold"
+                            @click="
+                                receiveModalOpen = false;
+                                openInvoiceScanner(receivingPO);
+                            "
                         >
                             <ScanLine class="size-3.5" />
                             <span>Scan Invoice</span>
@@ -1931,27 +1954,31 @@ onMounted(() => {
                     <!-- Items Checklist with Checkboxes -->
                     <div class="space-y-2">
                         <div class="flex items-center justify-between">
-                            <span class="font-bold text-foreground text-xs flex items-center gap-1.5">
+                            <span class="flex items-center gap-1.5 text-xs font-bold text-foreground">
                                 <PackageCheck class="size-4 text-emerald-600" />
                                 Check Items Received & Verified:
                             </span>
                             <button
                                 type="button"
                                 @click="toggleSelectAllReceiveItems"
-                                class="text-[11px] text-primary hover:underline font-semibold cursor-pointer"
+                                class="cursor-pointer text-[11px] font-semibold text-primary hover:underline"
                             >
-                                {{ selectedReceiveProductIds.length === (getPOStructuredItems(receivingPO)?.length || 0) ? 'Deselect All' : 'Select All' }}
+                                {{
+                                    selectedReceiveProductIds.length === (getPOStructuredItems(receivingPO)?.length || 0)
+                                        ? 'Deselect All'
+                                        : 'Select All'
+                                }}
                             </button>
                         </div>
 
                         <!-- Structured items list -->
-                        <div v-if="getPOStructuredItems(receivingPO)" class="border rounded-xl divide-y divide-border/60 overflow-hidden bg-card">
+                        <div v-if="getPOStructuredItems(receivingPO)" class="divide-y divide-border/60 overflow-hidden rounded-xl border bg-card">
                             <div
                                 v-for="(item, idx) in getPOStructuredItems(receivingPO)"
                                 :key="idx"
                                 :class="[
-                                    'p-3 flex items-center justify-between transition-colors',
-                                    selectedReceiveProductIds.includes(item.product_id) ? 'bg-emerald-500/5' : 'bg-muted/10 opacity-70'
+                                    'flex items-center justify-between p-3 transition-colors',
+                                    selectedReceiveProductIds.includes(item.product_id) ? 'bg-emerald-500/5' : 'bg-muted/10 opacity-70',
                                 ]"
                             >
                                 <div class="flex items-center gap-3">
@@ -1959,11 +1986,11 @@ onMounted(() => {
                                         type="checkbox"
                                         :checked="selectedReceiveProductIds.includes(item.product_id)"
                                         @change="toggleReceiveItem(item.product_id)"
-                                        class="size-4 rounded border-input text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                                        class="size-4 cursor-pointer rounded border-input text-emerald-600 focus:ring-emerald-500"
                                     />
                                     <div>
-                                        <div class="font-bold text-foreground text-xs">{{ item.name || item.product_name }}</div>
-                                        <div class="text-[11px] text-muted-foreground font-mono">
+                                        <div class="text-xs font-bold text-foreground">{{ item.name || item.product_name }}</div>
+                                        <div class="font-mono text-[11px] text-muted-foreground">
                                             <span>SKU: {{ item.sku || 'N/A' }}</span>
                                             <span class="mx-1">•</span>
                                             <span>{{ item.packs || 1 }} {{ item.package_unit || 'Pcs' }}</span>
@@ -1974,8 +2001,8 @@ onMounted(() => {
                                 </div>
 
                                 <div class="text-right font-mono">
-                                    <span class="font-black text-xs text-foreground">{{ formatCurrency(item.total || item.line_total) }}</span>
-                                    <div class="text-[10px] text-emerald-600 font-semibold">
+                                    <span class="text-xs font-black text-foreground">{{ formatCurrency(item.total || item.line_total) }}</span>
+                                    <div class="text-[10px] font-semibold text-emerald-600">
                                         {{ selectedReceiveProductIds.includes(item.product_id) ? 'Will Sync ✓' : 'Skip Sync' }}
                                     </div>
                                 </div>
@@ -1983,15 +2010,13 @@ onMounted(() => {
                         </div>
 
                         <!-- Fallback simple PO -->
-                        <div v-else class="p-3 bg-muted/20 rounded-xl border flex items-center gap-3">
-                            <input
-                                type="checkbox"
-                                checked
-                                class="size-4 rounded border-input text-emerald-600 focus:ring-emerald-500"
-                            />
+                        <div v-else class="flex items-center gap-3 rounded-xl border bg-muted/20 p-3">
+                            <input type="checkbox" checked class="size-4 rounded border-input text-emerald-600 focus:ring-emerald-500" />
                             <div class="flex-1">
                                 <div class="font-bold text-foreground">{{ receivingPO?.items }}</div>
-                                <div class="text-[11px] text-muted-foreground font-mono">Total Value: {{ formatCurrency(receivingPO?.amount || 0) }}</div>
+                                <div class="font-mono text-[11px] text-muted-foreground">
+                                    Total Value: {{ formatCurrency(receivingPO?.amount || 0) }}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2011,7 +2036,7 @@ onMounted(() => {
                     <Button variant="ghost" size="sm" @click="receiveModalOpen = false">Cancel</Button>
                     <Button
                         size="sm"
-                        class="gap-1.5 bg-emerald-600 hover:bg-emerald-700 font-bold shadow-xs text-white"
+                        class="shadow-xs gap-1.5 bg-emerald-600 font-bold text-white hover:bg-emerald-700"
                         @click="handleConfirmReceiveAndSync"
                     >
                         <RefreshCw class="size-3.5" />
@@ -2025,18 +2050,18 @@ onMounted(() => {
         <!-- MODAL: PO BREAKDOWN & LINE ITEMS DETAIL (VIEW ICON) -->
         <!-- ============================================================ -->
         <Dialog :open="detailModalOpen" @update:open="(v) => (detailModalOpen = v)">
-            <DialogContent class="w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent class="max-h-[90vh] w-[95vw] overflow-y-auto sm:max-w-2xl">
                 <DialogHeader>
-                    <DialogTitle class="text-base font-bold flex items-center justify-between">
+                    <DialogTitle class="flex items-center justify-between text-base font-bold">
                         <span class="flex items-center gap-2">
                             <Receipt v-if="detailPO?.documentType === 'LPO'" class="size-4 text-amber-500" />
                             <FileText v-else class="size-4 text-primary" />
                             <span>
                                 {{ detailPO?.documentType === 'LPO' ? 'Local Purchase Order' : 'Purchase Order' }}:
-                                {{ detailPO?.documentType === 'LPO' ? (detailPO?.lpoNumber || detailPO?.poNumber) : detailPO?.poNumber }}
+                                {{ detailPO?.documentType === 'LPO' ? detailPO?.lpoNumber || detailPO?.poNumber : detailPO?.poNumber }}
                             </span>
                         </span>
-                        <Button size="sm" variant="outline" class="h-7 text-xs gap-1" @click="openDownloadModal(detailPO)">
+                        <Button size="sm" variant="outline" class="h-7 gap-1 text-xs" @click="openDownloadModal(detailPO)">
                             <Download class="size-3 text-primary" />
                             Export
                         </Button>
@@ -2045,22 +2070,24 @@ onMounted(() => {
 
                 <div class="space-y-4 py-2 text-xs">
                     <!-- Complete PO Metadata (WHO, WHEN, TIME, VENDOR, BRANCH) -->
-                    <div class="p-3 bg-muted/40 rounded-xl border border-border/80 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                    <div class="grid grid-cols-2 gap-3 rounded-xl border border-border/80 bg-muted/40 p-3 text-xs sm:grid-cols-4">
                         <div>
-                            <span class="text-muted-foreground text-[10px] block uppercase font-mono">When Ordered</span>
-                            <span class="font-bold text-foreground font-mono">{{ detailPO?.orderTime || detailPO?.date }}</span>
+                            <span class="block font-mono text-[10px] uppercase text-muted-foreground">When Ordered</span>
+                            <span class="font-mono font-bold text-foreground">{{ detailPO?.orderTime || detailPO?.date }}</span>
                         </div>
                         <div>
-                            <span class="text-muted-foreground text-[10px] block uppercase font-mono">Ordered By</span>
+                            <span class="block font-mono text-[10px] uppercase text-muted-foreground">Ordered By</span>
                             <span class="font-bold text-foreground">{{ detailPO?.createdByName || 'Procurement Officer' }}</span>
-                            <div v-if="detailPO?.createdByEmail" class="text-[10px] text-muted-foreground truncate">{{ detailPO?.createdByEmail }}</div>
+                            <div v-if="detailPO?.createdByEmail" class="truncate text-[10px] text-muted-foreground">
+                                {{ detailPO?.createdByEmail }}
+                            </div>
                         </div>
                         <div>
-                            <span class="text-muted-foreground text-[10px] block uppercase font-mono">Supplier / Vendor</span>
-                            <span class="font-bold text-foreground truncate block">{{ detailPO?.supplier }}</span>
+                            <span class="block font-mono text-[10px] uppercase text-muted-foreground">Supplier / Vendor</span>
+                            <span class="block truncate font-bold text-foreground">{{ detailPO?.supplier }}</span>
                         </div>
                         <div>
-                            <span class="text-muted-foreground text-[10px] block uppercase font-mono">Receiving Branch</span>
+                            <span class="block font-mono text-[10px] uppercase text-muted-foreground">Receiving Branch</span>
                             <span class="font-bold text-foreground">{{ detailPO?.branch }}</span>
                         </div>
                     </div>
@@ -2068,20 +2095,20 @@ onMounted(() => {
                     <!-- LPO Purpose Card if LPO -->
                     <div
                         v-if="detailPO?.documentType === 'LPO'"
-                        class="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 flex items-center justify-between"
+                        class="flex items-center justify-between rounded-lg border border-amber-500/20 bg-amber-500/10 p-2.5 text-amber-800 dark:text-amber-300"
                     >
                         <div class="flex items-center gap-2">
                             <Receipt class="size-4 text-amber-600 dark:text-amber-400" />
-                            <span class="font-semibold text-xs">LPO Category / Purpose:</span>
+                            <span class="text-xs font-semibold">LPO Category / Purpose:</span>
                             <span class="font-bold">{{ detailPO?.lpoPurpose || 'General Local Procurement' }}</span>
                         </div>
-                        <Badge variant="outline" class="text-[10px] border-amber-500/30 text-amber-600 bg-amber-500/10">Local Purchase Voucher</Badge>
+                        <Badge variant="outline" class="border-amber-500/30 bg-amber-500/10 text-[10px] text-amber-600">Local Purchase Voucher</Badge>
                     </div>
 
                     <!-- Sync Status Banner -->
                     <div
                         v-if="detailPO?.status === 'Received'"
-                        class="flex items-center justify-between p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-semibold"
+                        class="flex items-center justify-between rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-2.5 font-semibold text-emerald-700 dark:text-emerald-300"
                     >
                         <div class="flex items-center gap-1.5">
                             <CheckCircle2 class="size-4 text-emerald-600" />
@@ -2092,20 +2119,16 @@ onMounted(() => {
 
                     <!-- Itemized List Table -->
                     <div v-if="parsedDetailItems" class="space-y-2">
-                        <span class="font-bold text-foreground text-xs">Procurement Line Items</span>
-                        <div class="border rounded-xl divide-y divide-border/60 overflow-hidden">
-                            <div
-                                v-for="(item, idx) in parsedDetailItems"
-                                :key="idx"
-                                class="p-2.5 flex items-center justify-between bg-card text-xs"
-                            >
+                        <span class="text-xs font-bold text-foreground">Procurement Line Items</span>
+                        <div class="divide-y divide-border/60 overflow-hidden rounded-xl border">
+                            <div v-for="(item, idx) in parsedDetailItems" :key="idx" class="flex items-center justify-between bg-card p-2.5 text-xs">
                                 <div>
                                     <div class="font-bold text-foreground">{{ item.name }}</div>
-                                    <div class="text-[11px] text-muted-foreground font-mono">
+                                    <div class="font-mono text-[11px] text-muted-foreground">
                                         {{ item.packs }} {{ item.package_unit }} •
-                                        <span class="text-foreground font-semibold">{{ item.quantity }} units</span>
+                                        <span class="font-semibold text-foreground">{{ item.quantity }} units</span>
                                         @ {{ formatCurrency(item.unit_cost) }}
-                                        <span v-if="item.current_stock !== undefined" class="text-[10px] text-muted-foreground ml-1">
+                                        <span v-if="item.current_stock !== undefined" class="ml-1 text-[10px] text-muted-foreground">
                                             (Prior Stock: {{ item.current_stock }})
                                         </span>
                                     </div>
@@ -2117,14 +2140,14 @@ onMounted(() => {
                         </div>
                     </div>
 
-                    <div v-else class="p-3 bg-muted/20 rounded-lg text-muted-foreground">
+                    <div v-else class="rounded-lg bg-muted/20 p-3 text-muted-foreground">
                         {{ detailPO?.items }}
                     </div>
 
                     <!-- Total Row -->
-                    <div class="flex items-center justify-between p-3 rounded-lg bg-muted/40 border font-bold">
+                    <div class="flex items-center justify-between rounded-lg border bg-muted/40 p-3 font-bold">
                         <span>Total Procurement Order Value:</span>
-                        <span class="text-sm text-primary font-mono font-black">{{ formatCurrency(detailPO?.amount || 0) }}</span>
+                        <span class="font-mono text-sm font-black text-primary">{{ formatCurrency(detailPO?.amount || 0) }}</span>
                     </div>
                 </div>
 
@@ -2134,8 +2157,11 @@ onMounted(() => {
                         <Button
                             v-if="detailPO?.status !== 'Received'"
                             size="sm"
-                            class="bg-emerald-600 hover:bg-emerald-700 font-bold gap-1"
-                            @click="detailModalOpen = false; openReceiveModal(detailPO)"
+                            class="gap-1 bg-emerald-600 font-bold hover:bg-emerald-700"
+                            @click="
+                                detailModalOpen = false;
+                                openReceiveModal(detailPO);
+                            "
                         >
                             <RefreshCw class="size-3.5" />
                             Receive & Sync Stock
@@ -2151,19 +2177,26 @@ onMounted(() => {
         <Dialog :open="downloadModalOpen" @update:open="(v) => (downloadModalOpen = v)">
             <DialogContent class="w-[95vw] sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle class="text-base font-bold flex items-center gap-2">
+                    <DialogTitle class="flex items-center gap-2 text-base font-bold">
                         <Download class="size-5 text-primary" />
                         Download Purchase Order Document
                     </DialogTitle>
                 </DialogHeader>
 
                 <div class="space-y-3 py-2 text-xs">
-                    <p class="text-muted-foreground text-xs">
+                    <p class="text-xs text-muted-foreground">
                         <span v-if="selectedPOForDownload">
-                            Exporting <strong>{{ selectedPOForDownload.documentType === 'LPO' ? (selectedPOForDownload.lpoNumber || selectedPOForDownload.poNumber) : selectedPOForDownload.poNumber }}</strong> (Vendor: {{ selectedPOForDownload.supplier }}).
+                            Exporting
+                            <strong>{{
+                                selectedPOForDownload.documentType === 'LPO'
+                                    ? selectedPOForDownload.lpoNumber || selectedPOForDownload.poNumber
+                                    : selectedPOForDownload.poNumber
+                            }}</strong>
+                            (Vendor: {{ selectedPOForDownload.supplier }}).
                         </span>
                         <span v-else>
-                            Exporting all active Purchase & Local Purchase Orders for <strong>{{ currentTenant.name || 'Store' }}</strong>.
+                            Exporting all active Purchase & Local Purchase Orders for <strong>{{ currentTenant.name || 'Store' }}</strong
+                            >.
                         </span>
                         Choose your desired document format:
                     </p>
@@ -2173,17 +2206,19 @@ onMounted(() => {
                         <button
                             type="button"
                             @click="openPrintPdf(selectedPOForDownload)"
-                            class="p-3 rounded-xl border border-border/80 bg-card hover:bg-muted/40 transition-all flex items-center gap-3 text-left cursor-pointer group shadow-xs"
+                            class="shadow-xs group flex cursor-pointer items-center gap-3 rounded-xl border border-border/80 bg-card p-3 text-left transition-all hover:bg-muted/40"
                         >
-                            <div class="size-10 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 flex items-center justify-center shrink-0">
+                            <div
+                                class="flex size-10 shrink-0 items-center justify-center rounded-lg border border-rose-500/20 bg-rose-500/10 text-rose-600"
+                            >
                                 <Printer class="size-5" />
                             </div>
                             <div class="flex-1">
-                                <div class="font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
+                                <div class="flex items-center gap-1.5 font-bold text-foreground transition-colors group-hover:text-primary">
                                     <span>Adobe PDF / Print Document</span>
-                                    <Badge variant="outline" class="text-[9px] py-0 px-1 font-mono">.pdf</Badge>
+                                    <Badge variant="outline" class="px-1 py-0 font-mono text-[9px]">.pdf</Badge>
                                 </div>
-                                <p class="text-[11px] text-muted-foreground mt-0.5">
+                                <p class="mt-0.5 text-[11px] text-muted-foreground">
                                     Formal printed voucher with company logo, header, itemized table & signature blocks.
                                 </p>
                             </div>
@@ -2193,17 +2228,19 @@ onMounted(() => {
                         <button
                             type="button"
                             @click="downloadWord(selectedPOForDownload)"
-                            class="p-3 rounded-xl border border-border/80 bg-card hover:bg-muted/40 transition-all flex items-center gap-3 text-left cursor-pointer group shadow-xs"
+                            class="shadow-xs group flex cursor-pointer items-center gap-3 rounded-xl border border-border/80 bg-card p-3 text-left transition-all hover:bg-muted/40"
                         >
-                            <div class="size-10 rounded-lg bg-sky-500/10 border border-sky-500/20 text-sky-600 flex items-center justify-center shrink-0">
+                            <div
+                                class="flex size-10 shrink-0 items-center justify-center rounded-lg border border-sky-500/20 bg-sky-500/10 text-sky-600"
+                            >
                                 <FileType2 class="size-5" />
                             </div>
                             <div class="flex-1">
-                                <div class="font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
+                                <div class="flex items-center gap-1.5 font-bold text-foreground transition-colors group-hover:text-primary">
                                     <span>Microsoft Word Document</span>
-                                    <Badge variant="outline" class="text-[9px] py-0 px-1 font-mono">.doc / .docx</Badge>
+                                    <Badge variant="outline" class="px-1 py-0 font-mono text-[9px]">.doc / .docx</Badge>
                                 </div>
-                                <p class="text-[11px] text-muted-foreground mt-0.5">
+                                <p class="mt-0.5 text-[11px] text-muted-foreground">
                                     Formatted editable Word document with vendor details, line items table, and totals.
                                 </p>
                             </div>
@@ -2213,17 +2250,19 @@ onMounted(() => {
                         <button
                             type="button"
                             @click="downloadCsv(selectedPOForDownload)"
-                            class="p-3 rounded-xl border border-border/80 bg-card hover:bg-muted/40 transition-all flex items-center gap-3 text-left cursor-pointer group shadow-xs"
+                            class="shadow-xs group flex cursor-pointer items-center gap-3 rounded-xl border border-border/80 bg-card p-3 text-left transition-all hover:bg-muted/40"
                         >
-                            <div class="size-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 flex items-center justify-center shrink-0">
+                            <div
+                                class="flex size-10 shrink-0 items-center justify-center rounded-lg border border-emerald-500/20 bg-emerald-500/10 text-emerald-600"
+                            >
                                 <FileSpreadsheet class="size-5" />
                             </div>
                             <div class="flex-1">
-                                <div class="font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
+                                <div class="flex items-center gap-1.5 font-bold text-foreground transition-colors group-hover:text-primary">
                                     <span>Excel / CSV Spreadsheet</span>
-                                    <Badge variant="outline" class="text-[9px] py-0 px-1 font-mono">.csv</Badge>
+                                    <Badge variant="outline" class="px-1 py-0 font-mono text-[9px]">.csv</Badge>
                                 </div>
-                                <p class="text-[11px] text-muted-foreground mt-0.5">
+                                <p class="mt-0.5 text-[11px] text-muted-foreground">
                                     Standard tabular data ready for Microsoft Excel, Google Sheets, or ERP integration.
                                 </p>
                             </div>
@@ -2241,9 +2280,9 @@ onMounted(() => {
         <!-- MODAL: PRINT / PDF PREVIEW -->
         <!-- ============================================================ -->
         <Dialog :open="printPOModalOpen" @update:open="(v) => (printPOModalOpen = v)">
-            <DialogContent class="w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent class="max-h-[90vh] w-[95vw] overflow-y-auto sm:max-w-2xl">
                 <DialogHeader>
-                    <DialogTitle class="text-base font-bold flex items-center justify-between">
+                    <DialogTitle class="flex items-center justify-between text-base font-bold">
                         <span>{{ printablePO?.documentType === 'LPO' ? 'Local Purchase Order' : 'Purchase Order' }} Print Preview</span>
                         <Button size="sm" class="gap-1.5 bg-primary" @click="triggerBrowserPrint">
                             <Printer class="size-3.5" />
@@ -2253,24 +2292,31 @@ onMounted(() => {
                 </DialogHeader>
 
                 <!-- Printable Voucher Mockup -->
-                <div id="printable-po-voucher" class="p-6 bg-white text-black rounded-xl border border-neutral-200 text-xs space-y-4">
+                <div id="printable-po-voucher" class="space-y-4 rounded-xl border border-neutral-200 bg-white p-6 text-xs text-black">
                     <!-- Voucher Header -->
                     <div class="flex items-start justify-between border-b pb-4">
                         <div>
-                            <h3 class="text-lg font-black uppercase text-emerald-800 tracking-wider">
+                            <h3 class="text-lg font-black uppercase tracking-wider text-emerald-800">
                                 {{ currentTenant.name || 'MDE RETAIL SYSTEMS' }}
                             </h3>
-                            <p class="text-[11px] text-neutral-600 font-mono">
-                                {{ printablePO?.documentType === 'LPO' ? 'Official Local Purchase Order (LPO)' : 'Official Procurement Purchase Order (PO)' }}
+                            <p class="font-mono text-[11px] text-neutral-600">
+                                {{
+                                    printablePO?.documentType === 'LPO'
+                                        ? 'Official Local Purchase Order (LPO)'
+                                        : 'Official Procurement Purchase Order (PO)'
+                                }}
                             </p>
                             <p class="text-[10px] text-neutral-500">Branch: {{ printablePO?.branch || 'Main Store' }}</p>
-                            <p v-if="printablePO?.documentType === 'LPO' && printablePO?.lpoPurpose" class="text-[10px] text-amber-800 font-semibold mt-0.5">
+                            <p
+                                v-if="printablePO?.documentType === 'LPO' && printablePO?.lpoPurpose"
+                                class="mt-0.5 text-[10px] font-semibold text-amber-800"
+                            >
                                 Purpose: {{ printablePO?.lpoPurpose }}
                             </p>
                         </div>
                         <div class="text-right">
-                            <div class="text-base font-black font-mono text-neutral-900">
-                                {{ printablePO?.documentType === 'LPO' ? (printablePO?.lpoNumber || printablePO?.poNumber) : printablePO?.poNumber }}
+                            <div class="font-mono text-base font-black text-neutral-900">
+                                {{ printablePO?.documentType === 'LPO' ? printablePO?.lpoNumber || printablePO?.poNumber : printablePO?.poNumber }}
                             </div>
                             <div class="text-[11px] text-neutral-600">Order: {{ printablePO?.orderTime || printablePO?.date }}</div>
                             <div class="text-[11px] text-neutral-600">By: {{ printablePO?.createdByName || 'Admin' }}</div>
@@ -2278,13 +2324,13 @@ onMounted(() => {
                     </div>
 
                     <!-- Vendor Box -->
-                    <div class="p-3 bg-neutral-50 rounded-lg border border-neutral-200 flex justify-between">
+                    <div class="flex justify-between rounded-lg border border-neutral-200 bg-neutral-50 p-3">
                         <div>
-                            <span class="text-[10px] uppercase font-bold text-neutral-500 block">Vendor / Supplier</span>
-                            <span class="font-bold text-sm text-neutral-900">{{ printablePO?.supplier }}</span>
+                            <span class="block text-[10px] font-bold uppercase text-neutral-500">Vendor / Supplier</span>
+                            <span class="text-sm font-bold text-neutral-900">{{ printablePO?.supplier }}</span>
                         </div>
                         <div class="text-right">
-                            <span class="text-[10px] uppercase font-bold text-neutral-500 block">Payment / Delivery Status</span>
+                            <span class="block text-[10px] font-bold uppercase text-neutral-500">Payment / Delivery Status</span>
                             <span class="font-bold text-neutral-900">{{ printablePO?.status }}</span>
                         </div>
                     </div>
@@ -2306,13 +2352,15 @@ onMounted(() => {
                                 <tr v-for="(it, idx) in getPOStructuredItems(printablePO)" :key="idx">
                                     <td class="border border-neutral-300 p-2">
                                         <div class="font-bold">{{ it.name || it.product_name }}</div>
-                                        <div class="text-[10px] text-neutral-500 font-mono">{{ it.sku }}</div>
+                                        <div class="font-mono text-[10px] text-neutral-500">{{ it.sku }}</div>
                                     </td>
                                     <td class="border border-neutral-300 p-2">{{ it.package_unit || 'Pcs' }}</td>
                                     <td class="border border-neutral-300 p-2 text-center">{{ it.packs || 1 }}</td>
                                     <td class="border border-neutral-300 p-2 text-center font-bold">{{ it.quantity || it.total_units }}</td>
                                     <td class="border border-neutral-300 p-2 text-right font-mono">{{ formatCurrency(it.unit_cost) }}</td>
-                                    <td class="border border-neutral-300 p-2 text-right font-bold font-mono">{{ formatCurrency(it.total || it.line_total) }}</td>
+                                    <td class="border border-neutral-300 p-2 text-right font-mono font-bold">
+                                        {{ formatCurrency(it.total || it.line_total) }}
+                                    </td>
                                 </tr>
                             </template>
                             <tr v-else>
@@ -2321,8 +2369,8 @@ onMounted(() => {
                                 </td>
                             </tr>
                             <tr class="bg-neutral-50 font-bold">
-                                <td colspan="5" class="border border-neutral-300 p-2.5 text-right uppercase text-[11px]">Grand Total (KES):</td>
-                                <td class="border border-neutral-300 p-2.5 text-right font-mono font-black text-sm text-emerald-800">
+                                <td colspan="5" class="border border-neutral-300 p-2.5 text-right text-[11px] uppercase">Grand Total (KES):</td>
+                                <td class="border border-neutral-300 p-2.5 text-right font-mono text-sm font-black text-emerald-800">
                                     {{ formatCurrency(printablePO?.amount || 0) }}
                                 </td>
                             </tr>
@@ -2369,29 +2417,30 @@ onMounted(() => {
             @reconciled="invoiceReconciliationOpen = false"
         />
         <!-- Physical Invoice Exact View Modal (Authentic Voucher & Softcopy, not comparing) -->
-        <InvoiceExactViewModal
-            v-model:open="invoiceExactViewOpen"
-            :purchase="selectedPOForExactView"
-        />
+        <InvoiceExactViewModal v-model:open="invoiceExactViewOpen" :purchase="selectedPOForExactView" />
 
         <!-- Cancel / Delete Purchase Order Warning Alert Dialog -->
         <ConfirmDialog
             v-model:open="deleteConfirmOpen"
             title="Cancel Purchase Order"
             description="Are you sure you want to cancel and remove this purchase order? This action will void the requisition record."
-            :item-name="poToDelete ? `${poToDelete.documentType === 'LPO' ? (poToDelete.lpoNumber || poToDelete.poNumber) : poToDelete.poNumber} (${poToDelete.supplierName || 'Vendor'})` : undefined"
-            :warning-note="poToDelete && (poToDelete.status === 'received' || poToDelete.status === 'ordered') ? `Warning: This order status is currently '${poToDelete.status.toUpperCase()}'. Cancelling may cause inventory discrepancy if items have already arrived.` : undefined"
+            :item-name="
+                poToDelete
+                    ? `${poToDelete.documentType === 'LPO' ? poToDelete.lpoNumber || poToDelete.poNumber : poToDelete.poNumber} (${poToDelete.supplierName || 'Vendor'})`
+                    : undefined
+            "
+            :warning-note="
+                poToDelete && (poToDelete.status === 'received' || poToDelete.status === 'ordered')
+                    ? `Warning: This order status is currently '${poToDelete.status.toUpperCase()}'. Cancelling may cause inventory discrepancy if items have already arrived.`
+                    : undefined
+            "
             confirm-text="Yes, Cancel Order"
             :loading="isDeletingPO"
             @confirm="confirmDeletePO"
         />
 
         <!-- Interactive Purchases & Orders Page Guide Overlay -->
-        <PurchasesGuideOverlay
-            v-model:open="guideOverlayOpen"
-            v-model:current-step="guideCurrentStep"
-            @action="handleGuideAction"
-        />
+        <PurchasesGuideOverlay v-model:open="guideOverlayOpen" v-model:current-step="guideCurrentStep" @action="handleGuideAction" />
     </AppLayout>
 </template>
 

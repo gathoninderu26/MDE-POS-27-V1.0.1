@@ -4,40 +4,15 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatCurrency } from '@/composables/useCurrency';
-import type { BillingCycle, PlatformTenant, SubscriptionPlan, TenantSubscriptionInvoice } from '@/composables/useSuperAdmin';
-import { billingCycleProfiles, planFeatures, subscriptionPlans, useSuperAdmin } from '@/composables/useSuperAdmin';
+import type { BillingCycle, SubscriptionPlan, TenantSubscriptionInvoice } from '@/composables/useSuperAdmin';
+import { billingCycleProfiles, subscriptionPlans, useSuperAdmin } from '@/composables/useSuperAdmin';
 import { useToast } from '@/composables/useToast';
 import SuperAdminLayout from '@/layouts/SuperAdminLayout.vue';
 import { Head } from '@inertiajs/vue3';
-import {
-    AlertTriangle,
-    Calendar,
-    Check,
-    CheckCircle2,
-    Clock,
-    CreditCard,
-    Download,
-    Layers,
-    Plus,
-    RefreshCw,
-    Search,
-    Send,
-    ShieldAlert,
-    Smartphone,
-    TrendingUp,
-    X,
-    Zap,
-} from 'lucide-vue-next';
+import { AlertTriangle, Calendar, Clock, CreditCard, Download, Plus, Search, Smartphone, TrendingUp, Zap } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
-const {
-    tenants,
-    totalMRR,
-    activeTenants,
-    subscriptionInvoices,
-    assignTenantSubscription,
-    extendTenantSubscription,
-} = useSuperAdmin();
+const { tenants, totalMRR, activeTenants, subscriptionInvoices, assignTenantSubscription, extendTenantSubscription } = useSuperAdmin();
 const { success, warning, info } = useToast();
 
 const searchQuery = ref('');
@@ -84,12 +59,12 @@ const handleCreateSubscription = () => {
         newSubCycle.value,
         newSubAmount.value,
         newSubPaymentMethod.value,
-        newSubAutoRenew.value
+        newSubAutoRenew.value,
     );
     if (inv) {
         success(
             'Subscription Activated',
-            `Assigned ${newSubPlan.value} (${newSubCycle.value}) to ${inv.tenantName} for ${formatCurrency(newSubAmount.value)}.`
+            `Assigned ${newSubPlan.value} (${newSubCycle.value}) to ${inv.tenantName} for ${formatCurrency(newSubAmount.value)}.`,
         );
     }
     addSubModal.value = false;
@@ -103,18 +78,12 @@ const openExtendModal = (inv: TenantSubscriptionInvoice) => {
 const handleConfirmExtend = () => {
     if (!selectedInvoice.value) return;
     extendTenantSubscription(selectedInvoice.value.tenantId, extraDays.value);
-    success(
-        'Validity Extended',
-        `Extended subscription for ${selectedInvoice.value.tenantName} by +${extraDays.value} days.`
-    );
+    success('Validity Extended', `Extended subscription for ${selectedInvoice.value.tenantName} by +${extraDays.value} days.`);
     extendModal.value = false;
 };
 
 const handleSendMpesaPrompt = (inv: TenantSubscriptionInvoice) => {
-    success(
-        'M-Pesa STK Dispatched',
-        `Prompt for ${formatCurrency(inv.amount)} sent to ${inv.tenantName} finance phone.`
-    );
+    success('M-Pesa STK Dispatched', `Prompt for ${formatCurrency(inv.amount)} sent to ${inv.tenantName} finance phone.`);
 };
 
 const handleDownloadInvoice = (inv: TenantSubscriptionInvoice) => {
@@ -140,120 +109,125 @@ const projectedARR = computed(() => totalMRR * 12);
 <template>
     <Head title="Super Admin — Manage Subscriptions" />
     <SuperAdminLayout>
-        <div class="p-6 space-y-6 max-w-[1600px] mx-auto">
+        <div class="mx-auto max-w-[1600px] space-y-6 p-6">
             <!-- Header -->
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 class="text-xl font-bold text-zinc-100 flex items-center gap-2">
+                    <h1 class="flex items-center gap-2 text-xl font-bold text-zinc-100">
                         <CreditCard class="size-5 text-violet-400" />
                         Subscription & Billing Engine
                     </h1>
-                    <p class="text-xs text-zinc-500 mt-0.5">
+                    <p class="mt-0.5 text-xs text-zinc-500">
                         Manage weekly, monthly, quarterly, semi-annual, and annual subscriptions for all tenants.
                     </p>
                 </div>
 
-                <Button
-                    size="sm"
-                    class="h-8 text-xs bg-violet-600 hover:bg-violet-700 text-white gap-1.5"
-                    @click="addSubModal = true"
-                >
+                <Button size="sm" class="h-8 gap-1.5 bg-violet-600 text-xs text-white hover:bg-violet-700" @click="addSubModal = true">
                     <Plus class="size-3.5" />
                     Add / Assign Subscription
                 </Button>
             </div>
 
             <!-- Revenue KPIs -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <div class="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-                    <p class="text-[11px] text-zinc-500 font-semibold uppercase flex items-center gap-1.5 mb-2">
+                    <p class="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase text-zinc-500">
                         <TrendingUp class="size-3.5 text-sky-400" /> Monthly Revenue Run-Rate
                     </p>
-                    <p class="text-2xl font-extrabold text-sky-400 font-mono">{{ formatCurrency(totalMRR) }}</p>
-                    <p class="text-[10px] text-zinc-600 mt-1">MRR across {{ activeTenants }} active tenants</p>
+                    <p class="font-mono text-2xl font-extrabold text-sky-400">{{ formatCurrency(totalMRR) }}</p>
+                    <p class="mt-1 text-[10px] text-zinc-600">MRR across {{ activeTenants }} active tenants</p>
                 </div>
 
                 <div class="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-                    <p class="text-[11px] text-zinc-500 font-semibold uppercase flex items-center gap-1.5 mb-2">
+                    <p class="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase text-zinc-500">
                         <Zap class="size-3.5 text-amber-400" /> Annual Projected ARR
                     </p>
-                    <p class="text-2xl font-extrabold text-amber-400 font-mono">{{ formatCurrency(projectedARR) }}</p>
-                    <p class="text-[10px] text-zinc-600 mt-1">Annualized recurring contract volume</p>
+                    <p class="font-mono text-2xl font-extrabold text-amber-400">{{ formatCurrency(projectedARR) }}</p>
+                    <p class="mt-1 text-[10px] text-zinc-600">Annualized recurring contract volume</p>
                 </div>
 
                 <div class="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-                    <p class="text-[11px] text-zinc-500 font-semibold uppercase flex items-center gap-1.5 mb-2">
+                    <p class="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase text-zinc-500">
                         <Calendar class="size-3.5 text-violet-400" /> Active Billing Cycles
                     </p>
-                    <div class="flex items-center gap-1.5 text-[10px] text-zinc-400 mt-1 flex-wrap">
-                        <span class="px-1.5 py-0.5 rounded bg-zinc-800 font-bold">Weekly</span>
-                        <span class="px-1.5 py-0.5 rounded bg-zinc-800 font-bold">Monthly</span>
-                        <span class="px-1.5 py-0.5 rounded bg-zinc-800 font-bold">Quarterly</span>
-                        <span class="px-1.5 py-0.5 rounded bg-zinc-800 font-bold">Annual</span>
+                    <div class="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] text-zinc-400">
+                        <span class="rounded bg-zinc-800 px-1.5 py-0.5 font-bold">Weekly</span>
+                        <span class="rounded bg-zinc-800 px-1.5 py-0.5 font-bold">Monthly</span>
+                        <span class="rounded bg-zinc-800 px-1.5 py-0.5 font-bold">Quarterly</span>
+                        <span class="rounded bg-zinc-800 px-1.5 py-0.5 font-bold">Annual</span>
                     </div>
                 </div>
 
                 <div class="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-                    <p class="text-[11px] text-zinc-500 font-semibold uppercase flex items-center gap-1.5 mb-2">
+                    <p class="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase text-zinc-500">
                         <AlertTriangle class="size-3.5 text-rose-400" /> Overdue / At Risk
                     </p>
-                    <p class="text-2xl font-extrabold text-rose-400 font-mono">
-                        {{ subscriptionInvoices.filter(i => i.status === 'Overdue').length }} Invoices
+                    <p class="font-mono text-2xl font-extrabold text-rose-400">
+                        {{ subscriptionInvoices.filter((i) => i.status === 'Overdue').length }} Invoices
                     </p>
-                    <p class="text-[10px] text-zinc-600 mt-1">Tenants requiring payment follow-up</p>
+                    <p class="mt-1 text-[10px] text-zinc-600">Tenants requiring payment follow-up</p>
                 </div>
             </div>
 
             <!-- Billing Frequencies / Cycles Comparison Matrix -->
-            <div class="rounded-xl border border-zinc-800 bg-zinc-900 p-4 space-y-3">
+            <div class="space-y-3 rounded-xl border border-zinc-800 bg-zinc-900 p-4">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-xs font-bold text-zinc-300 uppercase tracking-wider">
-                        Billing Frequency Profiles & Pricing Schedule
-                    </h3>
-                    <span class="text-[11px] text-zinc-500 font-mono">5 Supported Billing Cadences</span>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-300">Billing Frequency Profiles & Pricing Schedule</h3>
+                    <span class="font-mono text-[11px] text-zinc-500">5 Supported Billing Cadences</span>
                 </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
+                <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
                     <div
                         v-for="(profile, cycleKey) in billingCycleProfiles"
                         :key="cycleKey"
-                        class="p-3 rounded-xl border border-zinc-800 bg-zinc-950/60 space-y-2"
+                        class="space-y-2 rounded-xl border border-zinc-800 bg-zinc-950/60 p-3"
                     >
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-extrabold text-zinc-200">{{ cycleKey }}</span>
-                            <span class="text-[9px] font-bold text-violet-400 bg-violet-600/10 px-1.5 py-0.5 rounded">
-                                {{ profile.days }} Days
-                            </span>
+                            <span class="rounded bg-violet-600/10 px-1.5 py-0.5 text-[9px] font-bold text-violet-400"> {{ profile.days }} Days </span>
                         </div>
-                        <p class="text-[10px] text-emerald-400 font-bold">{{ profile.discount }}</p>
-                        <div class="text-[10px] text-zinc-400 space-y-0.5 pt-1 border-t border-zinc-800">
-                            <div>Basic: <strong class="text-zinc-200">{{ formatCurrency(calculateDefaultPrice('Basic', cycleKey as BillingCycle)) }}</strong></div>
-                            <div>Pro: <strong class="text-sky-300">{{ formatCurrency(calculateDefaultPrice('Pro', cycleKey as BillingCycle)) }}</strong></div>
-                            <div>Enterprise: <strong class="text-violet-300">{{ formatCurrency(calculateDefaultPrice('Enterprise', cycleKey as BillingCycle)) }}</strong></div>
+                        <p class="text-[10px] font-bold text-emerald-400">{{ profile.discount }}</p>
+                        <div class="space-y-0.5 border-t border-zinc-800 pt-1 text-[10px] text-zinc-400">
+                            <div>
+                                Basic:
+                                <strong class="text-zinc-200">{{ formatCurrency(calculateDefaultPrice('Basic', cycleKey as BillingCycle)) }}</strong>
+                            </div>
+                            <div>
+                                Pro:
+                                <strong class="text-sky-300">{{ formatCurrency(calculateDefaultPrice('Pro', cycleKey as BillingCycle)) }}</strong>
+                            </div>
+                            <div>
+                                Enterprise:
+                                <strong class="text-violet-300">{{
+                                    formatCurrency(calculateDefaultPrice('Enterprise', cycleKey as BillingCycle))
+                                }}</strong>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Per-Tenant Invoices & Active Subscriptions Table -->
-            <div class="rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 py-4 border-b border-zinc-800">
+            <div class="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900">
+                <div class="flex flex-col gap-3 border-b border-zinc-800 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h3 class="text-sm font-bold text-zinc-100">Tenant Subscriptions & Billing Invoices</h3>
                         <p class="text-[11px] text-zinc-500">Manage, renew, and track payment status across all tenant organizations.</p>
                     </div>
 
-                    <div class="flex items-center gap-2 flex-wrap">
+                    <div class="flex flex-wrap items-center gap-2">
                         <!-- Frequency filter -->
                         <div class="flex items-center gap-1 text-xs">
-                            <span class="text-zinc-500 text-[11px]">Cycle:</span>
+                            <span class="text-[11px] text-zinc-500">Cycle:</span>
                             <button
                                 v-for="c in ['All', 'Weekly', 'Monthly', 'Quarterly', 'Annual']"
                                 :key="c"
                                 type="button"
                                 :class="[
-                                    'px-2 py-0.5 rounded border text-[10px] font-semibold transition-all',
-                                    selectedCycleFilter === c ? 'bg-violet-600 text-white border-violet-600' : 'border-zinc-700 text-zinc-400 hover:text-zinc-200',
+                                    'rounded border px-2 py-0.5 text-[10px] font-semibold transition-all',
+                                    selectedCycleFilter === c
+                                        ? 'border-violet-600 bg-violet-600 text-white'
+                                        : 'border-zinc-700 text-zinc-400 hover:text-zinc-200',
                                 ]"
                                 @click="selectedCycleFilter = c"
                             >
@@ -262,7 +236,7 @@ const projectedARR = computed(() => totalMRR * 12);
                         </div>
 
                         <div class="relative w-56">
-                            <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-zinc-500" />
+                            <Search class="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-zinc-500" />
                             <input
                                 v-model="searchQuery"
                                 type="text"
@@ -275,23 +249,23 @@ const projectedARR = computed(() => totalMRR * 12);
 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs">
-                        <thead class="bg-zinc-800/60 text-zinc-400 border-b border-zinc-800">
+                        <thead class="border-b border-zinc-800 bg-zinc-800/60 text-zinc-400">
                             <tr>
                                 <th class="px-5 py-3 font-semibold uppercase">Invoice #</th>
                                 <th class="px-4 py-3 font-semibold uppercase">Tenant Organization</th>
-                                <th class="px-4 py-3 font-semibold uppercase text-center">Plan</th>
-                                <th class="px-4 py-3 font-semibold uppercase text-center">Billing Cycle</th>
-                                <th class="px-4 py-3 font-semibold uppercase text-right">Amount (KES)</th>
+                                <th class="px-4 py-3 text-center font-semibold uppercase">Plan</th>
+                                <th class="px-4 py-3 text-center font-semibold uppercase">Billing Cycle</th>
+                                <th class="px-4 py-3 text-right font-semibold uppercase">Amount (KES)</th>
                                 <th class="px-4 py-3 font-semibold uppercase">Next Renewal</th>
-                                <th class="px-4 py-3 font-semibold uppercase text-center">Status</th>
-                                <th class="px-4 py-3 font-semibold uppercase text-right">Actions</th>
+                                <th class="px-4 py-3 text-center font-semibold uppercase">Status</th>
+                                <th class="px-4 py-3 text-right font-semibold uppercase">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-zinc-800">
-                            <tr v-for="inv in filteredInvoices" :key="inv.id" class="hover:bg-zinc-800/40 transition-colors">
+                            <tr v-for="inv in filteredInvoices" :key="inv.id" class="transition-colors hover:bg-zinc-800/40">
                                 <td class="px-5 py-3.5 font-mono font-bold text-zinc-200">
                                     {{ inv.invoiceNumber }}
-                                    <div class="text-[10px] text-zinc-500 font-normal">{{ inv.paymentMethod }}</div>
+                                    <div class="text-[10px] font-normal text-zinc-500">{{ inv.paymentMethod }}</div>
                                 </td>
 
                                 <td class="px-4 py-3.5">
@@ -302,10 +276,12 @@ const projectedARR = computed(() => totalMRR * 12);
                                 <td class="px-4 py-3.5 text-center">
                                     <span
                                         :class="[
-                                            'text-[10px] font-extrabold font-mono px-2 py-0.5 rounded border',
-                                            inv.plan === 'Enterprise' ? 'text-violet-300 bg-violet-600/20 border-violet-600/30' :
-                                            inv.plan === 'Pro' ? 'text-sky-300 bg-sky-600/20 border-sky-600/30' :
-                                            'text-zinc-300 bg-zinc-700/60 border-zinc-600/30',
+                                            'rounded border px-2 py-0.5 font-mono text-[10px] font-extrabold',
+                                            inv.plan === 'Enterprise'
+                                                ? 'border-violet-600/30 bg-violet-600/20 text-violet-300'
+                                                : inv.plan === 'Pro'
+                                                  ? 'border-sky-600/30 bg-sky-600/20 text-sky-300'
+                                                  : 'border-zinc-600/30 bg-zinc-700/60 text-zinc-300',
                                         ]"
                                     >
                                         {{ inv.plan }}
@@ -313,7 +289,9 @@ const projectedARR = computed(() => totalMRR * 12);
                                 </td>
 
                                 <td class="px-4 py-3.5 text-center">
-                                    <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">
+                                    <span
+                                        class="inline-block rounded border border-zinc-700 bg-zinc-800 px-2 py-0.5 text-[10px] font-bold text-zinc-300"
+                                    >
                                         {{ inv.billingCycle }}
                                     </span>
                                 </td>
@@ -327,19 +305,20 @@ const projectedARR = computed(() => totalMRR * 12);
                                         <Calendar class="size-3 text-violet-400" />
                                         <span>{{ inv.dueDate }}</span>
                                     </div>
-                                    <div v-if="inv.autoRenew" class="text-[9px] text-emerald-400 mt-0.5">
-                                        Auto-Renew Active
-                                    </div>
+                                    <div v-if="inv.autoRenew" class="mt-0.5 text-[9px] text-emerald-400">Auto-Renew Active</div>
                                 </td>
 
                                 <td class="px-4 py-3.5 text-center">
                                     <span
                                         :class="[
-                                            'text-[10px] font-bold px-2 py-0.5 rounded',
-                                            inv.status === 'Paid' ? 'bg-emerald-600/20 text-emerald-300' :
-                                            inv.status === 'Pending' ? 'bg-amber-600/20 text-amber-300' :
-                                            inv.status === 'Grace Period' ? 'bg-sky-600/20 text-sky-300' :
-                                            'bg-rose-600/20 text-rose-300',
+                                            'rounded px-2 py-0.5 text-[10px] font-bold',
+                                            inv.status === 'Paid'
+                                                ? 'bg-emerald-600/20 text-emerald-300'
+                                                : inv.status === 'Pending'
+                                                  ? 'bg-amber-600/20 text-amber-300'
+                                                  : inv.status === 'Grace Period'
+                                                    ? 'bg-sky-600/20 text-sky-300'
+                                                    : 'bg-rose-600/20 text-rose-300',
                                         ]"
                                     >
                                         {{ inv.status }}
@@ -350,7 +329,7 @@ const projectedARR = computed(() => totalMRR * 12);
                                     <div class="flex items-center justify-end gap-1.5">
                                         <button
                                             type="button"
-                                            class="p-1.5 rounded text-zinc-400 hover:text-emerald-400 hover:bg-emerald-600/10 transition-colors"
+                                            class="rounded p-1.5 text-zinc-400 transition-colors hover:bg-emerald-600/10 hover:text-emerald-400"
                                             title="Send M-Pesa STK Renewal Prompt"
                                             @click="handleSendMpesaPrompt(inv)"
                                         >
@@ -359,7 +338,7 @@ const projectedARR = computed(() => totalMRR * 12);
 
                                         <button
                                             type="button"
-                                            class="p-1.5 rounded text-zinc-400 hover:text-violet-400 hover:bg-violet-600/10 transition-colors"
+                                            class="rounded p-1.5 text-zinc-400 transition-colors hover:bg-violet-600/10 hover:text-violet-400"
                                             title="Extend Validity / Grace Period"
                                             @click="openExtendModal(inv)"
                                         >
@@ -368,7 +347,7 @@ const projectedARR = computed(() => totalMRR * 12);
 
                                         <button
                                             type="button"
-                                            class="p-1.5 rounded text-zinc-400 hover:text-sky-400 hover:bg-sky-600/10 transition-colors"
+                                            class="rounded p-1.5 text-zinc-400 transition-colors hover:bg-sky-600/10 hover:text-sky-400"
                                             title="Download Invoice PDF"
                                             @click="handleDownloadInvoice(inv)"
                                         >
@@ -385,9 +364,9 @@ const projectedARR = computed(() => totalMRR * 12);
 
         <!-- Add / Assign Subscription Modal -->
         <Dialog :open="addSubModal" @update:open="(v) => (addSubModal = v)">
-            <DialogContent class="sm:max-w-lg bg-zinc-900 border-zinc-700 text-zinc-100">
+            <DialogContent class="border-zinc-700 bg-zinc-900 text-zinc-100 sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle class="text-base font-bold flex items-center gap-2">
+                    <DialogTitle class="flex items-center gap-2 text-base font-bold">
                         <CreditCard class="size-4 text-violet-400" />
                         Create / Assign Tenant Subscription
                     </DialogTitle>
@@ -396,7 +375,7 @@ const projectedARR = computed(() => totalMRR * 12);
 
                 <div class="space-y-3.5 py-2 text-xs">
                     <div>
-                        <Label class="text-zinc-400 text-[11px]">Select Target Tenant</Label>
+                        <Label class="text-[11px] text-zinc-400">Select Target Tenant</Label>
                         <select
                             v-model="newSubTenantId"
                             class="mt-1 h-9 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 text-xs text-zinc-200"
@@ -407,7 +386,7 @@ const projectedARR = computed(() => totalMRR * 12);
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <Label class="text-zinc-400 text-[11px]">Subscription Plan</Label>
+                            <Label class="text-[11px] text-zinc-400">Subscription Plan</Label>
                             <select
                                 v-model="newSubPlan"
                                 class="mt-1 h-9 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 text-xs text-zinc-200"
@@ -420,10 +399,10 @@ const projectedARR = computed(() => totalMRR * 12);
                         </div>
 
                         <div>
-                            <Label class="text-zinc-400 text-[11px]">Billing Frequency / Cycle</Label>
+                            <Label class="text-[11px] text-zinc-400">Billing Frequency / Cycle</Label>
                             <select
                                 v-model="newSubCycle"
-                                class="mt-1 h-9 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 text-xs text-zinc-200 font-bold"
+                                class="mt-1 h-9 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 text-xs font-bold text-zinc-200"
                                 @change="handleCycleChange"
                             >
                                 <option value="Weekly">Weekly (7 Days)</option>
@@ -437,16 +416,16 @@ const projectedARR = computed(() => totalMRR * 12);
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <Label class="text-zinc-400 text-[11px]">Billing Amount (KES)</Label>
+                            <Label class="text-[11px] text-zinc-400">Billing Amount (KES)</Label>
                             <Input
                                 v-model.number="newSubAmount"
                                 type="number"
-                                class="mt-1 text-xs bg-zinc-800 border-zinc-700 text-zinc-100 font-mono font-bold"
+                                class="mt-1 border-zinc-700 bg-zinc-800 font-mono text-xs font-bold text-zinc-100"
                             />
                         </div>
 
                         <div>
-                            <Label class="text-zinc-400 text-[11px]">Payment Channel</Label>
+                            <Label class="text-[11px] text-zinc-400">Payment Channel</Label>
                             <select
                                 v-model="newSubPaymentMethod"
                                 class="mt-1 h-9 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 text-xs text-zinc-200"
@@ -460,14 +439,14 @@ const projectedARR = computed(() => totalMRR * 12);
                         </div>
                     </div>
 
-                    <label class="flex items-center gap-2 p-2.5 rounded-lg bg-zinc-800/40 border border-zinc-800 cursor-pointer">
+                    <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-800/40 p-2.5">
                         <input
                             v-model="newSubAutoRenew"
                             type="checkbox"
                             class="rounded border-zinc-700 bg-zinc-900 text-violet-600 focus:ring-violet-500"
                         />
                         <div>
-                            <p class="font-bold text-zinc-200 text-xs">Enable Automatic Renewal</p>
+                            <p class="text-xs font-bold text-zinc-200">Enable Automatic Renewal</p>
                             <p class="text-[10px] text-zinc-500">Auto-bill via M-Pesa STK push or card on cycle renewal date</p>
                         </div>
                     </label>
@@ -475,7 +454,7 @@ const projectedARR = computed(() => totalMRR * 12);
 
                 <DialogFooter class="gap-2">
                     <Button variant="ghost" size="sm" class="text-zinc-400" @click="addSubModal = false">Cancel</Button>
-                    <Button size="sm" class="bg-violet-600 hover:bg-violet-700 text-white" @click="handleCreateSubscription">
+                    <Button size="sm" class="bg-violet-600 text-white hover:bg-violet-700" @click="handleCreateSubscription">
                         Activate Subscription
                     </Button>
                 </DialogFooter>
@@ -484,25 +463,28 @@ const projectedARR = computed(() => totalMRR * 12);
 
         <!-- Extend Validity / Grace Period Modal -->
         <Dialog :open="extendModal" @update:open="(v) => (extendModal = v)">
-            <DialogContent class="sm:max-w-md bg-zinc-900 border-zinc-700 text-zinc-100">
+            <DialogContent class="border-zinc-700 bg-zinc-900 text-zinc-100 sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle class="text-base font-bold flex items-center gap-2">
+                    <DialogTitle class="flex items-center gap-2 text-base font-bold">
                         <Clock class="size-4 text-violet-400" />
                         Extend Subscription Validity
                     </DialogTitle>
-                    <DialogDescription class="sr-only">Add additional days to the active subscription period for {{ selectedInvoice?.tenantName }}</DialogDescription>
+                    <DialogDescription class="sr-only"
+                        >Add additional days to the active subscription period for {{ selectedInvoice?.tenantName }}</DialogDescription
+                    >
                 </DialogHeader>
 
                 <div v-if="selectedInvoice" class="space-y-3 py-2 text-xs">
                     <p class="text-zinc-300">
-                        Extend active access for <strong class="text-white">{{ selectedInvoice.tenantName }}</strong>:
+                        Extend active access for <strong class="text-white">{{ selectedInvoice.tenantName }}</strong
+                        >:
                     </p>
 
                     <div>
-                        <Label class="text-zinc-400 text-[11px]">Select Additional Validity Days</Label>
+                        <Label class="text-[11px] text-zinc-400">Select Additional Validity Days</Label>
                         <select
                             v-model.number="extraDays"
-                            class="mt-1 h-9 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 text-xs text-zinc-200 font-bold"
+                            class="mt-1 h-9 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 text-xs font-bold text-zinc-200"
                         >
                             <option :value="7">+7 Days (Weekly Extension)</option>
                             <option :value="14">+14 Days (Two Weeks)</option>
@@ -516,9 +498,7 @@ const projectedARR = computed(() => totalMRR * 12);
 
                 <DialogFooter class="gap-2">
                     <Button variant="ghost" size="sm" class="text-zinc-400" @click="extendModal = false">Cancel</Button>
-                    <Button size="sm" class="bg-violet-600 hover:bg-violet-700 text-white" @click="handleConfirmExtend">
-                        Apply Extension
-                    </Button>
+                    <Button size="sm" class="bg-violet-600 text-white hover:bg-violet-700" @click="handleConfirmExtend"> Apply Extension </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

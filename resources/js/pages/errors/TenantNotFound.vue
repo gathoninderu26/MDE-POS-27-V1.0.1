@@ -2,7 +2,7 @@
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import { Button } from '@/components/ui/button';
 import { Head } from '@inertiajs/vue3';
-import { AlertOctagon, ArrowLeft, Building2, HelpCircle, Store } from 'lucide-vue-next';
+import { AlertOctagon, ArrowLeft, HelpCircle, Store } from 'lucide-vue-next';
 
 const props = defineProps<{
     subdomain: string;
@@ -10,7 +10,6 @@ const props = defineProps<{
     isSuspended?: boolean;
     centralUrl?: string;
 }>();
-
 </script>
 
 <template>
@@ -53,11 +52,10 @@ const props = defineProps<{
                         </h1>
                         <p class="text-center text-sm leading-relaxed text-muted-foreground">
                             <span v-if="isSuspended">
-                                The workspace for <strong class="text-foreground">{{ tenantName || subdomain }}</strong> has been suspended due to a billing or policy review.
+                                The workspace for <strong class="text-foreground">{{ tenantName || subdomain }}</strong> has been suspended due to a
+                                billing or policy review.
                             </span>
-                            <span v-else>
-                                No active business is registered under this subdomain address.
-                            </span>
+                            <span v-else> No active business is registered under this subdomain address. </span>
                         </p>
                     </div>
                 </div>
@@ -70,8 +68,8 @@ const props = defineProps<{
                             :class="[
                                 'flex size-16 items-center justify-center rounded-2xl border shadow-sm',
                                 isSuspended
-                                    ? 'bg-rose-500/10 border-rose-500/20 text-rose-500'
-                                    : 'bg-amber-500/10 border-amber-500/20 text-amber-500',
+                                    ? 'border-rose-500/20 bg-rose-500/10 text-rose-500'
+                                    : 'border-amber-500/20 bg-amber-500/10 text-amber-500',
                             ]"
                         >
                             <AlertOctagon v-if="isSuspended" class="size-8" />
@@ -81,14 +79,16 @@ const props = defineProps<{
 
                     <!-- Subdomain tag -->
                     <div class="flex justify-center">
-                        <div class="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-muted/60 px-3 py-1.5 font-mono text-xs font-bold text-primary">
+                        <div
+                            class="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-muted/60 px-3 py-1.5 font-mono text-xs font-bold text-primary"
+                        >
                             <Store class="size-3 opacity-60" />
                             {{ subdomain }}.mdepos.co.ke
                         </div>
                     </div>
 
                     <!-- Tips -->
-                    <div class="rounded-xl border border-border/60 bg-muted/30 p-3.5 text-left text-xs space-y-2">
+                    <div class="space-y-2 rounded-xl border border-border/60 bg-muted/30 p-3.5 text-left text-xs">
                         <div class="flex items-center gap-1.5 font-semibold text-foreground">
                             <HelpCircle class="size-3.5 text-primary" />
                             <span>What you can do:</span>
@@ -103,7 +103,7 @@ const props = defineProps<{
                     <!-- Actions -->
                     <div class="space-y-2">
                         <a href="/" class="block w-full">
-                            <Button class="w-full gap-2 text-xs font-bold h-10 shadow-sm">
+                            <Button class="h-10 w-full gap-2 text-xs font-bold shadow-sm">
                                 <ArrowLeft class="size-4" />
                                 <span>Return to Main Portal</span>
                             </Button>
@@ -114,8 +114,6 @@ const props = defineProps<{
         </div>
 
         <!-- Footer -->
-        <p class="absolute bottom-6 text-xs font-mono text-muted-foreground">
-            MDE POS &nbsp;•&nbsp; Multi-Tenant Subdomain Routing
-        </p>
+        <p class="absolute bottom-6 font-mono text-xs text-muted-foreground">MDE POS &nbsp;•&nbsp; Multi-Tenant Subdomain Routing</p>
     </div>
 </template>

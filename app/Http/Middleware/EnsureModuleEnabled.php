@@ -12,8 +12,7 @@ class EnsureModuleEnabled
      * Handle an incoming request.
      * Checks if the active tenant has the required module enabled.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     * @param  string  ...$modules
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next, string ...$modules): Response
     {
@@ -30,7 +29,7 @@ class EnsureModuleEnabled
             }
 
             if (! $hasAccess) {
-                $labels = implode(' or ', array_map(fn($m) => ucfirst($m), $modules));
+                $labels = implode(' or ', array_map(fn ($m) => ucfirst($m), $modules));
 
                 if ($request->expectsJson()) {
                     return response()->json([

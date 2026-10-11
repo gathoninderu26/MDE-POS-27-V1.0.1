@@ -2,6 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Tenant;
+use App\Services\DemoDatabaseService;
+use Database\Seeders\DemoDataSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
@@ -26,8 +29,8 @@ class DemoRefresh extends Command
 
     public function handle(): int
     {
-        $demoDir  = database_path('demo');
-        $template = $demoDir . DIRECTORY_SEPARATOR . '_template.sqlite';
+        $demoDir = database_path('demo');
+        $template = $demoDir.DIRECTORY_SEPARATOR.'_template.sqlite';
 
         // Ensure the demo directory exists
         if (! is_dir($demoDir)) {
@@ -50,8 +53,8 @@ class DemoRefresh extends Command
         $this->info('Running migrations on template...');
         Artisan::call('migrate', [
             '--database' => 'demo',
-            '--path'     => 'database/migrations',
-            '--force'    => true,
+            '--path' => 'database/migrations',
+            '--force' => true,
         ]);
         $this->line(Artisan::output());
 
@@ -59,12 +62,12 @@ class DemoRefresh extends Command
         $this->info('Seeding demo data...');
         Artisan::call('db:seed', [
             '--database' => 'demo',
-            '--class'    => \Database\Seeders\DemoDataSeeder::class,
-            '--force'    => true,
+            '--class' => DemoDataSeeder::class,
+            '--force' => true,
         ]);
         $this->line(Artisan::output());
 
-        $this->info('✅ Template rebuilt: ' . $template);
+        $this->info('✅ Template rebuilt: '.$template);
 
         // ── Step 5: Optionally re-copy to per-slug files ──────────────────────
         if ($this->option('all')) {
@@ -78,7 +81,7 @@ class DemoRefresh extends Command
 
     protected function refreshAllSlugs(string $demoDir, string $template): void
     {
-        $files = glob($demoDir . DIRECTORY_SEPARATOR . '*.sqlite');
+        $files = glob($demoDir.DIRECTORY_SEPARATOR.'*.sqlite');
         foreach ($files as $file) {
             $name = basename($file, '.sqlite');
             if ($name === '_template') {
@@ -90,12 +93,12 @@ class DemoRefresh extends Command
 
     protected function refreshSlug(string $demoDir, string $template, string $slug): void
     {
-        $target = $demoDir . DIRECTORY_SEPARATOR . $slug . '.sqlite';
+        $target = $demoDir.DIRECTORY_SEPARATOR.$slug.'.sqlite';
         copy($template, $target);
 
-        $tenant = \App\Models\Tenant::where('slug', $slug)->first();
+        $tenant = Tenant::where('slug', $slug)->first();
         if ($tenant) {
-            \App\Services\DemoDatabaseService::adaptDatabaseForTenant($target, $tenant);
+            DemoDatabaseService::adaptDatabaseForTenant($target, $tenant);
         }
 
         $this->info("  ↳ Refreshed: {$slug}.sqlite");

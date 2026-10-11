@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ReportsGuideOverlay from '@/components/reports/ReportsGuideOverlay.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,20 +10,8 @@ import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import ReportsGuideOverlay from '@/components/reports/ReportsGuideOverlay.vue';
-import {
-    BarChart3,
-    Calendar,
-    CircleDollarSign,
-    Compass,
-    Download,
-    FileSpreadsheet,
-    FileText,
-    PieChart,
-    Printer,
-    TrendingUp,
-} from 'lucide-vue-next';
-import { computed, onMounted, ref } from 'vue';
+import { BarChart3, CircleDollarSign, Compass, Download, FileSpreadsheet, PieChart, TrendingUp } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 const props = defineProps<{
     pnl?: {
@@ -58,14 +47,17 @@ const { success, info } = useToast();
 
 const selectedRange = ref(props.currentRange || 'month');
 
-const pnl = computed(() => props.pnl ?? {
-    revenue: 0,
-    cogs: 0,
-    grossProfit: 0,
-    operatingExpenses: 0,
-    netProfit: 0,
-    margin: 0,
-});
+const pnl = computed(
+    () =>
+        props.pnl ?? {
+            revenue: 0,
+            cogs: 0,
+            grossProfit: 0,
+            operatingExpenses: 0,
+            netProfit: 0,
+            margin: 0,
+        },
+);
 
 const categoryBreakdown = computed(() => props.categoryBreakdown ?? []);
 const cashierPerformance = computed(() => props.cashierPerformance ?? []);
@@ -87,9 +79,9 @@ const handleExportCSV = () => {
     info('Generating CSV', 'Preparing CSV raw transaction ledger data...');
     const rows = [
         ['Category / Item', 'Sales (KES)', 'Margin %'],
-        ...categoryBreakdown.value.map(c => [c.name, c.sales.toString(), `${c.margin}%`]),
+        ...categoryBreakdown.value.map((c) => [c.name, c.sales.toString(), `${c.margin}%`]),
     ];
-    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
+    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map((e) => e.join(',')).join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
@@ -126,14 +118,12 @@ const handleGuideAction = (actionType: string) => {
     <Head title="Business Reports & P&L" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
+        <div class="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
             <!-- Header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h2 class="text-2xl font-bold text-foreground">Financial & Operational Analytics</h2>
-                    <p class="text-xs text-muted-foreground mt-0.5">
-                        Profit & Loss (P&L), category performance, cashier auditing, and tax reports.
-                    </p>
+                    <p class="mt-0.5 text-xs text-muted-foreground">Profit & Loss (P&L), category performance, cashier auditing, and tax reports.</p>
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2">
@@ -141,49 +131,69 @@ const handleGuideAction = (actionType: string) => {
                         id="reports-tour-guide-btn"
                         variant="outline"
                         size="sm"
-                        class="h-9 gap-1.5 border-primary/30 text-primary hover:bg-primary/5 text-xs font-semibold"
+                        class="h-9 gap-1.5 border-primary/30 text-xs font-semibold text-primary hover:bg-primary/5"
                         @click="openGuide(0)"
                     >
                         <Compass class="size-3.5" />
                         Page Guide
                     </Button>
 
-                    <div id="reports-tour-date-filter" class="flex rounded-lg border border-border p-0.5 bg-card text-xs font-medium">
+                    <div id="reports-tour-date-filter" class="flex rounded-lg border border-border bg-card p-0.5 text-xs font-medium">
                         <button
                             type="button"
-                            :class="['px-2.5 py-1 rounded-md transition-colors', selectedRange === 'today' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+                            :class="[
+                                'rounded-md px-2.5 py-1 transition-colors',
+                                selectedRange === 'today'
+                                    ? 'bg-primary text-primary-foreground shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground',
+                            ]"
                             @click="switchRange('today')"
                         >
                             Today
                         </button>
                         <button
                             type="button"
-                            :class="['px-2.5 py-1 rounded-md transition-colors', selectedRange === 'week' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+                            :class="[
+                                'rounded-md px-2.5 py-1 transition-colors',
+                                selectedRange === 'week'
+                                    ? 'bg-primary text-primary-foreground shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground',
+                            ]"
                             @click="switchRange('week')"
                         >
                             7 Days
                         </button>
                         <button
                             type="button"
-                            :class="['px-2.5 py-1 rounded-md transition-colors', selectedRange === 'month' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+                            :class="[
+                                'rounded-md px-2.5 py-1 transition-colors',
+                                selectedRange === 'month'
+                                    ? 'bg-primary text-primary-foreground shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground',
+                            ]"
                             @click="switchRange('month')"
                         >
                             This Month
                         </button>
                         <button
                             type="button"
-                            :class="['px-2.5 py-1 rounded-md transition-colors', selectedRange === 'year' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+                            :class="[
+                                'rounded-md px-2.5 py-1 transition-colors',
+                                selectedRange === 'year'
+                                    ? 'bg-primary text-primary-foreground shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground',
+                            ]"
                             @click="switchRange('year')"
                         >
                             This Year
                         </button>
                     </div>
 
-                    <Button id="reports-tour-export-csv" variant="outline" size="sm" class="h-9 text-xs gap-1.5" @click="handleExportCSV">
+                    <Button id="reports-tour-export-csv" variant="outline" size="sm" class="h-9 gap-1.5 text-xs" @click="handleExportCSV">
                         <FileSpreadsheet class="size-3.5" />
                         Export Excel / CSV
                     </Button>
-                    <Button id="reports-tour-print-pdf" size="sm" class="h-9 text-xs gap-1.5 bg-primary" @click="handleExportPDF">
+                    <Button id="reports-tour-print-pdf" size="sm" class="h-9 gap-1.5 bg-primary text-xs" @click="handleExportPDF">
                         <Download class="size-3.5" />
                         Print Statement
                     </Button>
@@ -232,7 +242,7 @@ const handleGuideAction = (actionType: string) => {
 
             <!-- Profit & Loss Statement Table Component -->
             <Card id="reports-tour-pnl-table" class="border-border/80">
-                <CardHeader class="pb-3 flex flex-row items-center justify-between border-b border-border/70">
+                <CardHeader class="flex flex-row items-center justify-between border-b border-border/70 pb-3">
                     <div>
                         <CardTitle class="text-base font-bold">Comprehensive Profit & Loss Statement</CardTitle>
                         <CardDescription class="text-xs">Period: {{ selectedRange.toUpperCase() }}</CardDescription>
@@ -242,8 +252,8 @@ const handleGuideAction = (actionType: string) => {
                     </Badge>
                 </CardHeader>
                 <CardContent class="p-0">
-                    <div class="divide-y divide-border/60 text-xs font-mono">
-                        <div class="flex justify-between p-4 font-bold text-sm bg-muted/20">
+                    <div class="divide-y divide-border/60 font-mono text-xs">
+                        <div class="flex justify-between bg-muted/20 p-4 text-sm font-bold">
                             <span>1. REVENUE / GROSS SALES</span>
                             <span class="text-foreground">{{ formatCurrency(pnl.revenue) }}</span>
                         </div>
@@ -251,7 +261,7 @@ const handleGuideAction = (actionType: string) => {
                             <span>Less: Cost of Goods Sold (COGS)</span>
                             <span class="text-rose-600">- {{ formatCurrency(pnl.cogs) }}</span>
                         </div>
-                        <div class="flex justify-between p-4 font-bold text-sm bg-muted/40">
+                        <div class="flex justify-between bg-muted/40 p-4 text-sm font-bold">
                             <span>2. GROSS PROFIT</span>
                             <span class="text-primary">{{ formatCurrency(pnl.grossProfit) }}</span>
                         </div>
@@ -259,7 +269,7 @@ const handleGuideAction = (actionType: string) => {
                             <span>Operating Overheads (Electricity, Rent, Transport, Maintenance)</span>
                             <span class="text-rose-600">- {{ formatCurrency(pnl.operatingExpenses) }}</span>
                         </div>
-                        <div class="flex justify-between p-4 font-black text-base bg-emerald-500/10 text-emerald-900 dark:text-emerald-300">
+                        <div class="flex justify-between bg-emerald-500/10 p-4 text-base font-black text-emerald-900 dark:text-emerald-300">
                             <span>3. NET PROFIT</span>
                             <span>{{ formatCurrency(pnl.netProfit) }}</span>
                         </div>
@@ -287,7 +297,7 @@ const handleGuideAction = (actionType: string) => {
                                 </div>
                                 <div class="text-right font-mono">
                                     <p class="font-bold text-foreground">{{ formatCurrency(cat.sales) }}</p>
-                                    <Badge variant="outline" class="text-[10px] mt-0.5">
+                                    <Badge variant="outline" class="mt-0.5 text-[10px]">
                                         {{ pnl.revenue > 0 ? Math.round((cat.sales / pnl.revenue) * 100) : 0 }}% share
                                     </Badge>
                                 </div>
@@ -324,10 +334,6 @@ const handleGuideAction = (actionType: string) => {
         </div>
 
         <!-- Reports & P&L Interactive Tour Overlay -->
-        <ReportsGuideOverlay
-            v-model:open="guideOverlayOpen"
-            v-model:current-step="guideCurrentStep"
-            @action="handleGuideAction"
-        />
+        <ReportsGuideOverlay v-model:open="guideOverlayOpen" v-model:current-step="guideCurrentStep" @action="handleGuideAction" />
     </AppLayout>
 </template>

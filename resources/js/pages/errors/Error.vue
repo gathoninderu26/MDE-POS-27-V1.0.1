@@ -2,16 +2,7 @@
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import { Button } from '@/components/ui/button';
 import { Head, router } from '@inertiajs/vue3';
-import {
-    AlertTriangle,
-    ArrowLeft,
-    HelpCircle,
-    PlugZap,
-    RefreshCw,
-    SearchX,
-    ServerCrash,
-    ShieldX,
-} from 'lucide-vue-next';
+import { AlertTriangle, ArrowLeft, HelpCircle, PlugZap, RefreshCw, SearchX, ServerCrash, ShieldX } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 const props = defineProps<{
@@ -41,7 +32,8 @@ const config = computed(() => {
                 iconBg: 'bg-rose-500/10 border-rose-500/20 text-rose-500',
                 badge: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
                 title: 'Access Forbidden',
-                description: "You don't have the required permissions to access this resource. Contact your administrator if you believe this is a mistake.",
+                description:
+                    "You don't have the required permissions to access this resource. Contact your administrator if you believe this is a mistake.",
                 tips: [
                     'Ensure you are logged in with the correct account.',
                     'Ask your administrator to review your role permissions.',
@@ -83,7 +75,7 @@ const config = computed(() => {
                 iconBg: 'bg-teal-500/10 border-teal-500/20 text-teal-500',
                 badge: 'bg-teal-500/10 text-teal-600 dark:text-teal-400',
                 title: 'Session Expired',
-                description: "Your session has expired for security reasons. Please refresh the page or log in again to continue.",
+                description: 'Your session has expired for security reasons. Please refresh the page or log in again to continue.',
                 tips: [
                     'Refresh the page to renew your session.',
                     'Log in again if the problem continues.',
@@ -97,12 +89,8 @@ const config = computed(() => {
                 iconBg: 'bg-amber-500/10 border-amber-500/20 text-amber-500',
                 badge: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
                 title: 'Unexpected Error',
-                description: "An unexpected error occurred. If this keeps happening, please contact your system administrator.",
-                tips: [
-                    'Try refreshing the page.',
-                    'Return to the dashboard and try again.',
-                    'Contact support if the error persists.',
-                ],
+                description: 'An unexpected error occurred. If this keeps happening, please contact your system administrator.',
+                tips: ['Try refreshing the page.', 'Return to the dashboard and try again.', 'Contact support if the error persists.'],
             };
     }
 });
@@ -147,7 +135,12 @@ const goBack = () => {
                     </a>
                     <div class="space-y-1.5 text-center">
                         <div class="flex items-center justify-center gap-2">
-                            <span :class="['inline-flex items-center rounded-lg px-2.5 py-0.5 font-mono text-sm font-black tracking-wide', config.badge]">
+                            <span
+                                :class="[
+                                    'inline-flex items-center rounded-lg px-2.5 py-0.5 font-mono text-sm font-black tracking-wide',
+                                    config.badge,
+                                ]"
+                            >
                                 {{ status }}
                             </span>
                             <span class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -171,7 +164,7 @@ const goBack = () => {
                     </div>
 
                     <!-- Tips -->
-                    <div class="rounded-xl border border-border/60 bg-muted/30 p-3.5 text-left text-xs space-y-2">
+                    <div class="space-y-2 rounded-xl border border-border/60 bg-muted/30 p-3.5 text-left text-xs">
                         <div class="flex items-center gap-1.5 font-semibold text-foreground">
                             <HelpCircle class="size-3.5 text-primary" />
                             <span>What you can do:</span>
@@ -183,14 +176,12 @@ const goBack = () => {
 
                     <!-- Actions -->
                     <div class="space-y-2">
-                        <Button class="w-full gap-2 text-xs font-bold h-10 shadow-sm" @click="goBack">
+                        <Button class="h-10 w-full gap-2 text-xs font-bold shadow-sm" @click="goBack">
                             <ArrowLeft class="size-4" />
                             <span>Go Back</span>
                         </Button>
                         <a href="/">
-                            <Button variant="outline" class="w-full gap-2 text-xs h-9">
-                                Return to Dashboard
-                            </Button>
+                            <Button variant="outline" class="h-9 w-full gap-2 text-xs"> Return to Dashboard </Button>
                         </a>
                     </div>
                 </div>
@@ -198,8 +189,6 @@ const goBack = () => {
         </div>
 
         <!-- Footer -->
-        <p class="absolute bottom-6 text-xs font-mono text-muted-foreground">
-            MDE POS &nbsp;•&nbsp; Error {{ status }}
-        </p>
+        <p class="absolute bottom-6 font-mono text-xs text-muted-foreground">MDE POS &nbsp;•&nbsp; Error {{ status }}</p>
     </div>
 </template>

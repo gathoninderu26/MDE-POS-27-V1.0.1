@@ -17,7 +17,7 @@ export interface ProductItem {
     taxRate: number; // e.g. 16 for 16% VAT
     minStock?: number;
     description?: string;
-    
+
     // Vertical-specific properties
     genericName?: string;
     dosage?: string;
@@ -99,7 +99,7 @@ export interface CompletedSale {
     mpesaCode?: string;
     mpesaPayerName?: string;
     status: 'Completed' | 'Refunded' | 'Held' | 'Void';
-    
+
     // Vertical metadata for receipts
     rxNumber?: string;
     doctorName?: string;
@@ -130,7 +130,7 @@ const state = reactive<{
     recentSales: CompletedSale[];
     pricingMode: 'retail' | 'wholesale';
     activeReceipt: CompletedSale | null;
-    
+
     // Active session vertical metadata
     activeRxNumber: string;
     activeDoctorName: string;
@@ -182,7 +182,7 @@ export function useCart() {
             const lineDiscount = lineGross * (item.discountPercent / 100);
             const lineNet = lineGross - lineDiscount;
             const itemTaxRate = (item.product.taxRate ?? 16) / 100;
-            return sum + (lineNet * itemTaxRate);
+            return sum + lineNet * itemTaxRate;
         }, 0);
     });
 

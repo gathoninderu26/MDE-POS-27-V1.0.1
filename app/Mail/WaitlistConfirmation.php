@@ -45,14 +45,14 @@ class WaitlistConfirmation extends Mailable
      */
     private function buildHtml(): string
     {
-        $lead         = $this->lead;
-        $name         = htmlspecialchars($lead->full_name ?: $lead->business_name ?: 'there');
-        $business     = htmlspecialchars($lead->business_name ?: 'Not specified');
-        $email        = htmlspecialchars($lead->email ?? '');
-        $phone        = htmlspecialchars($lead->phone ?: 'Not provided');
+        $lead = $this->lead;
+        $name = htmlspecialchars($lead->full_name ?: $lead->business_name ?: 'there');
+        $business = htmlspecialchars($lead->business_name ?: 'Not specified');
+        $email = htmlspecialchars($lead->email ?? '');
+        $phone = htmlspecialchars($lead->phone ?: 'Not provided');
         $businessType = htmlspecialchars($lead->business_type ?? 'Retail Store');
-        $refId        = str_pad((string) ($lead->id ?? 1), 5, '0', STR_PAD_LEFT);
-        $year         = date('Y');
+        $refId = str_pad((string) ($lead->id ?? 1), 5, '0', STR_PAD_LEFT);
+        $year = date('Y');
 
         return <<<HTML
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">

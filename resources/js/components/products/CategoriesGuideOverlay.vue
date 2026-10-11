@@ -9,19 +9,11 @@ import {
     Check,
     CheckCircle2,
     Compass,
-    HelpCircle,
     Info,
-    Keyboard,
     Layers,
-    Package,
-    PackageCheck,
-    PackagePlus,
-    Percent,
     Plus,
-    RotateCcw,
     Search,
     Sparkles,
-    Tag,
     TrendingUp,
     X,
     Zap,
@@ -73,7 +65,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 8,
         icon: Compass,
-        usedFor: 'Welcome to the Product Categories Control Center! Categories group your inventory catalog into logical departments, assign default packaging units (Bales, Boxes, Dozens, Pieces, Kg, Litres), standardize VAT tax rates, and power departmental sales analytics.',
+        usedFor:
+            'Welcome to the Product Categories Control Center! Categories group your inventory catalog into logical departments, assign default packaging units (Bales, Boxes, Dozens, Pieces, Kg, Litres), standardize VAT tax rates, and power departmental sales analytics.',
         capabilities: [
             'Catalog Grouping & Departments',
             'Default Packaging Unit Pre-selection',
@@ -102,7 +95,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 8,
         icon: Plus,
-        usedFor: 'Provision a new product category or department. Customize unique UI colors for POS touchscreens, select default packaging units (e.g. Bale, Box, Piece), and set default VAT tax rates (16% Standard or 0% Exempt).',
+        usedFor:
+            'Provision a new product category or department. Customize unique UI colors for POS touchscreens, select default packaging units (e.g. Bale, Box, Piece), and set default VAT tax rates (16% Standard or 0% Exempt).',
         capabilities: [
             'Department Name & Description',
             'Color Palette & POS Identification',
@@ -129,7 +123,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 12,
         icon: TrendingUp,
-        usedFor: 'Monitor aggregate department telemetry across your entire inventory — including total registered categories, catalog product coverage, total stock value at cost, and your highest-grossing department.',
+        usedFor:
+            'Monitor aggregate department telemetry across your entire inventory — including total registered categories, catalog product coverage, total stock value at cost, and your highest-grossing department.',
         capabilities: [
             'Total Category Count vs Unlinked',
             'Catalog Product Coverage',
@@ -154,13 +149,9 @@ const sections: TourSection[] = [
         rx: 10,
         icon: Box,
         usedFor: 'View the live breakdown of products across standard packaging units — such as Bales, Boxes, Dozens, Kilograms, Litres, and Pieces.',
-        capabilities: [
-            'Real-Time Unit Distribution Counts',
-            'Visual Packaging Unit Badges',
-            'Wholesale vs Retail Product Ratios',
-        ],
+        capabilities: ['Real-Time Unit Distribution Counts', 'Visual Packaging Unit Badges', 'Wholesale vs Retail Product Ratios'],
         howToUse: [
-            'Check the top packaging unit badges to understand your store\'s primary supply formats.',
+            "Check the top packaging unit badges to understand your store's primary supply formats.",
             'Ensure bulk wholesale items (Bales, Boxes) are mapped to dedicated categories for easy stocktaking.',
         ],
         proTip: 'Standardizing units across categories simplifies bulk purchase order generation and supplier invoice reconciliation.',
@@ -176,7 +167,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 12,
         icon: AlertTriangle,
-        usedFor: 'Automatically detect and import category names discovered during CSV product imports or POS migrations that do not yet exist as formal catalog departments.',
+        usedFor:
+            'Automatically detect and import category names discovered during CSV product imports or POS migrations that do not yet exist as formal catalog departments.',
         capabilities: [
             'One-Click Category Formalization',
             'Auto-Link Discovered CSV Categories',
@@ -199,7 +191,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 10,
         icon: Search,
-        usedFor: 'Filter categories instantly by keyword search, default packaging unit (e.g. Piece, Box, Bale, Kg), or active/inactive lifecycle status.',
+        usedFor:
+            'Filter categories instantly by keyword search, default packaging unit (e.g. Piece, Box, Bale, Kg), or active/inactive lifecycle status.',
         capabilities: [
             'Instant Real-Time Keyword Search',
             'Packaging Unit Dropdown Filter',
@@ -224,7 +217,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 14,
         icon: Layers,
-        usedFor: 'Review the comprehensive categories table with product counts, total stock units in warehouse, cost valuation, retail potential value, and inline editing or deletion actions.',
+        usedFor:
+            'Review the comprehensive categories table with product counts, total stock units in warehouse, cost valuation, retail potential value, and inline editing or deletion actions.',
         capabilities: [
             'Multi-Column Sorting (Name, Count, Stock, Valuation)',
             'Packaging Unit Badges & VAT Rate Indicators',
@@ -257,7 +251,7 @@ watch(
             internalStep.value = newVal;
             updateTargetPosition();
         }
-    }
+    },
 );
 
 const currentSection = computed(() => {
@@ -401,7 +395,7 @@ watch(
             window.removeEventListener('keydown', handleKeyDown);
         }
     },
-    { immediate: true }
+    { immediate: true },
 );
 
 onMounted(() => {
@@ -575,15 +569,9 @@ const speechBubbleTail = computed(() => {
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
         >
-            <div
-                v-if="open"
-                class="fixed inset-0 z-50 pointer-events-none select-none font-sans"
-            >
+            <div v-if="open" class="pointer-events-none fixed inset-0 z-50 select-none font-sans">
                 <!-- SVG Dimming Backdrop with Cutout Hole -->
-                <svg
-                    class="absolute inset-0 size-full pointer-events-none transition-all duration-300"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
+                <svg class="pointer-events-none absolute inset-0 size-full transition-all duration-300" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <!-- SVG Mask Hole -->
                         <mask id="categories-enjoyhint-mask">
@@ -611,7 +599,7 @@ const speechBubbleTail = computed(() => {
                         fill="#000000"
                         fill-opacity="0.75"
                         mask="url(#categories-enjoyhint-mask)"
-                        class="pointer-events-auto backdrop-blur-xs"
+                        class="backdrop-blur-xs pointer-events-auto"
                         @click="nextStep"
                     />
                 </svg>
@@ -619,7 +607,7 @@ const speechBubbleTail = computed(() => {
                 <!-- Clickable Spotlight Hole: clicking highlighted button triggers action or advances step -->
                 <div
                     v-if="targetRect"
-                    class="absolute pointer-events-auto cursor-pointer z-40"
+                    class="pointer-events-auto absolute z-40 cursor-pointer"
                     :style="{
                         top: `${targetRect.top - 4}px`,
                         left: `${targetRect.left - 4}px`,
@@ -633,7 +621,7 @@ const speechBubbleTail = computed(() => {
                 <!-- EnjoyHint Glowing Target Boundary Ring -->
                 <div
                     v-if="targetRect"
-                    class="absolute pointer-events-none transition-all duration-300 ease-out border-2 border-primary shadow-[0_0_35px_rgba(16,185,129,0.5)] ring-4 ring-primary/30"
+                    class="pointer-events-none absolute border-2 border-primary shadow-[0_0_35px_rgba(16,185,129,0.5)] ring-4 ring-primary/30 transition-all duration-300 ease-out"
                     :style="{
                         top: `${targetRect.top - 8}px`,
                         left: `${targetRect.left - 8}px`,
@@ -644,25 +632,15 @@ const speechBubbleTail = computed(() => {
                 ></div>
 
                 <!-- Guided Callout Text Bubble (Speech bubble dialog pointing directly to target) -->
-                <div
-                    ref="cardRef"
-                    class="absolute z-50 pointer-events-auto transition-all duration-300 ease-out"
-                    :style="cardStyle"
-                    @click.stop
-                >
+                <div ref="cardRef" class="pointer-events-auto absolute z-50 transition-all duration-300 ease-out" :style="cardStyle" @click.stop>
                     <!-- Speech Bubble Tail: Top (points UP to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'top'"
-                        class="absolute -top-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -top-3.5 z-30"
                         :style="{ left: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="24" height="15" viewBox="0 0 24 15" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,15 L 12,0 L 24,15"
-                                class="fill-muted/95 stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,15 L 12,0 L 24,15" class="fill-muted/95 stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="1" y="14" width="22" height="3" class="fill-muted/95" />
                         </svg>
                     </div>
@@ -670,16 +648,11 @@ const speechBubbleTail = computed(() => {
                     <!-- Speech Bubble Tail: Bottom (points DOWN to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'bottom'"
-                        class="absolute -bottom-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -bottom-3.5 z-30"
                         :style="{ left: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="24" height="15" viewBox="0 0 24 15" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,0 L 12,15 L 24,0"
-                                class="fill-muted/80 stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,0 L 12,15 L 24,0" class="fill-muted/80 stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="1" y="-2" width="22" height="3" class="fill-muted/80" />
                         </svg>
                     </div>
@@ -687,16 +660,11 @@ const speechBubbleTail = computed(() => {
                     <!-- Speech Bubble Tail: Left (points LEFT to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'left'"
-                        class="absolute -left-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -left-3.5 z-30"
                         :style="{ top: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="15" height="24" viewBox="0 0 15 24" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 15,0 L 0,12 L 15,24"
-                                class="fill-card stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 15,0 L 0,12 L 15,24" class="fill-card stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="14" y="1" width="3" height="22" class="fill-card" />
                         </svg>
                     </div>
@@ -704,37 +672,43 @@ const speechBubbleTail = computed(() => {
                     <!-- Speech Bubble Tail: Right (points RIGHT to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'right'"
-                        class="absolute -right-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -right-3.5 z-30"
                         :style="{ top: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="15" height="24" viewBox="0 0 15 24" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,0 L 15,12 L 0,24"
-                                class="fill-card stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,0 L 15,12 L 0,24" class="fill-card stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="-2" y="1" width="3" height="22" class="fill-card" />
                         </svg>
                     </div>
 
-                    <div class="rounded-2xl border-2 border-border bg-card shadow-2xl overflow-hidden text-card-foreground flex flex-col max-h-[calc(100vh-90px)] ring-1 ring-black/10 dark:ring-white/15">
+                    <div
+                        class="flex max-h-[calc(100vh-90px)] flex-col overflow-hidden rounded-2xl border-2 border-border bg-card text-card-foreground shadow-2xl ring-1 ring-black/10 dark:ring-white/15"
+                    >
                         <!-- Card Header with Visible Background -->
-                        <div class="px-3.5 py-2.5 sm:px-4 sm:py-3 bg-muted/80 border-b border-border flex items-center justify-between shrink-0">
-                            <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                                <div class="size-7.5 rounded-lg bg-primary/15 text-primary border border-primary/25 flex items-center justify-center font-bold text-xs shadow-2xs shrink-0">
+                        <div class="flex shrink-0 items-center justify-between border-b border-border bg-muted/80 px-3.5 py-2.5 sm:px-4 sm:py-3">
+                            <div class="flex min-w-0 flex-1 items-center gap-2.5">
+                                <div
+                                    class="size-7.5 shadow-2xs flex shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/15 text-xs font-bold text-primary"
+                                >
                                     <component :is="currentSection.icon" class="size-4" />
                                 </div>
                                 <div class="min-w-0 flex-1">
-                                    <div class="flex items-center gap-1.5 flex-wrap">
-                                        <Badge variant="outline" class="text-[9px] px-1.5 py-0 h-4 border-primary/40 bg-primary/10 text-primary uppercase font-mono font-bold shrink-0">
-                                            {{ currentSection.id === 'start' ? 'ORIENTATION' : `Part ${currentSection.stepNumber}/${sections.length - 1}` }}
+                                    <div class="flex flex-wrap items-center gap-1.5">
+                                        <Badge
+                                            variant="outline"
+                                            class="h-4 shrink-0 border-primary/40 bg-primary/10 px-1.5 py-0 font-mono text-[9px] font-bold uppercase text-primary"
+                                        >
+                                            {{
+                                                currentSection.id === 'start'
+                                                    ? 'ORIENTATION'
+                                                    : `Part ${currentSection.stepNumber}/${sections.length - 1}`
+                                            }}
                                         </Badge>
-                                        <span class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                                             {{ currentSection.tag }}
                                         </span>
                                     </div>
-                                    <h3 class="text-xs sm:text-sm font-bold text-foreground leading-snug mt-0.5 truncate">
+                                    <h3 class="mt-0.5 truncate text-xs font-bold leading-snug text-foreground sm:text-sm">
                                         {{ currentSection.title }}
                                     </h3>
                                 </div>
@@ -746,7 +720,7 @@ const speechBubbleTail = computed(() => {
                                 variant="ghost"
                                 size="sm"
                                 @click="close"
-                                class="h-6 px-2 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/80 shrink-0 gap-1 rounded-md ml-1"
+                                class="ml-1 h-6 shrink-0 gap-1 rounded-md px-2 text-[11px] font-semibold text-muted-foreground hover:bg-muted/80 hover:text-foreground"
                                 title="Exit Tour (Esc)"
                             >
                                 <span>Exit</span>
@@ -755,14 +729,14 @@ const speechBubbleTail = computed(() => {
                         </div>
 
                         <!-- Card Body -->
-                        <div class="p-3.5 space-y-3 overflow-y-auto max-h-[min(500px,calc(100vh-200px))] text-xs">
+                        <div class="max-h-[min(500px,calc(100vh-200px))] space-y-3 overflow-y-auto p-3.5 text-xs">
                             <!-- 1. What it is used for -->
                             <div class="space-y-1.5">
                                 <div class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-primary">
                                     <Info class="size-3.5" />
                                     <span>Purpose & Function:</span>
                                 </div>
-                                <p class="text-xs text-foreground/90 font-normal leading-relaxed">
+                                <p class="text-xs font-normal leading-relaxed text-foreground/90">
                                     {{ currentSection.usedFor }}
                                 </p>
 
@@ -771,16 +745,16 @@ const speechBubbleTail = computed(() => {
                                     <span
                                         v-for="(cap, i) in currentSection.capabilities"
                                         :key="i"
-                                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-[10px] font-medium text-foreground border border-border/60"
+                                        class="inline-flex items-center gap-1 rounded-md border border-border/60 bg-muted px-2 py-0.5 text-[10px] font-medium text-foreground"
                                     >
-                                        <CheckCircle2 class="size-2.5 text-primary shrink-0" />
+                                        <CheckCircle2 class="size-2.5 shrink-0 text-primary" />
                                         {{ cap }}
                                     </span>
                                 </div>
                             </div>
 
                             <!-- 2. Step-by-Step Instructions -->
-                            <div class="space-y-1.5 pt-1 border-t border-border/60">
+                            <div class="space-y-1.5 border-t border-border/60 pt-1">
                                 <div class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                                     <Sparkles class="size-3.5 text-amber-500" />
                                     <span>How to Use:</span>
@@ -791,19 +765,24 @@ const speechBubbleTail = computed(() => {
                                         :key="i"
                                         class="flex items-start gap-1.5 text-[11px] leading-relaxed"
                                     >
-                                        <span class="size-1.5 rounded-full bg-primary mt-1.5 shrink-0"></span>
+                                        <span class="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary"></span>
                                         <span>{{ instruction }}</span>
                                     </li>
                                 </ul>
                             </div>
 
                             <!-- 3. Store Manager Pro Tip -->
-                            <div v-if="currentSection.proTip" class="p-2.5 sm:p-3 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-950 dark:text-amber-100 space-y-1">
-                                <span class="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-300 text-[10px] uppercase tracking-wide">
-                                    <Zap class="size-3.5 text-amber-600 dark:text-amber-400 fill-amber-500/30 shrink-0" />
+                            <div
+                                v-if="currentSection.proTip"
+                                class="space-y-1 rounded-lg border border-amber-500/25 bg-amber-500/10 p-2.5 text-amber-950 dark:text-amber-100 sm:p-3"
+                            >
+                                <span
+                                    class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-amber-900 dark:text-amber-300"
+                                >
+                                    <Zap class="size-3.5 shrink-0 fill-amber-500/30 text-amber-600 dark:text-amber-400" />
                                     <span>Store Manager Tip</span>
                                 </span>
-                                <p class="text-[11px] leading-relaxed font-medium">
+                                <p class="text-[11px] font-medium leading-relaxed">
                                     {{ currentSection.proTip }}
                                 </p>
                             </div>
@@ -812,7 +791,7 @@ const speechBubbleTail = computed(() => {
                                 <button
                                     type="button"
                                     @click="handleAction"
-                                    class="w-full py-2 px-3 rounded-lg bg-primary/15 hover:bg-primary/25 text-primary text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer border border-primary/30 shadow-2xs active:scale-[0.99]"
+                                    class="shadow-2xs flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/15 px-3 py-2 text-xs font-bold text-primary transition-colors hover:bg-primary/25 active:scale-[0.99]"
                                 >
                                     <span>{{ currentSection.actionLabel }}</span>
                                     <ArrowRight class="size-3.5 shrink-0" />
@@ -821,13 +800,13 @@ const speechBubbleTail = computed(() => {
                         </div>
 
                         <!-- EnjoyHint Navigation Footer -->
-                        <div class="px-3.5 py-2.5 bg-muted/70 border-t border-border flex items-center justify-between shrink-0">
+                        <div class="flex shrink-0 items-center justify-between border-t border-border bg-muted/70 px-3.5 py-2.5">
                             <!-- Previous Button -->
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                class="h-7 text-xs px-2.5 gap-1 text-muted-foreground hover:text-foreground font-semibold"
+                                class="h-7 gap-1 px-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground"
                                 :disabled="internalStep === 0"
                                 @click="prevStep"
                             >
@@ -842,8 +821,8 @@ const speechBubbleTail = computed(() => {
                                     :key="idx"
                                     type="button"
                                     @click="goToStep(idx)"
-                                    class="size-2 rounded-full transition-all cursor-pointer"
-                                    :class="idx === internalStep ? 'bg-primary w-4' : 'bg-muted-foreground/30 hover:bg-muted-foreground/60'"
+                                    class="size-2 cursor-pointer rounded-full transition-all"
+                                    :class="idx === internalStep ? 'w-4 bg-primary' : 'bg-muted-foreground/30 hover:bg-muted-foreground/60'"
                                     :title="idx === 0 ? 'Start: Page Guide' : `Part ${idx}`"
                                 ></button>
                             </div>
@@ -852,10 +831,12 @@ const speechBubbleTail = computed(() => {
                             <Button
                                 type="button"
                                 size="sm"
-                                class="h-7 text-xs px-3 gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-xs cursor-pointer"
+                                class="shadow-xs h-7 cursor-pointer gap-1.5 bg-primary px-3 text-xs font-bold text-primary-foreground hover:bg-primary/90"
                                 @click="nextStep"
                             >
-                                <span>{{ currentSection.id === 'start' ? 'Start Tour' : internalStep === sections.length - 1 ? 'Done' : 'Next' }}</span>
+                                <span>{{
+                                    currentSection.id === 'start' ? 'Start Tour' : internalStep === sections.length - 1 ? 'Done' : 'Next'
+                                }}</span>
                                 <ArrowRight v-if="internalStep < sections.length - 1" class="size-3" />
                                 <Check v-else class="size-3" />
                             </Button>

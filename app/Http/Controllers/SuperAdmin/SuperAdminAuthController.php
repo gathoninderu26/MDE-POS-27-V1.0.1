@@ -25,7 +25,7 @@ class SuperAdminAuthController extends Controller
 
         return Inertia::render('super-admin/SuperAdminLogin', [
             'status' => $request->session()->get('status'),
-            'submitUrl' => '/' . ltrim($request->path(), '/'),
+            'submitUrl' => '/'.ltrim($request->path(), '/'),
         ]);
     }
 

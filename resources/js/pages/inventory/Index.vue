@@ -1,18 +1,17 @@
 <script setup lang="ts">
+import BarcodeLabelModal, { type ProductLabelData } from '@/components/inventory/BarcodeLabelModal.vue';
+import ShelfPriceTagModal, { type ShelfPriceTagData } from '@/components/inventory/ShelfPriceTagModal.vue';
+import StockGuideOverlay from '@/components/inventory/StockGuideOverlay.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import DataTable from '@/components/ui/DataTable.vue';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import StatCard from '@/components/ui/StatCard.vue';
-import BarcodeLabelModal, { type ProductLabelData } from '@/components/inventory/BarcodeLabelModal.vue';
-import ShelfPriceTagModal, { type ShelfPriceTagData } from '@/components/inventory/ShelfPriceTagModal.vue';
-import StockGuideOverlay from '@/components/inventory/StockGuideOverlay.vue';
 import { useBarcodeScanner } from '@/composables/useBarcodeScanner';
 import { useBranch } from '@/composables/useBranch';
-import { formatCurrency, formatDateTime } from '@/composables/useCurrency';
+import { formatCurrency } from '@/composables/useCurrency';
 import { useFeatures } from '@/composables/useFeatures';
 import { useTenant } from '@/composables/useTenant';
 import { useToast } from '@/composables/useToast';
@@ -20,38 +19,29 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import {
-    AlertCircle,
     AlertTriangle,
     ArrowLeftRight,
     Boxes,
     Building2,
-    Check,
     CheckCircle2,
     ChevronLeft,
     ChevronRight,
     ChevronsLeft,
     ChevronsRight,
-    Clock,
     Compass,
     Download,
-    Eye,
-    FileSpreadsheet,
     History,
     Package,
     Plus,
     Printer,
     RotateCcw,
-    Scale,
     ScanBarcode,
     Search,
     SlidersHorizontal,
-    Sparkles,
     Tag,
     TrendingDown,
     TrendingUp,
-    Truck,
     X,
-    Zap,
 } from 'lucide-vue-next';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
@@ -162,13 +152,104 @@ onMounted(() => {
 
 // Default items for mock/fallback
 const defaultStockItems = [
-    { id: '1', product: 'Brookside Whole Milk 500ml', sku: 'DAI-001', barcode: '616110000101', category: 'Dairy', branch: 'Westlands Mega Store', available: 48, cost: 65, retail: 80, reorder: 15, unit: 'pcs', status: 'In Stock' },
-    { id: '2', product: 'Broadways White Bread 400g', sku: 'BAK-002', barcode: '616110000202', category: 'Bakery', branch: 'Westlands Mega Store', available: 35, cost: 55, retail: 70, reorder: 10, unit: 'pcs', status: 'In Stock' },
-    { id: '3', product: 'Mumias Pure Sugar 1kg', sku: 'GRO-003', barcode: '616110000303', category: 'Groceries', branch: 'Westlands Mega Store', available: 80, cost: 155, retail: 185, reorder: 20, unit: 'kg', status: 'In Stock' },
-    { id: '4', product: 'Pembe Maize Flour 2kg', sku: 'GRO-004', barcode: '616110000404', category: 'Groceries', branch: 'Westlands Mega Store', available: 120, cost: 140, retail: 175, reorder: 25, unit: 'bales', status: 'In Stock' },
-    { id: '5', product: 'Fresh Fri Vegetable Oil 2L', sku: 'OIL-006', barcode: '616110000606', category: 'Oils & Fats', branch: 'Westlands Mega Store', available: 24, cost: 580, retail: 680, reorder: 8, unit: 'pcs', status: 'In Stock' },
-    { id: '6', product: 'Ketepa Pride Tea Leaves 500g', sku: 'BEV-007', barcode: '616110000707', category: 'Beverages', branch: 'Westlands Mega Store', available: 4, cost: 240, retail: 295, reorder: 10, unit: 'pcs', status: 'Low Stock' },
-    { id: '7', product: 'Kiwi Shoe Polish Black 100ml', sku: 'HOU-015', barcode: '616110000808', category: 'Household Care', branch: 'Westlands Mega Store', available: 0, cost: 95, retail: 130, reorder: 5, unit: 'pcs', status: 'Out of Stock' },
+    {
+        id: '1',
+        product: 'Brookside Whole Milk 500ml',
+        sku: 'DAI-001',
+        barcode: '616110000101',
+        category: 'Dairy',
+        branch: 'Westlands Mega Store',
+        available: 48,
+        cost: 65,
+        retail: 80,
+        reorder: 15,
+        unit: 'pcs',
+        status: 'In Stock',
+    },
+    {
+        id: '2',
+        product: 'Broadways White Bread 400g',
+        sku: 'BAK-002',
+        barcode: '616110000202',
+        category: 'Bakery',
+        branch: 'Westlands Mega Store',
+        available: 35,
+        cost: 55,
+        retail: 70,
+        reorder: 10,
+        unit: 'pcs',
+        status: 'In Stock',
+    },
+    {
+        id: '3',
+        product: 'Mumias Pure Sugar 1kg',
+        sku: 'GRO-003',
+        barcode: '616110000303',
+        category: 'Groceries',
+        branch: 'Westlands Mega Store',
+        available: 80,
+        cost: 155,
+        retail: 185,
+        reorder: 20,
+        unit: 'kg',
+        status: 'In Stock',
+    },
+    {
+        id: '4',
+        product: 'Pembe Maize Flour 2kg',
+        sku: 'GRO-004',
+        barcode: '616110000404',
+        category: 'Groceries',
+        branch: 'Westlands Mega Store',
+        available: 120,
+        cost: 140,
+        retail: 175,
+        reorder: 25,
+        unit: 'bales',
+        status: 'In Stock',
+    },
+    {
+        id: '5',
+        product: 'Fresh Fri Vegetable Oil 2L',
+        sku: 'OIL-006',
+        barcode: '616110000606',
+        category: 'Oils & Fats',
+        branch: 'Westlands Mega Store',
+        available: 24,
+        cost: 580,
+        retail: 680,
+        reorder: 8,
+        unit: 'pcs',
+        status: 'In Stock',
+    },
+    {
+        id: '6',
+        product: 'Ketepa Pride Tea Leaves 500g',
+        sku: 'BEV-007',
+        barcode: '616110000707',
+        category: 'Beverages',
+        branch: 'Westlands Mega Store',
+        available: 4,
+        cost: 240,
+        retail: 295,
+        reorder: 10,
+        unit: 'pcs',
+        status: 'Low Stock',
+    },
+    {
+        id: '7',
+        product: 'Kiwi Shoe Polish Black 100ml',
+        sku: 'HOU-015',
+        barcode: '616110000808',
+        category: 'Household Care',
+        branch: 'Westlands Mega Store',
+        available: 0,
+        cost: 95,
+        retail: 130,
+        reorder: 5,
+        unit: 'pcs',
+        status: 'Out of Stock',
+    },
 ];
 
 const stockItems = computed(() => {
@@ -271,12 +352,7 @@ const filteredAuditRows = computed(() => {
     let list = auditRows.value;
     const q = auditSearchQuery.value.toLowerCase().trim();
     if (q) {
-        list = list.filter(
-            (r) =>
-                r.productName.toLowerCase().includes(q) ||
-                r.sku.toLowerCase().includes(q) ||
-                r.barcode.toLowerCase().includes(q),
-        );
+        list = list.filter((r) => r.productName.toLowerCase().includes(q) || r.sku.toLowerCase().includes(q) || r.barcode.toLowerCase().includes(q));
     }
     if (auditStatusFilter.value === 'discrepancy') {
         list = list.filter((r) => r.variance !== 0);
@@ -354,16 +430,17 @@ const handleAuditBarcodeScan = (scannedCode: string) => {
     if (!scannedCode) return;
     const code = scannedCode.trim().toLowerCase();
 
-    const matched = auditRows.value.find(
-        (r) => r.barcode.toLowerCase() === code || r.sku.toLowerCase() === code,
-    );
+    const matched = auditRows.value.find((r) => r.barcode.toLowerCase() === code || r.sku.toLowerCase() === code);
 
     if (matched) {
         matched.countedStock++;
         matched.variance = matched.countedStock - matched.systemStock;
         matched.varianceCost = matched.variance * matched.unitCost;
         playScanBeep('success');
-        success(`Counted: ${matched.productName}`, `Count increased to ${matched.countedStock} units (Variance: ${matched.variance >= 0 ? '+' : ''}${matched.variance})`);
+        success(
+            `Counted: ${matched.productName}`,
+            `Count increased to ${matched.countedStock} units (Variance: ${matched.variance >= 0 ? '+' : ''}${matched.variance})`,
+        );
 
         // If the item matches, ensure it is brought into view on the current page
         const idx = filteredAuditRows.value.findIndex((r) => r.productId === matched.productId);
@@ -413,7 +490,7 @@ const handleReconcileStock = () => {
 
     success(
         'Stock Count Reconciled',
-        `Adjusted ${changesCount} inventory lines. Total variance: ${totalVarianceUnits.value >= 0 ? '+' : ''}${totalVarianceUnits.value} units (${formatCurrency(totalVarianceValuation.value)}).`
+        `Adjusted ${changesCount} inventory lines. Total variance: ${totalVarianceUnits.value >= 0 ? '+' : ''}${totalVarianceUnits.value} units (${formatCurrency(totalVarianceValuation.value)}).`,
     );
 };
 
@@ -567,11 +644,39 @@ const openShelfPriceTagModal = (item: any) => {
 // ============================================================
 // 4. BRANCH STOCK TRANSFERS
 // ============================================================
-const transfers = ref(isDemo.value ? [
-    { id: 'TRF-4091', date: '2026-08-23 08:30', from: 'Industrial Area Central Warehouse', to: 'Westlands Mega Store', product: 'Pembe Maize Flour 2kg', qty: 50, status: 'Approved' },
-    { id: 'TRF-4090', date: '2026-08-22 14:15', from: 'CBD City Square Branch', to: 'Kilimani Outlet', product: 'Fresh Fri Vegetable Oil 2L', qty: 12, status: 'Completed' },
-    { id: 'TRF-4089', date: '2026-08-21 11:00', from: 'Westlands Mega Store', to: 'CBD City Square Branch', product: 'Brookside Whole Milk 500ml', qty: 30, status: 'Completed' },
-] : []);
+const transfers = ref(
+    isDemo.value
+        ? [
+              {
+                  id: 'TRF-4091',
+                  date: '2026-08-23 08:30',
+                  from: 'Industrial Area Central Warehouse',
+                  to: 'Westlands Mega Store',
+                  product: 'Pembe Maize Flour 2kg',
+                  qty: 50,
+                  status: 'Approved',
+              },
+              {
+                  id: 'TRF-4090',
+                  date: '2026-08-22 14:15',
+                  from: 'CBD City Square Branch',
+                  to: 'Kilimani Outlet',
+                  product: 'Fresh Fri Vegetable Oil 2L',
+                  qty: 12,
+                  status: 'Completed',
+              },
+              {
+                  id: 'TRF-4089',
+                  date: '2026-08-21 11:00',
+                  from: 'Westlands Mega Store',
+                  to: 'CBD City Square Branch',
+                  product: 'Brookside Whole Milk 500ml',
+                  qty: 30,
+                  status: 'Completed',
+              },
+          ]
+        : [],
+);
 
 const transferColumns = [
     { key: 'id', label: 'Transfer Ref' },
@@ -613,11 +718,36 @@ const handleCompleteTransfer = (trf: any) => {
 // ============================================================
 // 5. STOCK ADJUSTMENTS & SHRINKAGE LOG
 // ============================================================
-const adjustments = ref(isDemo.value ? [
-    { id: 'ADJ-102', date: '2026-08-23 09:10', product: 'Ketepa Pride Tea Leaves 500g', change: -2, reason: 'Damaged in Store / Breakage', by: 'David M.' },
-    { id: 'ADJ-101', date: '2026-08-22 16:45', product: 'Brookside Whole Milk 500ml', change: -3, reason: 'Expired / Spoilage', by: 'Wamtesh K.' },
-    { id: 'ADJ-100', date: '2026-08-20 10:20', product: 'Mumias Pure Sugar 1kg', change: +10, reason: 'Physical Stock Take Audit Reconciliation', by: 'Admin' },
-] : []);
+const adjustments = ref(
+    isDemo.value
+        ? [
+              {
+                  id: 'ADJ-102',
+                  date: '2026-08-23 09:10',
+                  product: 'Ketepa Pride Tea Leaves 500g',
+                  change: -2,
+                  reason: 'Damaged in Store / Breakage',
+                  by: 'David M.',
+              },
+              {
+                  id: 'ADJ-101',
+                  date: '2026-08-22 16:45',
+                  product: 'Brookside Whole Milk 500ml',
+                  change: -3,
+                  reason: 'Expired / Spoilage',
+                  by: 'Wamtesh K.',
+              },
+              {
+                  id: 'ADJ-100',
+                  date: '2026-08-20 10:20',
+                  product: 'Mumias Pure Sugar 1kg',
+                  change: +10,
+                  reason: 'Physical Stock Take Audit Reconciliation',
+                  by: 'Admin',
+              },
+          ]
+        : [],
+);
 
 const adjustmentColumns = [
     { key: 'id', label: 'Adjustment Ref' },
@@ -632,7 +762,18 @@ const adjustmentColumns = [
 // 6. CSV EXPORT UTILITY
 // ============================================================
 const exportStockCsv = () => {
-    const headers = ['Product Name', 'SKU', 'Barcode', 'Branch Location', 'Available Units', 'Unit Cost (KES)', 'Selling Price (KES)', 'Valuation (KES)', 'Reorder Level', 'Stock Health'];
+    const headers = [
+        'Product Name',
+        'SKU',
+        'Barcode',
+        'Branch Location',
+        'Available Units',
+        'Unit Cost (KES)',
+        'Selling Price (KES)',
+        'Valuation (KES)',
+        'Reorder Level',
+        'Stock Health',
+    ];
     const rows = stockItems.value.map((i) => [
         `"${i.product.replace(/"/g, '""')}"`,
         `"${i.sku}"`,
@@ -663,15 +804,15 @@ const exportStockCsv = () => {
     <Head title="Inventory & Stock Management" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
+        <div class="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
             <!-- Header Section -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h2 class="text-2xl font-bold text-foreground flex items-center gap-2">
+                    <h2 class="flex items-center gap-2 text-2xl font-bold text-foreground">
                         <Boxes class="size-6 text-primary" />
                         Inventory & Multi-Branch Stock Control
                     </h2>
-                    <p class="text-xs text-muted-foreground mt-0.5">
+                    <p class="mt-0.5 text-xs text-muted-foreground">
                         Enterprise stock auditing, barcode scanning, shrinkage reconciliation, and thermal label generation.
                     </p>
                 </div>
@@ -681,10 +822,10 @@ const exportStockCsv = () => {
                         id="stock-tour-guide-btn"
                         size="sm"
                         variant="outline"
-                        class="h-9 text-xs gap-1.5 border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 font-semibold shadow-xs"
+                        class="shadow-xs h-9 gap-1.5 border-primary/40 bg-primary/10 text-xs font-semibold text-primary hover:bg-primary/20"
                         @click="openGuide()"
                     >
-                        <Compass class="size-4 animate-spin-slow text-primary" />
+                        <Compass class="animate-spin-slow size-4 text-primary" />
                         <span>Page Guide</span>
                     </Button>
 
@@ -692,7 +833,7 @@ const exportStockCsv = () => {
                         id="stock-tour-btn-export"
                         size="sm"
                         variant="outline"
-                        class="h-9 text-xs gap-1.5 border-border shadow-xs"
+                        class="shadow-xs h-9 gap-1.5 border-border text-xs"
                         @click="exportStockCsv"
                     >
                         <Download class="size-3.5 text-muted-foreground" />
@@ -703,7 +844,7 @@ const exportStockCsv = () => {
                         id="stock-tour-btn-audit"
                         size="sm"
                         variant="outline"
-                        class="h-9 text-xs gap-1.5 bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 font-semibold shadow-xs"
+                        class="shadow-xs h-9 gap-1.5 border-emerald-500/30 bg-emerald-500/10 text-xs font-semibold text-emerald-700 hover:bg-emerald-500/20 dark:text-emerald-300"
                         @click="startStockTake"
                     >
                         <ScanBarcode class="size-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -714,7 +855,7 @@ const exportStockCsv = () => {
                         id="stock-tour-btn-adjust"
                         size="sm"
                         variant="outline"
-                        class="h-9 text-xs gap-1.5 border-border shadow-xs"
+                        class="shadow-xs h-9 gap-1.5 border-border text-xs"
                         @click="openAdjustModal()"
                     >
                         <SlidersHorizontal class="size-3.5" />
@@ -725,7 +866,7 @@ const exportStockCsv = () => {
                         v-if="isMultiBranch"
                         id="stock-tour-btn-transfer"
                         size="sm"
-                        class="h-9 text-xs gap-1.5 bg-primary shadow-xs"
+                        class="shadow-xs h-9 gap-1.5 bg-primary text-xs"
                         @click="transferModalOpen = true"
                     >
                         <ArrowLeftRight class="size-3.5" />
@@ -769,13 +910,13 @@ const exportStockCsv = () => {
             </div>
 
             <!-- Tab Switcher Bar -->
-            <div id="stock-tour-tabs" class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-border pb-3">
-                <div class="flex rounded-xl border border-border/80 p-1 bg-card text-xs font-semibold">
+            <div id="stock-tour-tabs" class="flex flex-col items-start justify-between gap-3 border-b border-border pb-3 sm:flex-row sm:items-center">
+                <div class="flex rounded-xl border border-border/80 bg-card p-1 text-xs font-semibold">
                     <button
                         type="button"
                         :class="[
-                            'px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5',
-                            activeTab === 'overview' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground',
+                            'flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 transition-all',
+                            activeTab === 'overview' ? 'shadow-xs bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
                         ]"
                         @click="activeTab = 'overview'"
                     >
@@ -786,21 +927,23 @@ const exportStockCsv = () => {
                     <button
                         type="button"
                         :class="[
-                            'px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5',
-                            activeTab === 'audit' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground',
+                            'flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 transition-all',
+                            activeTab === 'audit' ? 'shadow-xs bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
                         ]"
                         @click="startStockTake"
                     >
                         <ScanBarcode class="size-3.5" />
                         Stock Take & Audit
-                        <span v-if="isAuditing" class="size-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                        <span v-if="isAuditing" class="size-1.5 animate-ping rounded-full bg-emerald-400"></span>
                     </button>
 
                     <button
                         type="button"
                         :class="[
-                            'px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5',
-                            activeTab === 'adjustments' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground',
+                            'flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 transition-all',
+                            activeTab === 'adjustments'
+                                ? 'shadow-xs bg-primary text-primary-foreground'
+                                : 'text-muted-foreground hover:text-foreground',
                         ]"
                         @click="activeTab = 'adjustments'"
                     >
@@ -812,8 +955,10 @@ const exportStockCsv = () => {
                         v-if="isMultiBranch"
                         type="button"
                         :class="[
-                            'px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5',
-                            activeTab === 'transfers' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground',
+                            'flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 transition-all',
+                            activeTab === 'transfers'
+                                ? 'shadow-xs bg-primary text-primary-foreground'
+                                : 'text-muted-foreground hover:text-foreground',
                         ]"
                         @click="activeTab = 'transfers'"
                     >
@@ -823,12 +968,14 @@ const exportStockCsv = () => {
                 </div>
 
                 <!-- Stock Health Filters (Active on Overview Tab) -->
-                <div v-if="activeTab === 'overview'" class="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/60 text-xs">
+                <div v-if="activeTab === 'overview'" class="flex items-center gap-1 rounded-lg border border-border/60 bg-muted/40 p-1 text-xs">
                     <button
                         type="button"
                         :class="[
-                            'px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors',
-                            stockStatusFilter === 'all' ? 'bg-background shadow-xs text-foreground font-bold' : 'text-muted-foreground hover:text-foreground'
+                            'rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors',
+                            stockStatusFilter === 'all'
+                                ? 'shadow-xs bg-background font-bold text-foreground'
+                                : 'text-muted-foreground hover:text-foreground',
                         ]"
                         @click="stockStatusFilter = 'all'"
                     >
@@ -837,8 +984,10 @@ const exportStockCsv = () => {
                     <button
                         type="button"
                         :class="[
-                            'px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors',
-                            stockStatusFilter === 'in_stock' ? 'bg-background shadow-xs text-emerald-600 font-bold' : 'text-muted-foreground hover:text-foreground'
+                            'rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors',
+                            stockStatusFilter === 'in_stock'
+                                ? 'shadow-xs bg-background font-bold text-emerald-600'
+                                : 'text-muted-foreground hover:text-foreground',
                         ]"
                         @click="stockStatusFilter = 'in_stock'"
                     >
@@ -847,8 +996,10 @@ const exportStockCsv = () => {
                     <button
                         type="button"
                         :class="[
-                            'px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors',
-                            stockStatusFilter === 'low_stock' ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold' : 'text-muted-foreground hover:text-foreground'
+                            'rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors',
+                            stockStatusFilter === 'low_stock'
+                                ? 'bg-amber-500/20 font-bold text-amber-700 dark:text-amber-300'
+                                : 'text-muted-foreground hover:text-foreground',
                         ]"
                         @click="stockStatusFilter = 'low_stock'"
                     >
@@ -857,8 +1008,10 @@ const exportStockCsv = () => {
                     <button
                         type="button"
                         :class="[
-                            'px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors',
-                            stockStatusFilter === 'out_of_stock' ? 'bg-rose-500/20 text-rose-700 dark:text-rose-300 font-bold' : 'text-muted-foreground hover:text-foreground'
+                            'rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors',
+                            stockStatusFilter === 'out_of_stock'
+                                ? 'bg-rose-500/20 font-bold text-rose-700 dark:text-rose-300'
+                                : 'text-muted-foreground hover:text-foreground',
                         ]"
                         @click="stockStatusFilter = 'out_of_stock'"
                     >
@@ -880,8 +1033,8 @@ const exportStockCsv = () => {
                 >
                     <template #cell-product="{ row }">
                         <div :id="row.id === filteredStockItems[0]?.id ? 'stock-tour-col-product' : undefined">
-                            <div class="font-bold text-foreground leading-tight">{{ row.product }}</div>
-                            <div class="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground font-mono">
+                            <div class="font-bold leading-tight text-foreground">{{ row.product }}</div>
+                            <div class="mt-0.5 flex items-center gap-2 font-mono text-[11px] text-muted-foreground">
                                 <span>SKU: {{ row.sku }}</span>
                                 <span>•</span>
                                 <span class="flex items-center gap-1 text-primary">
@@ -893,16 +1046,19 @@ const exportStockCsv = () => {
                     </template>
 
                     <template #cell-branch="{ row }">
-                        <div :id="row.id === filteredStockItems[0]?.id ? 'stock-tour-col-branch' : undefined" class="flex items-center gap-1.5 text-xs">
+                        <div
+                            :id="row.id === filteredStockItems[0]?.id ? 'stock-tour-col-branch' : undefined"
+                            class="flex items-center gap-1.5 text-xs"
+                        >
                             <Building2 class="size-3.5 text-muted-foreground" />
                             <span>{{ row.branch }}</span>
                         </div>
                     </template>
 
                     <template #cell-available="{ row }">
-                        <div :id="row.id === filteredStockItems[0]?.id ? 'stock-tour-col-stock' : undefined" class="font-mono text-center">
-                            <span class="font-bold text-sm text-foreground">{{ row.available }}</span>
-                            <span class="text-[10px] text-muted-foreground ml-1">{{ row.unit }}</span>
+                        <div :id="row.id === filteredStockItems[0]?.id ? 'stock-tour-col-stock' : undefined" class="text-center font-mono">
+                            <span class="text-sm font-bold text-foreground">{{ row.available }}</span>
+                            <span class="ml-1 text-[10px] text-muted-foreground">{{ row.unit }}</span>
                             <div class="text-[10px] text-muted-foreground">Min: {{ row.reorder }}</div>
                         </div>
                     </template>
@@ -917,16 +1073,14 @@ const exportStockCsv = () => {
                     <template #cell-value="{ row }">
                         <div class="text-right font-mono">
                             <span class="font-bold text-foreground">{{ formatCurrency(row.value) }}</span>
-                            <div class="text-[10px] text-emerald-600 dark:text-emerald-400">
-                                Pot: {{ formatCurrency(row.retailValue) }}
-                            </div>
+                            <div class="text-[10px] text-emerald-600 dark:text-emerald-400">Pot: {{ formatCurrency(row.retailValue) }}</div>
                         </div>
                     </template>
 
                     <template #cell-status="{ row }">
                         <Badge
                             :variant="row.status === 'In Stock' ? 'success' : row.status === 'Low Stock' ? 'warning' : 'destructive'"
-                            class="text-[10px] py-0.5"
+                            class="py-0.5 text-[10px]"
                         >
                             {{ row.status }}
                         </Badge>
@@ -938,7 +1092,7 @@ const exportStockCsv = () => {
                                 :id="row.id === filteredStockItems[0]?.id ? 'stock-tour-btn-label' : undefined"
                                 variant="ghost"
                                 size="sm"
-                                class="h-7 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground"
+                                class="h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground"
                                 @click="openBarcodeLabelModal(row)"
                                 title="Print Barcode Labels"
                             >
@@ -950,7 +1104,7 @@ const exportStockCsv = () => {
                                 :id="row.id === filteredStockItems[0]?.id ? 'stock-tour-btn-tag' : undefined"
                                 variant="ghost"
                                 size="sm"
-                                class="h-7 px-2 text-xs gap-1 text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400"
+                                class="h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400"
                                 @click="openShelfPriceTagModal(row)"
                                 title="Print Shelf Price Tag (No Barcode)"
                             >
@@ -962,7 +1116,7 @@ const exportStockCsv = () => {
                                 :id="row.id === filteredStockItems[0]?.id ? 'stock-tour-btn-adjust' : undefined"
                                 variant="outline"
                                 size="sm"
-                                class="h-7 px-2 text-xs gap-1"
+                                class="h-7 gap-1 px-2 text-xs"
                                 @click="openAdjustModal(row)"
                                 title="Quick Stock Adjustment"
                             >
@@ -979,17 +1133,17 @@ const exportStockCsv = () => {
             <!-- ============================================================ -->
             <div v-if="activeTab === 'audit'" class="space-y-4">
                 <!-- Barcode Scanner Audit Control Bar -->
-                <div id="stock-tour-audit-box" class="p-4 rounded-xl border border-border/80 bg-card shadow-sm space-y-3">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div id="stock-tour-audit-box" class="space-y-3 rounded-xl border border-border/80 bg-card p-4 shadow-sm">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <div class="flex items-center gap-2">
                                 <h3 class="text-base font-bold text-foreground">Live Physical Stock Take Mode</h3>
-                                <Badge variant="success" class="text-[10px] gap-1 py-0.5">
-                                    <span class="size-1.5 rounded-full bg-white animate-pulse"></span>
+                                <Badge variant="success" class="gap-1 py-0.5 text-[10px]">
+                                    <span class="size-1.5 animate-pulse rounded-full bg-white"></span>
                                     Hardware Scanner Armed
                                 </Badge>
                             </div>
-                            <p class="text-xs text-muted-foreground mt-0.5">
+                            <p class="mt-0.5 text-xs text-muted-foreground">
                                 Scan items using USB/Bluetooth barcode scanner or enter quantities. System automatically flags count variances.
                             </p>
                         </div>
@@ -998,7 +1152,7 @@ const exportStockCsv = () => {
                             <Button
                                 id="stock-tour-audit-reconcile"
                                 size="sm"
-                                class="h-8 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-xs font-semibold shadow-xs"
+                                class="shadow-xs h-8 gap-1.5 bg-emerald-600 text-xs font-semibold hover:bg-emerald-700"
                                 @click="handleReconcileStock"
                             >
                                 <CheckCircle2 class="size-3.5" />
@@ -1016,45 +1170,53 @@ const exportStockCsv = () => {
                                 v-model="auditScanInput"
                                 type="text"
                                 placeholder="Scan item barcode or enter SKU here..."
-                                class="h-10 w-full rounded-lg border border-input bg-muted/20 pl-9 pr-24 text-xs font-mono font-semibold placeholder:text-muted-foreground focus:bg-background focus:ring-2 focus:ring-emerald-500"
+                                class="h-10 w-full rounded-lg border border-input bg-muted/20 pl-9 pr-24 font-mono text-xs font-semibold placeholder:text-muted-foreground focus:bg-background focus:ring-2 focus:ring-emerald-500"
                                 @keydown.enter.prevent="handleAuditBarcodeScan(auditScanInput)"
                             />
-                            <div class="absolute right-2.5 top-2.5 flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground">
-                                <kbd class="px-1 py-0.5 rounded bg-muted border border-border text-[9px]">Enter</kbd>
+                            <div class="absolute right-2.5 top-2.5 flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground">
+                                <kbd class="rounded border border-border bg-muted px-1 py-0.5 text-[9px]">Enter</kbd>
                                 to submit
                             </div>
                         </div>
                     </div>
 
                     <!-- Variance Summary KPI Bar -->
-                    <div id="stock-tour-audit-kpis" class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1 text-xs">
-                        <div class="p-2.5 rounded-lg border bg-muted/30">
-                            <span class="text-muted-foreground text-[11px] block">Items Audited</span>
-                            <span class="font-bold text-foreground font-mono text-sm">{{ auditRows.length }} SKUs</span>
+                    <div id="stock-tour-audit-kpis" class="grid grid-cols-2 gap-3 pt-1 text-xs sm:grid-cols-4">
+                        <div class="rounded-lg border bg-muted/30 p-2.5">
+                            <span class="block text-[11px] text-muted-foreground">Items Audited</span>
+                            <span class="font-mono text-sm font-bold text-foreground">{{ auditRows.length }} SKUs</span>
                         </div>
-                        <div class="p-2.5 rounded-lg border bg-muted/30">
-                            <span class="text-muted-foreground text-[11px] block">Discrepancy Lines</span>
-                            <span class="font-bold text-amber-600 font-mono text-sm">
-                                {{ auditRows.filter(r => r.variance !== 0).length }} Lines
+                        <div class="rounded-lg border bg-muted/30 p-2.5">
+                            <span class="block text-[11px] text-muted-foreground">Discrepancy Lines</span>
+                            <span class="font-mono text-sm font-bold text-amber-600">
+                                {{ auditRows.filter((r) => r.variance !== 0).length }} Lines
                             </span>
                         </div>
-                        <div class="p-2.5 rounded-lg border bg-muted/30">
-                            <span class="text-muted-foreground text-[11px] block">Net Unit Variance</span>
+                        <div class="rounded-lg border bg-muted/30 p-2.5">
+                            <span class="block text-[11px] text-muted-foreground">Net Unit Variance</span>
                             <span
                                 :class="[
-                                    'font-bold font-mono text-sm',
-                                    totalVarianceUnits === 0 ? 'text-muted-foreground' : totalVarianceUnits > 0 ? 'text-emerald-600' : 'text-rose-600'
+                                    'font-mono text-sm font-bold',
+                                    totalVarianceUnits === 0
+                                        ? 'text-muted-foreground'
+                                        : totalVarianceUnits > 0
+                                          ? 'text-emerald-600'
+                                          : 'text-rose-600',
                                 ]"
                             >
                                 {{ totalVarianceUnits >= 0 ? `+${totalVarianceUnits}` : totalVarianceUnits }} units
                             </span>
                         </div>
-                        <div class="p-2.5 rounded-lg border bg-muted/30">
-                            <span class="text-muted-foreground text-[11px] block">Variance Financial Impact</span>
+                        <div class="rounded-lg border bg-muted/30 p-2.5">
+                            <span class="block text-[11px] text-muted-foreground">Variance Financial Impact</span>
                             <span
                                 :class="[
-                                    'font-bold font-mono text-sm',
-                                    totalVarianceValuation === 0 ? 'text-muted-foreground' : totalVarianceValuation > 0 ? 'text-emerald-600' : 'text-rose-600'
+                                    'font-mono text-sm font-bold',
+                                    totalVarianceValuation === 0
+                                        ? 'text-muted-foreground'
+                                        : totalVarianceValuation > 0
+                                          ? 'text-emerald-600'
+                                          : 'text-rose-600',
                                 ]"
                             >
                                 {{ formatCurrency(totalVarianceValuation) }}
@@ -1064,16 +1226,12 @@ const exportStockCsv = () => {
                 </div>
 
                 <!-- ─── Audit Filter & Search Toolbar ────────────────────── -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-wrap">
-                    <div class="flex items-center gap-2 flex-wrap flex-1 min-w-[280px]">
+                <div class="flex flex-col flex-wrap justify-between gap-3 sm:flex-row sm:items-center">
+                    <div class="flex min-w-[280px] flex-1 flex-wrap items-center gap-2">
                         <!-- Search Input -->
                         <div class="relative w-full sm:w-64">
-                            <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-                            <Input
-                                v-model="auditSearchQuery"
-                                placeholder="Search audit item, SKU or barcode..."
-                                class="pl-9 pr-7 h-9 text-xs"
-                            />
+                            <Search class="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+                            <Input v-model="auditSearchQuery" placeholder="Search audit item, SKU or barcode..." class="h-9 pl-9 pr-7 text-xs" />
                             <button
                                 v-if="auditSearchQuery"
                                 @click="auditSearchQuery = ''"
@@ -1100,8 +1258,12 @@ const exportStockCsv = () => {
                             v-if="auditSearchQuery || auditStatusFilter !== 'all'"
                             variant="ghost"
                             size="sm"
-                            class="h-9 text-xs gap-1 text-muted-foreground hover:text-foreground"
-                            @click="auditSearchQuery = ''; auditStatusFilter = 'all'; auditCurrentPage = 1;"
+                            class="h-9 gap-1 text-xs text-muted-foreground hover:text-foreground"
+                            @click="
+                                auditSearchQuery = '';
+                                auditStatusFilter = 'all';
+                                auditCurrentPage = 1;
+                            "
                         >
                             <RotateCcw class="size-3" />
                             Reset
@@ -1110,15 +1272,16 @@ const exportStockCsv = () => {
 
                     <!-- Showing count -->
                     <div class="text-xs text-muted-foreground">
-                        Showing <span class="font-bold text-foreground">{{ filteredAuditRows.length }}</span> of <span class="font-bold text-foreground">{{ auditRows.length }}</span> audit SKUs
+                        Showing <span class="font-bold text-foreground">{{ filteredAuditRows.length }}</span> of
+                        <span class="font-bold text-foreground">{{ auditRows.length }}</span> audit SKUs
                     </div>
                 </div>
 
                 <!-- Live Audit Table -->
-                <div id="stock-tour-audit-table" class="rounded-xl border border-border/80 bg-card overflow-hidden shadow-xs">
+                <div id="stock-tour-audit-table" class="shadow-xs overflow-hidden rounded-xl border border-border/80 bg-card">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-xs text-left">
-                            <thead class="bg-muted/50 border-b border-border text-muted-foreground font-semibold">
+                        <table class="w-full text-left text-xs">
+                            <thead class="border-b border-border bg-muted/50 font-semibold text-muted-foreground">
                                 <tr>
                                     <th class="p-3">Product / Barcode</th>
                                     <th class="p-3 text-center">System Expected</th>
@@ -1133,16 +1296,11 @@ const exportStockCsv = () => {
                                 <tr
                                     v-for="row in paginatedAuditRows"
                                     :key="row.productId"
-                                    :class="[
-                                        'hover:bg-muted/20 transition-colors',
-                                        row.variance !== 0 ? 'bg-amber-500/5 dark:bg-amber-500/10' : ''
-                                    ]"
+                                    :class="['transition-colors hover:bg-muted/20', row.variance !== 0 ? 'bg-amber-500/5 dark:bg-amber-500/10' : '']"
                                 >
                                     <td class="p-3">
                                         <div class="font-bold text-foreground">{{ row.productName }}</div>
-                                        <div class="text-[11px] text-muted-foreground font-mono">
-                                            SKU: {{ row.sku }} • Barcode: {{ row.barcode }}
-                                        </div>
+                                        <div class="font-mono text-[11px] text-muted-foreground">SKU: {{ row.sku }} • Barcode: {{ row.barcode }}</div>
                                     </td>
                                     <td class="p-3 text-center font-mono font-bold text-muted-foreground">
                                         {{ row.systemStock }}
@@ -1154,7 +1312,7 @@ const exportStockCsv = () => {
                                         >
                                             <button
                                                 type="button"
-                                                class="size-6 rounded border bg-muted/40 hover:bg-muted flex items-center justify-center font-bold text-xs cursor-pointer"
+                                                class="flex size-6 cursor-pointer items-center justify-center rounded border bg-muted/40 text-xs font-bold hover:bg-muted"
                                                 @click="updateCountDirectly(row, row.countedStock - 1)"
                                             >
                                                 -
@@ -1163,11 +1321,11 @@ const exportStockCsv = () => {
                                                 type="number"
                                                 :value="row.countedStock"
                                                 @input="(e: any) => updateCountDirectly(row, Number(e.target.value))"
-                                                class="w-16 h-7 text-center font-mono font-bold text-xs rounded border border-input bg-background"
+                                                class="h-7 w-16 rounded border border-input bg-background text-center font-mono text-xs font-bold"
                                             />
                                             <button
                                                 type="button"
-                                                class="size-6 rounded border bg-muted/40 hover:bg-muted flex items-center justify-center font-bold text-xs cursor-pointer"
+                                                class="flex size-6 cursor-pointer items-center justify-center rounded border bg-muted/40 text-xs font-bold hover:bg-muted"
                                                 @click="updateCountDirectly(row, row.countedStock + 1)"
                                             >
                                                 +
@@ -1175,10 +1333,7 @@ const exportStockCsv = () => {
                                         </div>
                                     </td>
                                     <td class="p-3 text-center font-mono font-bold">
-                                        <span
-                                            v-if="row.variance !== 0"
-                                            :class="row.variance > 0 ? 'text-emerald-600' : 'text-rose-600'"
-                                        >
+                                        <span v-if="row.variance !== 0" :class="row.variance > 0 ? 'text-emerald-600' : 'text-rose-600'">
                                             {{ row.variance > 0 ? `+${row.variance}` : row.variance }}
                                         </span>
                                         <span v-else class="text-muted-foreground">0</span>
@@ -1187,10 +1342,7 @@ const exportStockCsv = () => {
                                         {{ formatCurrency(row.unitCost) }}
                                     </td>
                                     <td class="p-3 text-right font-mono font-bold">
-                                        <span
-                                            v-if="row.varianceCost !== 0"
-                                            :class="row.varianceCost > 0 ? 'text-emerald-600' : 'text-rose-600'"
-                                        >
+                                        <span v-if="row.varianceCost !== 0" :class="row.varianceCost > 0 ? 'text-emerald-600' : 'text-rose-600'">
                                             {{ formatCurrency(row.varianceCost) }}
                                         </span>
                                         <span v-else class="text-muted-foreground">-</span>
@@ -1199,27 +1351,11 @@ const exportStockCsv = () => {
                                         :id="paginatedAuditRows[0]?.productId === row.productId ? 'stock-tour-audit-status' : undefined"
                                         class="p-3 text-center"
                                     >
-                                        <Badge
-                                            v-if="row.variance === 0"
-                                            variant="success"
-                                            class="text-[10px] py-0.5"
-                                        >
-                                            Exact Match
-                                        </Badge>
-                                        <Badge
-                                            v-else-if="row.variance > 0"
-                                            variant="info"
-                                            class="text-[10px] py-0.5"
-                                        >
+                                        <Badge v-if="row.variance === 0" variant="success" class="py-0.5 text-[10px]"> Exact Match </Badge>
+                                        <Badge v-else-if="row.variance > 0" variant="info" class="py-0.5 text-[10px]">
                                             Surplus (+{{ row.variance }})
                                         </Badge>
-                                        <Badge
-                                            v-else
-                                            variant="destructive"
-                                            class="text-[10px] py-0.5"
-                                        >
-                                            Shortage ({{ row.variance }})
-                                        </Badge>
+                                        <Badge v-else variant="destructive" class="py-0.5 text-[10px]"> Shortage ({{ row.variance }}) </Badge>
                                     </td>
                                 </tr>
                                 <tr v-if="filteredAuditRows.length === 0">
@@ -1236,15 +1372,19 @@ const exportStockCsv = () => {
 
                     <!-- ─── Table Pagination Bar ────────────────────────────── -->
                     <div
-                        class="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-border/70 bg-muted/20 px-4 py-3 text-xs text-muted-foreground"
+                        class="flex flex-col items-center justify-between gap-3 border-t border-border/70 bg-muted/20 px-4 py-3 text-xs text-muted-foreground sm:flex-row"
                     >
                         <!-- Left: Showing summary & Page size selector -->
-                        <div class="flex items-center gap-3 flex-wrap justify-between w-full sm:w-auto">
+                        <div class="flex w-full flex-wrap items-center justify-between gap-3 sm:w-auto">
                             <div class="text-xs text-muted-foreground">
                                 Showing
-                                <span class="font-bold text-foreground">{{ filteredAuditRows.length === 0 ? 0 : (auditCurrentPage - 1) * auditPageSize + 1 }}</span>
+                                <span class="font-bold text-foreground">{{
+                                    filteredAuditRows.length === 0 ? 0 : (auditCurrentPage - 1) * auditPageSize + 1
+                                }}</span>
                                 to
-                                <span class="font-bold text-foreground">{{ Math.min(auditCurrentPage * auditPageSize, filteredAuditRows.length) }}</span>
+                                <span class="font-bold text-foreground">{{
+                                    Math.min(auditCurrentPage * auditPageSize, filteredAuditRows.length)
+                                }}</span>
                                 of
                                 <span class="font-bold text-foreground">{{ filteredAuditRows.length }}</span>
                                 items
@@ -1292,19 +1432,16 @@ const exportStockCsv = () => {
 
                             <!-- Page Pills -->
                             <template v-for="(p, i) in auditVisiblePages" :key="i">
-                                <span
-                                    v-if="p === '...'"
-                                    class="px-2 py-1 text-xs text-muted-foreground select-none"
-                                >
-                                    …
-                                </span>
+                                <span v-if="p === '...'" class="select-none px-2 py-1 text-xs text-muted-foreground"> … </span>
                                 <Button
                                     v-else
                                     :variant="auditCurrentPage === p ? 'default' : 'outline'"
                                     size="sm"
                                     :class="[
                                         'h-8 min-w-8 px-2 text-xs font-semibold',
-                                        auditCurrentPage === p ? 'bg-primary text-primary-foreground font-bold shadow-xs' : 'hover:bg-muted/60 text-muted-foreground hover:text-foreground'
+                                        auditCurrentPage === p
+                                            ? 'shadow-xs bg-primary font-bold text-primary-foreground'
+                                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
                                     ]"
                                     @click="goToAuditPage(p as number)"
                                 >
@@ -1358,10 +1495,7 @@ const exportStockCsv = () => {
                     <template #cell-change="{ row }">
                         <span
                             :id="row.id === adjustments[0]?.id ? 'stock-tour-adj-shift' : undefined"
-                            :class="[
-                                'font-mono font-bold text-xs',
-                                row.change > 0 ? 'text-emerald-600' : 'text-rose-600',
-                            ]"
+                            :class="['font-mono text-xs font-bold', row.change > 0 ? 'text-emerald-600' : 'text-rose-600']"
                         >
                             {{ row.change > 0 ? `+${row.change}` : row.change }} units
                         </span>
@@ -1394,7 +1528,7 @@ const exportStockCsv = () => {
                         <Button
                             id="stock-tour-tab4-new-transfer"
                             size="sm"
-                            class="h-9 text-xs gap-1.5 bg-primary font-semibold shadow-xs"
+                            class="shadow-xs h-9 gap-1.5 bg-primary text-xs font-semibold"
                             @click="transferModalOpen = true"
                         >
                             <Plus class="size-3.5" />
@@ -1425,12 +1559,12 @@ const exportStockCsv = () => {
                             v-if="row.status !== 'Completed'"
                             :id="row.id === transfers[0]?.id ? 'stock-tour-transfer-receive' : undefined"
                             size="sm"
-                            class="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 font-semibold shadow-2xs"
+                            class="shadow-2xs h-7 bg-emerald-600 text-xs font-semibold hover:bg-emerald-700"
                             @click="handleCompleteTransfer(row)"
                         >
                             Receive & Stock
                         </Button>
-                        <span v-else class="text-xs text-muted-foreground font-medium">Received ✓</span>
+                        <span v-else class="text-xs font-medium text-muted-foreground">Received ✓</span>
                     </template>
                 </DataTable>
             </div>
@@ -1442,7 +1576,7 @@ const exportStockCsv = () => {
         <Dialog :open="adjustModalOpen" @update:open="(v) => (adjustModalOpen = v)">
             <DialogContent class="w-[95vw] sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle class="text-base font-bold flex items-center gap-2">
+                    <DialogTitle class="flex items-center gap-2 text-base font-bold">
                         <SlidersHorizontal class="size-4 text-primary" />
                         Record Stock Adjustment / Shrinkage
                     </DialogTitle>
@@ -1454,13 +1588,15 @@ const exportStockCsv = () => {
                         <Label class="text-xs">Product Item</Label>
                         <select
                             v-model="adjustForm.productId"
-                            @change="() => {
-                                const p = stockItems.find(i => i.id === adjustForm.productId);
-                                if (p) {
-                                    adjustForm.productName = p.product;
-                                    adjustForm.currentStock = p.available;
+                            @change="
+                                () => {
+                                    const p = stockItems.find((i) => i.id === adjustForm.productId);
+                                    if (p) {
+                                        adjustForm.productName = p.product;
+                                        adjustForm.currentStock = p.available;
+                                    }
                                 }
-                            }"
+                            "
                             class="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs"
                         >
                             <option v-for="item in stockItems" :key="item.id" :value="item.id">
@@ -1474,10 +1610,10 @@ const exportStockCsv = () => {
                         <button
                             type="button"
                             :class="[
-                                'py-2 px-3 rounded-lg border text-xs font-bold transition-all',
+                                'rounded-lg border px-3 py-2 text-xs font-bold transition-all',
                                 adjustForm.type === 'decrease'
-                                    ? 'bg-rose-500/15 border-rose-500 text-rose-600 dark:text-rose-400'
-                                    : 'border-border text-muted-foreground hover:text-foreground'
+                                    ? 'border-rose-500 bg-rose-500/15 text-rose-600 dark:text-rose-400'
+                                    : 'border-border text-muted-foreground hover:text-foreground',
                             ]"
                             @click="adjustForm.type = 'decrease'"
                         >
@@ -1486,10 +1622,10 @@ const exportStockCsv = () => {
                         <button
                             type="button"
                             :class="[
-                                'py-2 px-3 rounded-lg border text-xs font-bold transition-all',
+                                'rounded-lg border px-3 py-2 text-xs font-bold transition-all',
                                 adjustForm.type === 'increase'
-                                    ? 'bg-emerald-500/15 border-emerald-500 text-emerald-600 dark:text-emerald-400'
-                                    : 'border-border text-muted-foreground hover:text-foreground'
+                                    ? 'border-emerald-500 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                                    : 'border-border text-muted-foreground hover:text-foreground',
                             ]"
                             @click="adjustForm.type = 'increase'"
                         >
@@ -1501,16 +1637,13 @@ const exportStockCsv = () => {
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <Label class="text-xs">Adjustment Quantity</Label>
-                            <Input
-                                v-model.number="adjustForm.changeQty"
-                                type="number"
-                                min="1"
-                                class="mt-1 font-mono font-bold text-xs"
-                            />
+                            <Input v-model.number="adjustForm.changeQty" type="number" min="1" class="mt-1 font-mono text-xs font-bold" />
                         </div>
                         <div>
                             <Label class="text-xs">Resulting Stock Level</Label>
-                            <div class="mt-1 h-9 flex items-center px-3 rounded-md bg-muted/40 border border-border/80 font-mono font-bold text-xs text-foreground">
+                            <div
+                                class="mt-1 flex h-9 items-center rounded-md border border-border/80 bg-muted/40 px-3 font-mono text-xs font-bold text-foreground"
+                            >
                                 {{ resultingStock }} units
                             </div>
                         </div>
@@ -1519,10 +1652,7 @@ const exportStockCsv = () => {
                     <!-- Adjustment Reason -->
                     <div>
                         <Label class="text-xs">Reason Code</Label>
-                        <select
-                            v-model="adjustForm.reason"
-                            class="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs"
-                        >
+                        <select v-model="adjustForm.reason" class="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs">
                             <option v-for="r in adjustmentReasons" :key="r" :value="r">{{ r }}</option>
                         </select>
                     </div>
@@ -1530,11 +1660,7 @@ const exportStockCsv = () => {
                     <!-- Internal Notes -->
                     <div>
                         <Label class="text-xs">Internal Notes (Optional)</Label>
-                        <Input
-                            v-model="adjustForm.notes"
-                            placeholder="e.g. Broken bottle during shelf rearrangement"
-                            class="mt-1 text-xs"
-                        />
+                        <Input v-model="adjustForm.notes" placeholder="e.g. Broken bottle during shelf rearrangement" class="mt-1 text-xs" />
                     </div>
                 </div>
 
@@ -1575,7 +1701,7 @@ const exportStockCsv = () => {
                         </div>
                         <div>
                             <Label class="text-xs">Quantity to Transfer</Label>
-                            <Input v-model.number="newTransfer.qty" type="number" class="mt-1 text-xs font-mono font-bold" />
+                            <Input v-model.number="newTransfer.qty" type="number" class="mt-1 font-mono text-xs font-bold" />
                         </div>
                     </div>
                 </div>
@@ -1589,20 +1715,12 @@ const exportStockCsv = () => {
         <!-- ============================================================ -->
         <!-- MODAL: BARCODE THERMAL LABEL GENERATOR -->
         <!-- ============================================================ -->
-        <BarcodeLabelModal
-            :open="labelModalOpen"
-            :product="labelProduct"
-            @update:open="(v) => (labelModalOpen = v)"
-        />
+        <BarcodeLabelModal :open="labelModalOpen" :product="labelProduct" @update:open="(v) => (labelModalOpen = v)" />
 
         <!-- ============================================================ -->
         <!-- MODAL: SHELF PRICE TAG GENERATOR (NO BARCODE) -->
         <!-- ============================================================ -->
-        <ShelfPriceTagModal
-            :open="shelfTagModalOpen"
-            :product="shelfTagProduct"
-            @update:open="(v) => (shelfTagModalOpen = v)"
-        />
+        <ShelfPriceTagModal :open="shelfTagModalOpen" :product="shelfTagProduct" @update:open="(v) => (shelfTagModalOpen = v)" />
 
         <!-- ============================================================ -->
         <!-- INTERACTIVE STOCK OVERVIEW SPOTLIGHT & TOUR GUIDE -->

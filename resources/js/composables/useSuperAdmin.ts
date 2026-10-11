@@ -184,17 +184,57 @@ export const businessTypeProfiles: Record<BusinessType, { modules: string[]; des
     Supermarket: {
         description: 'Full retail grocery — multi-department, high SKU count, fast cashier throughput',
         color: 'emerald',
-        modules: ['pos', 'sales', 'products', 'inventory', 'purchases', 'customers', 'suppliers', 'expenses', 'reports', 'users', 'branches', 'settings', 'loyalty'],
+        modules: [
+            'pos',
+            'sales',
+            'products',
+            'inventory',
+            'purchases',
+            'customers',
+            'suppliers',
+            'expenses',
+            'reports',
+            'users',
+            'branches',
+            'settings',
+            'loyalty',
+        ],
     },
     Wholesale: {
         description: 'Bulk distribution — wholesale pricing tiers, LPOs, credit accounts',
         color: 'blue',
-        modules: ['pos', 'sales', 'products', 'inventory', 'purchases', 'customers', 'suppliers', 'expenses', 'reports', 'users', 'branches', 'settings'],
+        modules: [
+            'pos',
+            'sales',
+            'products',
+            'inventory',
+            'purchases',
+            'customers',
+            'suppliers',
+            'expenses',
+            'reports',
+            'users',
+            'branches',
+            'settings',
+        ],
     },
     Pharmacy: {
         description: 'Pharmaceutical retail — prescription tracking, batch/expiry management, controlled substances',
         color: 'rose',
-        modules: ['pos', 'sales', 'products', 'inventory', 'purchases', 'customers', 'suppliers', 'expenses', 'reports', 'users', 'settings', 'prescriptions'],
+        modules: [
+            'pos',
+            'sales',
+            'products',
+            'inventory',
+            'purchases',
+            'customers',
+            'suppliers',
+            'expenses',
+            'reports',
+            'users',
+            'settings',
+            'prescriptions',
+        ],
     },
     Restaurant: {
         description: 'Food & beverage — table management, kitchen display, menu modifiers, split billing',
@@ -204,7 +244,20 @@ export const businessTypeProfiles: Record<BusinessType, { modules: string[]; des
     Hardware: {
         description: 'Building materials & hardware — heavy SKU catalog, quotations, project billing',
         color: 'amber',
-        modules: ['pos', 'sales', 'products', 'inventory', 'purchases', 'customers', 'suppliers', 'expenses', 'reports', 'users', 'branches', 'settings'],
+        modules: [
+            'pos',
+            'sales',
+            'products',
+            'inventory',
+            'purchases',
+            'customers',
+            'suppliers',
+            'expenses',
+            'reports',
+            'users',
+            'branches',
+            'settings',
+        ],
     },
     'General Trade': {
         description: 'Mixed retail — broad product range, cash-and-carry, basic inventory management',
@@ -214,12 +267,38 @@ export const businessTypeProfiles: Record<BusinessType, { modules: string[]; des
     Electronics: {
         description: 'Electronics & gadgets — serial number tracking, warranties, service & repair',
         color: 'violet',
-        modules: ['pos', 'sales', 'products', 'inventory', 'purchases', 'customers', 'suppliers', 'expenses', 'reports', 'users', 'branches', 'settings'],
+        modules: [
+            'pos',
+            'sales',
+            'products',
+            'inventory',
+            'purchases',
+            'customers',
+            'suppliers',
+            'expenses',
+            'reports',
+            'users',
+            'branches',
+            'settings',
+        ],
     },
     'Clothing & Apparel': {
         description: 'Fashion retail — size/color variants, seasonal stock, loyalty programs',
         color: 'pink',
-        modules: ['pos', 'sales', 'products', 'inventory', 'purchases', 'customers', 'suppliers', 'expenses', 'reports', 'users', 'settings', 'loyalty'],
+        modules: [
+            'pos',
+            'sales',
+            'products',
+            'inventory',
+            'purchases',
+            'customers',
+            'suppliers',
+            'expenses',
+            'reports',
+            'users',
+            'settings',
+            'loyalty',
+        ],
     },
     Bakery: {
         description: 'Bakery & confectionery — production tracking, daily output, perishable stock',
@@ -235,15 +314,69 @@ export const businessTypeProfiles: Record<BusinessType, { modules: string[]; des
 
 // Platform payment methods
 export const platformPaymentMethods = [
-    { key: 'mpesaStk', label: 'M-Pesa STK Push', description: 'Prompt customer phone directly for instant PIN checkout', category: 'Mobile Money', icon: 'Smartphone' },
-    { key: 'mpesaPaybill', label: 'M-Pesa Paybill (C2B)', description: 'Automated IPN confirmation on business Paybill number', category: 'Mobile Money', icon: 'PhoneCall' },
-    { key: 'mpesaTill', label: 'M-Pesa Buy Goods Till', description: 'Till number validation and instant cash register sync', category: 'Mobile Money', icon: 'QrCode' },
-    { key: 'cardGateway', label: 'Card Gateway / PDQ', description: 'Visa / Mastercard online and connected POS terminal processing', category: 'Card & Bank', icon: 'CreditCard' },
-    { key: 'bankTransfer', label: 'Bank Transfer / RTGS / EFT', description: 'Direct bank slip reference check & account crediting', category: 'Card & Bank', icon: 'Landmark' },
-    { key: 'cash', label: 'Cash Tender', description: 'Physical cash drawer balancing & change calculation', category: 'Cash & Credit', icon: 'Banknote' },
-    { key: 'creditLedger', label: 'Customer Store Credit', description: 'Post-paid debtor ledger with credit limit enforcement', category: 'Cash & Credit', icon: 'BookOpen' },
-    { key: 'giftVouchers', label: 'Gift Cards & Vouchers', description: 'Barcoded voucher redemption & promotional discount codes', category: 'Value & Promo', icon: 'Gift' },
-    { key: 'etimsAutoInvoice', label: 'KRA eTIMS Auto-Sync', description: 'Generate cryptographically signed fiscal receipt with QR code', category: 'Compliance', icon: 'FileCheck' },
+    {
+        key: 'mpesaStk',
+        label: 'M-Pesa STK Push',
+        description: 'Prompt customer phone directly for instant PIN checkout',
+        category: 'Mobile Money',
+        icon: 'Smartphone',
+    },
+    {
+        key: 'mpesaPaybill',
+        label: 'M-Pesa Paybill (C2B)',
+        description: 'Automated IPN confirmation on business Paybill number',
+        category: 'Mobile Money',
+        icon: 'PhoneCall',
+    },
+    {
+        key: 'mpesaTill',
+        label: 'M-Pesa Buy Goods Till',
+        description: 'Till number validation and instant cash register sync',
+        category: 'Mobile Money',
+        icon: 'QrCode',
+    },
+    {
+        key: 'cardGateway',
+        label: 'Card Gateway / PDQ',
+        description: 'Visa / Mastercard online and connected POS terminal processing',
+        category: 'Card & Bank',
+        icon: 'CreditCard',
+    },
+    {
+        key: 'bankTransfer',
+        label: 'Bank Transfer / RTGS / EFT',
+        description: 'Direct bank slip reference check & account crediting',
+        category: 'Card & Bank',
+        icon: 'Landmark',
+    },
+    {
+        key: 'cash',
+        label: 'Cash Tender',
+        description: 'Physical cash drawer balancing & change calculation',
+        category: 'Cash & Credit',
+        icon: 'Banknote',
+    },
+    {
+        key: 'creditLedger',
+        label: 'Customer Store Credit',
+        description: 'Post-paid debtor ledger with credit limit enforcement',
+        category: 'Cash & Credit',
+        icon: 'BookOpen',
+    },
+    {
+        key: 'giftVouchers',
+        label: 'Gift Cards & Vouchers',
+        description: 'Barcoded voucher redemption & promotional discount codes',
+        category: 'Value & Promo',
+        icon: 'Gift',
+    },
+    {
+        key: 'etimsAutoInvoice',
+        label: 'KRA eTIMS Auto-Sync',
+        description: 'Generate cryptographically signed fiscal receipt with QR code',
+        category: 'Compliance',
+        icon: 'FileCheck',
+    },
 ];
 
 export const subscriptionPlans = {
@@ -269,7 +402,20 @@ export const subscriptionPlans = {
         maxBranches: -1,
         maxUsers: -1,
         storageMB: 50000,
-        modules: ['pos', 'sales', 'products', 'inventory', 'purchases', 'customers', 'suppliers', 'expenses', 'reports', 'users', 'branches', 'settings'],
+        modules: [
+            'pos',
+            'sales',
+            'products',
+            'inventory',
+            'purchases',
+            'customers',
+            'suppliers',
+            'expenses',
+            'reports',
+            'users',
+            'branches',
+            'settings',
+        ],
     },
 };
 
@@ -398,7 +544,7 @@ export function useSuperAdmin() {
     const createBackup = (
         tenantId: string,
         type: 'Full System' | 'Tenant DB & Media' | 'DB Only',
-        destination: 'AWS S3 (eu-west-1)' | 'Local Storage' | 'Google Cloud Storage'
+        destination: 'AWS S3 (eu-west-1)' | 'Local Storage' | 'Google Cloud Storage',
     ) => {
         const tenant = tenantId === 'PLATFORM_ALL' ? null : tenantsData.find((t) => t.id === tenantId);
         const name = tenant ? tenant.name : 'Platform Full Snapshot (All Tenants)';
@@ -433,11 +579,11 @@ export function useSuperAdmin() {
     const getTenantTelemetry = (tenantId: string | number, liveTenant?: Record<string, any>): TenantTelemetry => {
         // Resolve tenant: prefer the passed liveTenant, else look up in mock data
         const mockTenant = tenantsData.find((t) => String(t.id) === String(tenantId));
-        
+
         const plan: string = liveTenant?.plan ?? mockTenant?.plan ?? 'Basic';
         const userCount: number = liveTenant?.user_count ?? liveTenant?.userCount ?? mockTenant?.userCount ?? 5;
         const storageUsedMB: number = liveTenant?.storage_used_mb ?? liveTenant?.storageUsedMB ?? mockTenant?.storageUsedMB ?? 512;
-        
+
         const multiplier = plan === 'Enterprise' ? 3.5 : plan === 'Pro' ? 1.8 : 0.6;
 
         return {
@@ -509,88 +655,88 @@ export function useSuperAdmin() {
         };
     };
 
-// Mock subscription invoices repository
-const subscriptionInvoicesData = reactive<TenantSubscriptionInvoice[]>([
-    {
-        id: 'INV-9021',
-        invoiceNumber: 'MDE-SUB-2026-0801',
-        tenantId: 'T-001',
-        tenantName: 'Nairobi Fresh Mart',
-        plan: 'Pro',
-        billingCycle: 'Monthly',
-        amount: 6500,
-        currency: 'KES',
-        issuedDate: '2026-08-01',
-        dueDate: '2026-09-01',
-        paidDate: '2026-08-01',
-        status: 'Paid',
-        paymentMethod: 'M-Pesa Express (STK)',
-        autoRenew: true,
-    },
-    {
-        id: 'INV-9020',
-        invoiceNumber: 'MDE-SUB-2026-0115',
-        tenantId: 'T-002',
-        tenantName: 'Westlands Electronics',
-        plan: 'Enterprise',
-        billingCycle: 'Annual',
-        amount: 150000,
-        currency: 'KES',
-        issuedDate: '2026-01-15',
-        dueDate: '2027-01-15',
-        paidDate: '2026-01-15',
-        status: 'Paid',
-        paymentMethod: 'Bank Wire / RTGS',
-        autoRenew: true,
-    },
-    {
-        id: 'INV-9019',
-        invoiceNumber: 'MDE-SUB-2026-0630',
-        tenantId: 'T-003',
-        tenantName: 'ABC Wholesale Ltd',
-        plan: 'Enterprise',
-        billingCycle: 'Quarterly',
-        amount: 42000,
-        currency: 'KES',
-        issuedDate: '2026-06-30',
-        dueDate: '2026-09-30',
-        paidDate: '2026-06-30',
-        status: 'Paid',
-        paymentMethod: 'Credit Card',
-        autoRenew: true,
-    },
-    {
-        id: 'INV-9018',
-        invoiceNumber: 'MDE-SUB-2026-0810',
-        tenantId: 'T-005',
-        tenantName: 'Sunset Pharmacy Ltd',
-        plan: 'Pro',
-        billingCycle: 'Weekly',
-        amount: 1800,
-        currency: 'KES',
-        issuedDate: '2026-08-10',
-        dueDate: '2026-08-17',
-        paidDate: '2026-08-10',
-        status: 'Paid',
-        paymentMethod: 'M-Pesa Paybill',
-        autoRenew: false,
-    },
-    {
-        id: 'INV-9017',
-        invoiceNumber: 'MDE-SUB-2026-0801-OVR',
-        tenantId: 'T-006',
-        tenantName: 'Coast Hardware & Steel',
-        plan: 'Basic',
-        billingCycle: 'Monthly',
-        amount: 2500,
-        currency: 'KES',
-        issuedDate: '2026-07-01',
-        dueDate: '2026-08-01',
-        status: 'Overdue',
-        paymentMethod: 'M-Pesa Express (STK)',
-        autoRenew: false,
-    },
-]);
+    // Mock subscription invoices repository
+    const subscriptionInvoicesData = reactive<TenantSubscriptionInvoice[]>([
+        {
+            id: 'INV-9021',
+            invoiceNumber: 'MDE-SUB-2026-0801',
+            tenantId: 'T-001',
+            tenantName: 'Nairobi Fresh Mart',
+            plan: 'Pro',
+            billingCycle: 'Monthly',
+            amount: 6500,
+            currency: 'KES',
+            issuedDate: '2026-08-01',
+            dueDate: '2026-09-01',
+            paidDate: '2026-08-01',
+            status: 'Paid',
+            paymentMethod: 'M-Pesa Express (STK)',
+            autoRenew: true,
+        },
+        {
+            id: 'INV-9020',
+            invoiceNumber: 'MDE-SUB-2026-0115',
+            tenantId: 'T-002',
+            tenantName: 'Westlands Electronics',
+            plan: 'Enterprise',
+            billingCycle: 'Annual',
+            amount: 150000,
+            currency: 'KES',
+            issuedDate: '2026-01-15',
+            dueDate: '2027-01-15',
+            paidDate: '2026-01-15',
+            status: 'Paid',
+            paymentMethod: 'Bank Wire / RTGS',
+            autoRenew: true,
+        },
+        {
+            id: 'INV-9019',
+            invoiceNumber: 'MDE-SUB-2026-0630',
+            tenantId: 'T-003',
+            tenantName: 'ABC Wholesale Ltd',
+            plan: 'Enterprise',
+            billingCycle: 'Quarterly',
+            amount: 42000,
+            currency: 'KES',
+            issuedDate: '2026-06-30',
+            dueDate: '2026-09-30',
+            paidDate: '2026-06-30',
+            status: 'Paid',
+            paymentMethod: 'Credit Card',
+            autoRenew: true,
+        },
+        {
+            id: 'INV-9018',
+            invoiceNumber: 'MDE-SUB-2026-0810',
+            tenantId: 'T-005',
+            tenantName: 'Sunset Pharmacy Ltd',
+            plan: 'Pro',
+            billingCycle: 'Weekly',
+            amount: 1800,
+            currency: 'KES',
+            issuedDate: '2026-08-10',
+            dueDate: '2026-08-17',
+            paidDate: '2026-08-10',
+            status: 'Paid',
+            paymentMethod: 'M-Pesa Paybill',
+            autoRenew: false,
+        },
+        {
+            id: 'INV-9017',
+            invoiceNumber: 'MDE-SUB-2026-0801-OVR',
+            tenantId: 'T-006',
+            tenantName: 'Coast Hardware & Steel',
+            plan: 'Basic',
+            billingCycle: 'Monthly',
+            amount: 2500,
+            currency: 'KES',
+            issuedDate: '2026-07-01',
+            dueDate: '2026-08-01',
+            status: 'Overdue',
+            paymentMethod: 'M-Pesa Express (STK)',
+            autoRenew: false,
+        },
+    ]);
 
     const assignTenantSubscription = (
         tenantId: string,
@@ -598,7 +744,7 @@ const subscriptionInvoicesData = reactive<TenantSubscriptionInvoice[]>([
         cycle: BillingCycle,
         customAmount: number,
         paymentMethod: TenantSubscriptionInvoice['paymentMethod'],
-        autoRenew: boolean
+        autoRenew: boolean,
     ) => {
         const tenant = tenantsData.find((t) => t.id === tenantId);
         if (!tenant) return;
@@ -611,7 +757,14 @@ const subscriptionInvoicesData = reactive<TenantSubscriptionInvoice[]>([
         tenant.plan = plan;
         tenant.billingCycle = cycle;
         tenant.status = 'Active';
-        tenant.monthlyRevenue = cycle === 'Weekly' ? customAmount * 4 : cycle === 'Annual' ? Math.round(customAmount / 12) : cycle === 'Quarterly' ? Math.round(customAmount / 3) : customAmount;
+        tenant.monthlyRevenue =
+            cycle === 'Weekly'
+                ? customAmount * 4
+                : cycle === 'Annual'
+                  ? Math.round(customAmount / 12)
+                  : cycle === 'Quarterly'
+                    ? Math.round(customAmount / 3)
+                    : customAmount;
         tenant.nextBillingDate = nextDateStr;
 
         const newInvoice: TenantSubscriptionInvoice = {

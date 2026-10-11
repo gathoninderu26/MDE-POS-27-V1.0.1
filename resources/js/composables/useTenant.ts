@@ -1,6 +1,6 @@
+import type { BusinessType } from '@/composables/useSuperAdmin';
 import { usePage } from '@inertiajs/vue3';
 import { computed, reactive } from 'vue';
-import type { BusinessType } from '@/composables/useSuperAdmin';
 
 export interface PaymentMethodConfig {
     id: string;
@@ -53,11 +53,10 @@ const state = reactive<{
     selectedTenantId: '',
 });
 
-
 export function useTenant() {
     const page = usePage();
     const DEMO_SLUGS = ['nairobi-fresh-mart', 'metro-wholesale-retail', 'apex-care-pharmacy', 'nairobi-fresh-clean', 'metro-wholesale-clean'];
-    
+
     const isDemo = computed(() => {
         const serverTenant = (page?.props?.tenant || page?.props?.auth?.tenant) as any;
         if (serverTenant && typeof serverTenant.is_demo !== 'undefined') {
@@ -74,18 +73,20 @@ export function useTenant() {
         // Priority 1: Top-level shared tenant (resolved via subdomain or auth)
         const serverTenant = (page?.props?.tenant || page?.props?.auth?.tenant) as any;
         if (serverTenant && serverTenant.name) {
-            const isThisDemo = typeof serverTenant.is_demo !== 'undefined'
-                ? Boolean(serverTenant.is_demo)
-                : (DEMO_SLUGS.includes(serverTenant.slug) || !!(page?.props as any)?.demo?.is_demo);
-            
+            const isThisDemo =
+                typeof serverTenant.is_demo !== 'undefined'
+                    ? Boolean(serverTenant.is_demo)
+                    : DEMO_SLUGS.includes(serverTenant.slug) || !!(page?.props as any)?.demo?.is_demo;
+
             const rawName = String(serverTenant.name);
             const cleanName = rawName.replace(/^\[DEMO\]\s*/i, '');
             const displayName = isThisDemo ? `[DEMO] ${cleanName}` : cleanName;
 
             const branchCount = Number(serverTenant.branch_count ?? serverTenant.branchCount ?? 1);
-            const isMulti = typeof serverTenant.is_multi_branch !== 'undefined'
-                ? Boolean(serverTenant.is_multi_branch)
-                : (branchCount > 1 && (serverTenant.enabled_modules || []).includes('branches'));
+            const isMulti =
+                typeof serverTenant.is_multi_branch !== 'undefined'
+                    ? Boolean(serverTenant.is_multi_branch)
+                    : branchCount > 1 && (serverTenant.enabled_modules || []).includes('branches');
 
             return {
                 id: String(serverTenant.id),
@@ -198,11 +199,14 @@ export function useTenant() {
     const paymentMethods = computed<PaymentMethodConfig[]>(() => {
         const configured = currentTenant.value.settings?.payment_methods;
         if (Array.isArray(configured) && configured.length > 0) {
-            return configured.map(pm => ({
+            return configured.map((pm) => ({
                 id: pm.id || `pm_${pm.code || Math.random()}`,
                 code: pm.code || pm.type?.toLowerCase() || 'other',
                 name: pm.name || pm.type,
-                type: (pm.type === 'Cash' || pm.type === 'Mobile Money' || pm.type === 'Card' || pm.type === 'Bank' || pm.type === 'Credit') ? pm.type : 'Other',
+                type:
+                    pm.type === 'Cash' || pm.type === 'Mobile Money' || pm.type === 'Card' || pm.type === 'Bank' || pm.type === 'Credit'
+                        ? pm.type
+                        : 'Other',
                 enabled: typeof pm.enabled !== 'undefined' ? Boolean(pm.enabled) : true,
                 is_default: Boolean(pm.is_default),
                 fee_percent: Number(pm.fee_percent ?? pm.feePercent ?? 0),
@@ -215,7 +219,7 @@ export function useTenant() {
     });
 
     const activePaymentMethods = computed<PaymentMethodConfig[]>(() => {
-        return paymentMethods.value.filter(pm => pm.enabled);
+        return paymentMethods.value.filter((pm) => pm.enabled);
     });
 
     const isSubdomain = computed(() => !!page?.props?.isSubdomain || !!page?.props?.tenant);

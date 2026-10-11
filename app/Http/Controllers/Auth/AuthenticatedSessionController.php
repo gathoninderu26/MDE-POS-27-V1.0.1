@@ -4,10 +4,15 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\Tenant;
+use App\Models\User;
+use App\Services\DemoDatabaseService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -40,14 +45,14 @@ class AuthenticatedSessionController extends Controller
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            throw \Illuminate\Validation\ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 'email' => 'Super Administrator accounts must sign in via the dedicated Platform Super Admin Gateway at /super-admin/login.',
             ]);
         }
 
         // ── Demo / subscription expiry gate ──────────────────────────────────
         // Load the tenant and check whether their account has lapsed.
-        $tenant = \App\Models\Tenant::find($user->tenant_id);
+        $tenant = Tenant::find($user->tenant_id);
         if ($tenant) {
             $isStatusExpired = in_array($tenant->status, ['Expired', 'Suspended', 'Inactive']);
             $isBillingLapsed = $tenant->next_billing_date && $tenant->next_billing_date->isPast();
@@ -58,7 +63,7 @@ class AuthenticatedSessionController extends Controller
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
 
-                throw \Illuminate\Validation\ValidationException::withMessages([
+                throw ValidationException::withMessages([
                     'account_expired' => 'Your demo account has expired.',
                 ]);
             }
@@ -76,13 +81,13 @@ class AuthenticatedSessionController extends Controller
             if ($tenant->is_demo) {
                 $days = 7;
                 $request->session()->put('demo_session', [
-                    'is_demo'     => true,
-                    'days'        => $days,
-                    'expires_at'  => now()->addDays($days)->toIso8601String(),
+                    'is_demo' => true,
+                    'days' => $days,
+                    'expires_at' => now()->addDays($days)->toIso8601String(),
                     'tenant_slug' => $tenant->slug,
                     'tenant_name' => "[DEMO] {$tenant->name}",
-                    'role'        => $user->role,
-                    'persona'     => $user->role,
+                    'role' => $user->role,
+                    'persona' => $user->role,
                 ]);
             }
         }
@@ -118,7 +123,7 @@ class AuthenticatedSessionController extends Controller
         $isCleanMode = in_array($dataMode, ['own', 'no_mock', 'clean']);
 
         // STRICT SECURITY GATE: If a real commercial tenant slug is requested, reject immediately
-        $requestedTenant = \App\Models\Tenant::where('slug', $tenantSlug)->first();
+        $requestedTenant = Tenant::where('slug', $tenantSlug)->first();
         if ($requestedTenant && ! $requestedTenant->is_demo) {
             abort(403, 'Unauthorized access. Live production merchant accounts cannot be accessed via demo login.');
         }
@@ -133,7 +138,7 @@ class AuthenticatedSessionController extends Controller
             abort(403, 'Unauthorized access. Only official demo sandboxes can be accessed via demo login.');
         }
 
-        $tenant = \App\Models\Tenant::where('slug', $effectiveSlug)->first();
+        $tenant = Tenant::where('slug', $effectiveSlug)->first();
         if (! $tenant) {
             abort(404, 'Demo tenant sandbox not found.');
         }
@@ -146,7 +151,7 @@ class AuthenticatedSessionController extends Controller
         // This is critical: user IDs in the SQLite file differ from MySQL.
         // Auth::login() stores the user ID in the session; on subsequent requests
         // the middleware switches back to this same SQLite, so the ID must match.
-        \App\Services\DemoDatabaseService::switchTo($tenant);
+        DemoDatabaseService::switchTo($tenant);
         app()->instance('currentTenant', $tenant);
         $request->attributes->set('tenant', $tenant);
         // ─────────────────────────────────────────────────────────────────────
@@ -169,20 +174,20 @@ class AuthenticatedSessionController extends Controller
 
         // Find staff user by target role or default to first tenant user
         // (runs against the demo SQLite connection now active)
-        $user = \App\Models\User::where('tenant_id', $tenant->id)
+        $user = User::where('tenant_id', $tenant->id)
             ->where(function ($q) use ($targetRole) {
                 $q->where('role', $targetRole)
-                  ->orWhere('role', 'like', "%{$targetRole}%");
+                    ->orWhere('role', 'like', "%{$targetRole}%");
             })
             ->first()
-            ?: \App\Models\User::where('tenant_id', $tenant->id)->first();
+            ?: User::where('tenant_id', $tenant->id)->first();
 
         if (! $user) {
             // Create default staff user for this tenant if none exists
-            $user = \App\Models\User::create([
+            $user = User::create([
                 'name' => "Demo {$targetRole}",
-                'email' => strtolower(str_replace(' ', '', $targetRole)) . "@{$tenant->slug}.mdepos.co.ke",
-                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'email' => strtolower(str_replace(' ', '', $targetRole))."@{$tenant->slug}.mdepos.co.ke",
+                'password' => Hash::make('password'),
                 'role' => $targetRole,
                 'tenant_id' => $tenant->id,
                 'email_verified_at' => now(),
@@ -213,22 +218,22 @@ class AuthenticatedSessionController extends Controller
         $request->session()->put('active_tenant_slug', $tenant->slug);
 
         $request->session()->put('demo_session', [
-            'is_demo'     => true,
-            'days'        => $days,
-            'expires_at'  => $expiresAt->toIso8601String(),
+            'is_demo' => true,
+            'days' => $days,
+            'expires_at' => $expiresAt->toIso8601String(),
             'tenant_slug' => $tenant->slug,
             'tenant_name' => "[DEMO] {$tenant->name}",
-            'data_mode'   => $sessionDataMode,
-            'role'        => $targetRole,
-            'persona'     => $targetRole,
+            'data_mode' => $sessionDataMode,
+            'role' => $targetRole,
+            'persona' => $targetRole,
         ]);
 
         // Redirect directly to POS register for Cashier role, or dashboard for others
         if ($user->role === 'Cashier' || strtolower($role) === 'cashier') {
-            return redirect()->route('pos', ['tenant' => $tenant->slug]);
+            return redirect()->route('pos');
         }
 
-        return redirect()->route('dashboard', ['tenant' => $tenant->slug]);
+        return redirect()->route('dashboard');
     }
 
     /**
@@ -241,6 +246,6 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login');
+        return redirect('/');
     }
 }

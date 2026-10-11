@@ -17,8 +17,6 @@ class BarcodeLookupService
     /**
      * Look up product details by barcode across multi-tier sources.
      *
-     * @param string $barcode
-     * @param int|null $tenantId
      * @return array{found: bool, name?: string, brand?: string, category?: string, description?: string, imageUrl?: string, source?: string}
      */
     public function lookup(string $barcode, ?int $tenantId = null): array
@@ -31,13 +29,13 @@ class BarcodeLookupService
         // Tier 1: Check Cache / Master Record
         if ($tenantId) {
             $tenantCached = Cache::get("barcode:t{$tenantId}:{$barcode}");
-            if ($tenantCached && !empty($tenantCached['name'])) {
+            if ($tenantCached && ! empty($tenantCached['name'])) {
                 return array_merge($tenantCached, ['found' => true, 'source' => $tenantCached['source'] ?? 'cached']);
             }
         }
 
         $cached = Cache::get("barcode:{$barcode}");
-        if ($cached && !empty($cached['name'])) {
+        if ($cached && ! empty($cached['name'])) {
             // Only return global cache if public source or tenant matches
             if (($cached['source'] ?? '') !== 'pos_catalog' || empty($cached['tenant_id']) || $cached['tenant_id'] === $tenantId) {
                 return array_merge($cached, ['found' => true, 'source' => $cached['source'] ?? 'cached']);
@@ -48,6 +46,7 @@ class BarcodeLookupService
         $dbMatch = $this->searchDatabase($barcode, $tenantId);
         if ($dbMatch['found']) {
             $this->remember($barcode, $dbMatch, $tenantId);
+
             return $dbMatch;
         }
 
@@ -55,6 +54,7 @@ class BarcodeLookupService
         $offMatch = $this->searchOpenFoodFacts($barcode);
         if ($offMatch['found']) {
             $this->remember($barcode, $offMatch);
+
             return $offMatch;
         }
 
@@ -62,6 +62,7 @@ class BarcodeLookupService
         $upcMatch = $this->searchUpcItemDb($barcode);
         if ($upcMatch['found']) {
             $this->remember($barcode, $upcMatch);
+
             return $upcMatch;
         }
 
@@ -69,6 +70,7 @@ class BarcodeLookupService
         $webMatch = $this->searchWebFallback($barcode);
         if ($webMatch['found']) {
             $this->remember($barcode, $webMatch);
+
             return $webMatch;
         }
 
@@ -148,7 +150,7 @@ class BarcodeLookupService
 
             if ($response->successful()) {
                 $data = $response->json();
-                if (($data['status'] ?? 0) === 1 && !empty($data['product'])) {
+                if (($data['status'] ?? 0) === 1 && ! empty($data['product'])) {
                     $p = $data['product'];
                     $name = $p['product_name'] ?? $p['product_name_en'] ?? $p['generic_name'] ?? null;
                     if ($name) {
@@ -177,15 +179,15 @@ class BarcodeLookupService
     protected function searchUpcItemDb(string $barcode): array
     {
         try {
-            $response = Http::timeout(5)->get("https://api.upcitemdb.com/prod/trial/lookup", [
+            $response = Http::timeout(5)->get('https://api.upcitemdb.com/prod/trial/lookup', [
                 'upc' => $barcode,
             ]);
 
             if ($response->successful()) {
                 $data = $response->json();
-                if (($data['code'] ?? '') === 'OK' && !empty($data['items'][0])) {
+                if (($data['code'] ?? '') === 'OK' && ! empty($data['items'][0])) {
                     $item = $data['items'][0];
-                    if (!empty($item['title'])) {
+                    if (! empty($item['title'])) {
                         return [
                             'found' => true,
                             'source' => 'upcitemdb',
@@ -257,7 +259,7 @@ class BarcodeLookupService
 
             if ($res->successful()) {
                 $items = $res->json('items');
-                if (!empty($items) && is_array($items)) {
+                if (! empty($items) && is_array($items)) {
                     foreach ($items as $item) {
                         $rawTitle = $item['title'] ?? '';
                         $cleanTitle = $this->cleanProductTitle($rawTitle);
@@ -297,7 +299,7 @@ class BarcodeLookupService
 
             if ($res->successful()) {
                 $organic = $res->json('organic');
-                if (!empty($organic) && is_array($organic)) {
+                if (! empty($organic) && is_array($organic)) {
                     foreach ($organic as $item) {
                         $rawTitle = $item['title'] ?? '';
                         $cleanTitle = $this->cleanProductTitle($rawTitle);
@@ -334,7 +336,7 @@ class BarcodeLookupService
 
             if ($res->successful()) {
                 $data = $res->json();
-                if (!empty($data[0]['name'])) {
+                if (! empty($data[0]['name'])) {
                     return [
                         'found' => true,
                         'source' => 'ean_search',

@@ -14,7 +14,8 @@ use Illuminate\Support\Facades\DB;
  */
 class PurgeDemoFromProd extends Command
 {
-    protected $signature   = 'demo:purge-from-prod {--force : Skip confirmation}';
+    protected $signature = 'demo:purge-from-prod {--force : Skip confirmation}';
+
     protected $description = 'Remove demo tenants and their data from the production database (one-time migration).';
 
     public function handle(): int
@@ -24,6 +25,7 @@ class PurgeDemoFromProd extends Command
             false
         )) {
             $this->warn('Cancelled.');
+
             return self::SUCCESS;
         }
 
@@ -38,10 +40,11 @@ class PurgeDemoFromProd extends Command
             ->pluck('id')
             ->toArray();
 
-        $this->info('Demo tenant IDs in production DB: ' . implode(', ', $tenantIds) ?: '(none)');
+        $this->info('Demo tenant IDs in production DB: '.implode(', ', $tenantIds) ?: '(none)');
 
         if (empty($tenantIds)) {
             $this->info('✅ Nothing to remove — production DB is already demo-free.');
+
             return self::SUCCESS;
         }
 

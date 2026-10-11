@@ -8,18 +8,14 @@ import {
     Check,
     Clock,
     Compass,
-    DollarSign,
     Download,
     Edit,
     FileSpreadsheet,
     FolderTree,
     Info,
-    Keyboard,
     Package,
     Plus,
     Printer,
-    RefreshCcw,
-    ScanBarcode,
     Search,
     ShieldCheck,
     Tag,
@@ -76,7 +72,8 @@ const sections: TourSection[] = [
         rx: 10,
         icon: Compass,
         preferredPlacement: 'bottom-right',
-        usedFor: 'Welcome to your Product Master Catalog! This interactive walkthrough covers every section: stock valuation telemetry, hardware barcode auto-lookup, category management, universal search, tier pricing, live stock health, 1-click audited adjustments, and thermal shelf label printing.',
+        usedFor:
+            'Welcome to your Product Master Catalog! This interactive walkthrough covers every section: stock valuation telemetry, hardware barcode auto-lookup, category management, universal search, tier pricing, live stock health, 1-click audited adjustments, and thermal shelf label printing.',
         capabilities: [
             'Master Inventory Control & Stock Valuation',
             'Hardware Barcode Scanner Gun Detection',
@@ -102,7 +99,8 @@ const sections: TourSection[] = [
         rx: 16,
         icon: TrendingUp,
         preferredPlacement: 'bottom',
-        usedFor: 'Live financial breakdown of your active catalog: Total SKU Count, Stock Cost Value (capital tied up at cost), Total Projected Retail Revenue, Catalog Average Gross Margin %, and Out-of-Stock Counters.',
+        usedFor:
+            'Live financial breakdown of your active catalog: Total SKU Count, Stock Cost Value (capital tied up at cost), Total Projected Retail Revenue, Catalog Average Gross Margin %, and Out-of-Stock Counters.',
         capabilities: [
             'Working Capital at Cost Valuation',
             'Projected Total Retail Sales Value',
@@ -127,7 +125,8 @@ const sections: TourSection[] = [
         rx: 14,
         icon: AlertTriangle,
         preferredPlacement: 'bottom',
-        usedFor: 'Automated early-warning safety system that flags items dipped below minimum reorder thresholds, plus perishable products expiring within the next 90 days for retail, pharmacy, and grocery.',
+        usedFor:
+            'Automated early-warning safety system that flags items dipped below minimum reorder thresholds, plus perishable products expiring within the next 90 days for retail, pharmacy, and grocery.',
         capabilities: [
             'Safety Stock Threshold Depletion Warnings',
             'Real-Time Remaining Stock Pill Counters',
@@ -150,7 +149,8 @@ const sections: TourSection[] = [
         rx: 14,
         icon: FolderTree,
         preferredPlacement: 'bottom',
-        usedFor: 'Ultra-fast department filter displaying live SKU counts and color-coded department tags. Switches product views in under 50 milliseconds with zero page reload latency.',
+        usedFor:
+            'Ultra-fast department filter displaying live SKU counts and color-coded department tags. Switches product views in under 50 milliseconds with zero page reload latency.',
         capabilities: [
             'Instant 1-Click Client-Side Filtering',
             'Real-Time SKU Count per Category',
@@ -174,7 +174,8 @@ const sections: TourSection[] = [
         rx: 16,
         icon: Search,
         preferredPlacement: 'bottom',
-        usedFor: 'Central catalog datatable featuring multi-field instantaneous search matching item name, SKU, barcode, manufacturer brand, generic medical composition, and hardware specifications.',
+        usedFor:
+            'Central catalog datatable featuring multi-field instantaneous search matching item name, SKU, barcode, manufacturer brand, generic medical composition, and hardware specifications.',
         capabilities: [
             'Multi-Field Fuzzy Search across 7 attributes',
             'Direct Barcode Scanner Gun Input',
@@ -201,7 +202,8 @@ const sections: TourSection[] = [
         rx: 12,
         icon: Tag,
         preferredPlacement: 'right',
-        usedFor: 'Master product identity display showing product name, SKU, manufacturer barcode, and industry-tailored metadata (Rx prescription flags & generic names for pharmacy, technical dimensions for hardware, IMEI/serial numbers for electronics).',
+        usedFor:
+            'Master product identity display showing product name, SKU, manufacturer barcode, and industry-tailored metadata (Rx prescription flags & generic names for pharmacy, technical dimensions for hardware, IMEI/serial numbers for electronics).',
         capabilities: [
             'Industry Vertical Metadata (Rx Only, Generic Names, IMEI)',
             'Dual SKU and Barcode Display with Scanner Icon',
@@ -227,7 +229,8 @@ const sections: TourSection[] = [
         rx: 12,
         icon: Zap,
         preferredPlacement: 'left',
-        usedFor: 'Multi-tier price management displaying cost price, retail selling price, wholesale trade price, and live calculated gross margin % with visual profitability indicators.',
+        usedFor:
+            'Multi-tier price management displaying cost price, retail selling price, wholesale trade price, and live calculated gross margin % with visual profitability indicators.',
         capabilities: [
             'Dual Retail vs. Wholesale Selling Prices',
             'Unit Cost Price Display for Staff Transparency',
@@ -251,7 +254,8 @@ const sections: TourSection[] = [
         rx: 12,
         icon: Package,
         preferredPlacement: 'left',
-        usedFor: 'Live on-hand stock quantity display with measurement units (Pcs, Kg, Liters, Boxes) paired with a visual progress bar comparing current stock against 3× safety stock.',
+        usedFor:
+            'Live on-hand stock quantity display with measurement units (Pcs, Kg, Liters, Boxes) paired with a visual progress bar comparing current stock against 3× safety stock.',
         capabilities: [
             'Real-Time Physical Stock Count Display',
             'Tailored Unit of Measurement Badges',
@@ -275,7 +279,8 @@ const sections: TourSection[] = [
         rx: 12,
         icon: Clock,
         preferredPlacement: 'left',
-        usedFor: 'Batch expiration date tracking for healthcare, pharmacy, food, and perishables. Displays exact expiration date with an active remaining days countdown.',
+        usedFor:
+            'Batch expiration date tracking for healthcare, pharmacy, food, and perishables. Displays exact expiration date with an active remaining days countdown.',
         capabilities: [
             'Remaining Days Countdown (e.g. 45d left)',
             'Color-Coded Expiry Urgency (Rose ≤ 30 days, Amber ≤ 90 days)',
@@ -299,7 +304,8 @@ const sections: TourSection[] = [
         rx: 12,
         icon: ShieldCheck,
         preferredPlacement: 'left',
-        usedFor: 'Instant stock correction modal for reconciling physical warehouse counts, receiving spot deliveries, or writing off damaged, expired, or stolen items.',
+        usedFor:
+            'Instant stock correction modal for reconciling physical warehouse counts, receiving spot deliveries, or writing off damaged, expired, or stolen items.',
         capabilities: [
             '3 Correction Modes (Exact Count, Add Stock, Deduct Damage)',
             'Audited Reason Tracking (Count, Breakage, Return, Expiry)',
@@ -326,7 +332,8 @@ const sections: TourSection[] = [
         rx: 12,
         icon: Printer,
         preferredPlacement: 'left',
-        usedFor: 'Integrated thermal barcode generator. Formats compliant EAN-13, UPC, and Code-128 barcodes and shelf-edge price tags with store branding and KES currency for 58mm or 80mm thermal printers.',
+        usedFor:
+            'Integrated thermal barcode generator. Formats compliant EAN-13, UPC, and Code-128 barcodes and shelf-edge price tags with store branding and KES currency for 58mm or 80mm thermal printers.',
         capabilities: [
             'EAN-13, UPC & Code-128 Barcode Generation',
             'Standard Thermal Paper Sizes (50x30mm, 40x25mm)',
@@ -353,7 +360,8 @@ const sections: TourSection[] = [
         rx: 12,
         icon: Edit,
         preferredPlacement: 'left',
-        usedFor: 'Complete product lifecycle control: update pricing tiers, reorder levels, barcodes, tax rates, or supplier links via the slide-over drawer, or safely archive obsolete items.',
+        usedFor:
+            'Complete product lifecycle control: update pricing tiers, reorder levels, barcodes, tax rates, or supplier links via the slide-over drawer, or safely archive obsolete items.',
         capabilities: [
             'Full Slide-Over Edit Drawer with Live Validation',
             'Instant Margin & Markup Re-Calculation',
@@ -379,7 +387,8 @@ const sections: TourSection[] = [
         rx: 12,
         icon: FileSpreadsheet,
         preferredPlacement: 'bottom-right',
-        usedFor: 'Export your complete master catalog to CSV with 1 click. Generates an offline Excel-compatible spreadsheet capturing SKUs, barcodes, pricing, and stock levels for periodic audits or executive accounting.',
+        usedFor:
+            'Export your complete master catalog to CSV with 1 click. Generates an offline Excel-compatible spreadsheet capturing SKUs, barcodes, pricing, and stock levels for periodic audits or executive accounting.',
         capabilities: [
             'Full Catalog CSV Export in 1-Click',
             'Excel & Google Sheets Compatible Format',
@@ -404,7 +413,8 @@ const sections: TourSection[] = [
         rx: 12,
         icon: Download,
         preferredPlacement: 'bottom-right',
-        usedFor: 'Bulk-upload supplier product catalogs, price lists, or legacy POS exports directly via Excel or CSV spreadsheets. Automatically maps columns, detects duplicate barcodes, and registers hundreds of SKUs simultaneously.',
+        usedFor:
+            'Bulk-upload supplier product catalogs, price lists, or legacy POS exports directly via Excel or CSV spreadsheets. Automatically maps columns, detects duplicate barcodes, and registers hundreds of SKUs simultaneously.',
         capabilities: [
             'CSV & Excel Spreadsheet File Uploader',
             'Supplier Catalog Template Downloader',
@@ -431,7 +441,8 @@ const sections: TourSection[] = [
         rx: 12,
         icon: Plus,
         preferredPlacement: 'bottom-right',
-        usedFor: 'Rapidly enroll individual new products into your master catalog. Connect any USB or Bluetooth barcode gun: scanning a physical product barcode automatically queries international databases to auto-populate the item name, brand, and category.',
+        usedFor:
+            'Rapidly enroll individual new products into your master catalog. Connect any USB or Bluetooth barcode gun: scanning a physical product barcode automatically queries international databases to auto-populate the item name, brand, and category.',
         capabilities: [
             'Hardware Barcode Gun Auto-Detection',
             'Global Database Barcode Auto-Lookup',
@@ -463,7 +474,7 @@ watch(
             internalStep.value = newStep;
             updateTargetPosition();
         }
-    }
+    },
 );
 
 const currentSection = computed(() => {
@@ -598,7 +609,7 @@ watch(
             window.removeEventListener('keydown', handleKeyDown);
         }
     },
-    { immediate: true }
+    { immediate: true },
 );
 
 onMounted(() => {
@@ -780,7 +791,6 @@ const speechBubbleTail = computed(() => {
         offset,
     };
 });
-
 </script>
 
 <template>
@@ -793,15 +803,9 @@ const speechBubbleTail = computed(() => {
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
         >
-            <div
-                v-if="open"
-                class="fixed inset-0 z-50 pointer-events-none select-none font-sans"
-            >
+            <div v-if="open" class="pointer-events-none fixed inset-0 z-50 select-none font-sans">
                 <!-- SVG Dimming Backdrop with Cutout Hole -->
-                <svg
-                    class="absolute inset-0 w-full h-full pointer-events-none transition-all duration-300"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
+                <svg class="pointer-events-none absolute inset-0 h-full w-full transition-all duration-300" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <!-- Cutout Mask Hole -->
                         <mask id="product-guide-mask">
@@ -834,7 +838,7 @@ const speechBubbleTail = computed(() => {
                 <!-- Clickable Spotlight Hole: clicking highlighted area advances tour -->
                 <div
                     v-if="targetRect"
-                    class="absolute pointer-events-auto cursor-pointer z-40"
+                    class="pointer-events-auto absolute z-40 cursor-pointer"
                     :style="{
                         top: `${targetRect.top - 4}px`,
                         left: `${targetRect.left - 4}px`,
@@ -848,7 +852,7 @@ const speechBubbleTail = computed(() => {
                 <!-- Glowing Target Boundary Ring -->
                 <div
                     v-if="targetRect"
-                    class="absolute pointer-events-none transition-all duration-300 ease-out border-2 border-primary shadow-[0_0_35px_rgba(16,185,129,0.5)] ring-4 ring-primary/30"
+                    class="pointer-events-none absolute border-2 border-primary shadow-[0_0_35px_rgba(16,185,129,0.5)] ring-4 ring-primary/30 transition-all duration-300 ease-out"
                     :style="{
                         top: `${targetRect.top - 8}px`,
                         left: `${targetRect.left - 8}px`,
@@ -859,25 +863,15 @@ const speechBubbleTail = computed(() => {
                 ></div>
 
                 <!-- Guided Callout Text Bubble (Speech bubble dialog pointing directly to target) -->
-                <div
-                    ref="cardRef"
-                    class="absolute z-50 pointer-events-auto transition-all duration-300 ease-out"
-                    :style="cardStyle"
-                    @click.stop
-                >
+                <div ref="cardRef" class="pointer-events-auto absolute z-50 transition-all duration-300 ease-out" :style="cardStyle" @click.stop>
                     <!-- Speech Bubble Tail: Top (points UP to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'top'"
-                        class="absolute -top-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -top-3.5 z-30"
                         :style="{ left: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="24" height="15" viewBox="0 0 24 15" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,15 L 12,0 L 24,15"
-                                class="fill-muted/95 stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,15 L 12,0 L 24,15" class="fill-muted/95 stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="1" y="14" width="22" height="3" class="fill-muted/95" />
                         </svg>
                     </div>
@@ -885,16 +879,11 @@ const speechBubbleTail = computed(() => {
                     <!-- Speech Bubble Tail: Bottom (points DOWN to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'bottom'"
-                        class="absolute -bottom-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -bottom-3.5 z-30"
                         :style="{ left: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="24" height="15" viewBox="0 0 24 15" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,0 L 12,15 L 24,0"
-                                class="fill-muted/80 stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,0 L 12,15 L 24,0" class="fill-muted/80 stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="1" y="-2" width="22" height="3" class="fill-muted/80" />
                         </svg>
                     </div>
@@ -902,16 +891,11 @@ const speechBubbleTail = computed(() => {
                     <!-- Speech Bubble Tail: Left (points LEFT to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'left'"
-                        class="absolute -left-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -left-3.5 z-30"
                         :style="{ top: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="15" height="24" viewBox="0 0 15 24" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 15,0 L 0,12 L 15,24"
-                                class="fill-card stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 15,0 L 0,12 L 15,24" class="fill-card stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="14" y="1" width="3" height="22" class="fill-card" />
                         </svg>
                     </div>
@@ -919,38 +903,44 @@ const speechBubbleTail = computed(() => {
                     <!-- Speech Bubble Tail: Right (points RIGHT to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'right'"
-                        class="absolute -right-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -right-3.5 z-30"
                         :style="{ top: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="15" height="24" viewBox="0 0 15 24" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,0 L 15,12 L 0,24"
-                                class="fill-card stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,0 L 15,12 L 0,24" class="fill-card stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="-2" y="1" width="3" height="22" class="fill-card" />
                         </svg>
                     </div>
 
                     <!-- Text Bubble Container Card -->
-                    <div class="rounded-2xl border-2 border-border bg-card shadow-2xl overflow-hidden text-card-foreground flex flex-col max-h-[calc(100vh-90px)] ring-1 ring-black/10 dark:ring-white/15">
+                    <div
+                        class="flex max-h-[calc(100vh-90px)] flex-col overflow-hidden rounded-2xl border-2 border-border bg-card text-card-foreground shadow-2xl ring-1 ring-black/10 dark:ring-white/15"
+                    >
                         <!-- Card Header -->
-                        <div class="px-4 py-3 bg-muted/80 border-b border-border flex items-center justify-between shrink-0">
-                            <div class="flex items-center gap-3 min-w-0 flex-1">
-                                <div class="size-8 rounded-lg bg-primary/15 text-primary border border-primary/25 flex items-center justify-center font-bold text-xs shadow-2xs shrink-0">
+                        <div class="flex shrink-0 items-center justify-between border-b border-border bg-muted/80 px-4 py-3">
+                            <div class="flex min-w-0 flex-1 items-center gap-3">
+                                <div
+                                    class="shadow-2xs flex size-8 shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/15 text-xs font-bold text-primary"
+                                >
                                     <component :is="currentSection.icon" class="size-4.5" />
                                 </div>
                                 <div class="min-w-0 flex-1">
-                                    <div class="flex items-center gap-2 flex-wrap">
-                                        <Badge variant="outline" class="text-[9.5px] px-2 py-0.5 h-4.5 border-primary/40 bg-primary/10 text-primary uppercase font-mono font-bold shrink-0">
-                                            {{ currentSection.id === 'start' ? 'ORIENTATION' : `Part ${currentSection.stepNumber}/${sections.length - 1}` }}
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <Badge
+                                            variant="outline"
+                                            class="h-4.5 shrink-0 border-primary/40 bg-primary/10 px-2 py-0.5 font-mono text-[9.5px] font-bold uppercase text-primary"
+                                        >
+                                            {{
+                                                currentSection.id === 'start'
+                                                    ? 'ORIENTATION'
+                                                    : `Part ${currentSection.stepNumber}/${sections.length - 1}`
+                                            }}
                                         </Badge>
-                                        <span class="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-wider truncate">
+                                        <span class="truncate text-[10px] font-bold uppercase tracking-wider text-muted-foreground sm:text-[11px]">
                                             {{ currentSection.tag }}
                                         </span>
                                     </div>
-                                    <h3 class="text-sm sm:text-[15px] font-bold text-foreground leading-snug mt-0.5">
+                                    <h3 class="mt-0.5 text-sm font-bold leading-snug text-foreground sm:text-[15px]">
                                         {{ currentSection.title }}
                                     </h3>
                                 </div>
@@ -962,7 +952,7 @@ const speechBubbleTail = computed(() => {
                                 variant="ghost"
                                 size="sm"
                                 @click="close"
-                                class="h-7 px-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/80 shrink-0 gap-1 rounded-lg ml-2 cursor-pointer"
+                                class="ml-2 h-7 shrink-0 cursor-pointer gap-1 rounded-lg px-2.5 text-xs font-semibold text-muted-foreground hover:bg-muted/80 hover:text-foreground"
                                 title="Exit Tour (Esc)"
                             >
                                 <span>Exit</span>
@@ -971,14 +961,14 @@ const speechBubbleTail = computed(() => {
                         </div>
 
                         <!-- Card Body -->
-                        <div class="p-3.5 space-y-3 overflow-y-auto max-h-[min(400px,calc(100vh-190px))] text-xs">
+                        <div class="max-h-[min(400px,calc(100vh-190px))] space-y-3 overflow-y-auto p-3.5 text-xs">
                             <!-- Purpose & Function -->
                             <div class="space-y-1.5">
-                                <div class="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-primary">
+                                <div class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-primary sm:text-xs">
                                     <Info class="size-3.5" />
                                     <span>Purpose & Function:</span>
                                 </div>
-                                <p class="text-xs sm:text-[13px] text-foreground font-normal leading-relaxed">
+                                <p class="text-xs font-normal leading-relaxed text-foreground sm:text-[13px]">
                                     {{ currentSection.usedFor }}
                                 </p>
 
@@ -987,16 +977,16 @@ const speechBubbleTail = computed(() => {
                                     <span
                                         v-for="cap in currentSection.capabilities"
                                         :key="cap"
-                                        class="inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-md font-semibold bg-muted/80 border border-border/80 text-foreground shadow-2xs"
+                                        class="shadow-2xs inline-flex items-center gap-1.5 rounded-md border border-border/80 bg-muted/80 px-2 py-0.5 text-[10px] font-semibold text-foreground"
                                     >
-                                        <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
+                                        <span class="size-1.5 shrink-0 rounded-full bg-primary"></span>
                                         <span>{{ cap }}</span>
                                     </span>
                                 </div>
                             </div>
 
                             <!-- Guidance Steps -->
-                            <div class="p-2.5 rounded-xl bg-muted/40 border border-border/80 space-y-2">
+                            <div class="space-y-2 rounded-xl border border-border/80 bg-muted/40 p-2.5">
                                 <span class="text-[10px] font-bold uppercase tracking-wider text-foreground/70">How to use:</span>
                                 <div class="space-y-2">
                                     <div
@@ -1004,10 +994,12 @@ const speechBubbleTail = computed(() => {
                                         :key="idx"
                                         class="flex items-start gap-2 text-[11.5px] text-foreground"
                                     >
-                                        <div class="size-4.5 rounded-full bg-primary text-primary-foreground font-mono font-bold text-[9px] flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                                        <div
+                                            class="size-4.5 shadow-2xs mt-0.5 flex shrink-0 items-center justify-center rounded-full bg-primary font-mono text-[9px] font-bold text-primary-foreground"
+                                        >
                                             {{ idx + 1 }}
                                         </div>
-                                        <span class="leading-relaxed font-normal text-foreground/95 flex-1 break-words">
+                                        <span class="flex-1 break-words font-normal leading-relaxed text-foreground/95">
                                             {{ step }}
                                         </span>
                                     </div>
@@ -1015,12 +1007,14 @@ const speechBubbleTail = computed(() => {
                             </div>
 
                             <!-- Pro Tip -->
-                            <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-950 dark:text-amber-100 space-y-1">
-                                <span class="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-300 text-[10px] uppercase tracking-wide">
-                                    <Zap class="size-3 text-amber-600 dark:text-amber-400 fill-amber-500/30 shrink-0" />
+                            <div class="space-y-1 rounded-xl border border-amber-500/30 bg-amber-500/10 p-2.5 text-amber-950 dark:text-amber-100">
+                                <span
+                                    class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-amber-900 dark:text-amber-300"
+                                >
+                                    <Zap class="size-3 shrink-0 fill-amber-500/30 text-amber-600 dark:text-amber-400" />
                                     <span>Tip</span>
                                 </span>
-                                <p class="text-[11px] leading-relaxed font-medium">
+                                <p class="text-[11px] font-medium leading-relaxed">
                                     {{ currentSection.proTip }}
                                 </p>
                             </div>
@@ -1030,7 +1024,7 @@ const speechBubbleTail = computed(() => {
                                 <button
                                     type="button"
                                     @click="handleAction"
-                                    class="w-full py-2.5 px-4 rounded-xl bg-primary/15 hover:bg-primary/25 text-primary text-xs sm:text-[13px] font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer border border-primary/30 shadow-2xs active:scale-[0.99]"
+                                    class="shadow-2xs flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/15 px-4 py-2.5 text-xs font-bold text-primary transition-colors hover:bg-primary/25 active:scale-[0.99] sm:text-[13px]"
                                 >
                                     <span>{{ currentSection.actionLabel }}</span>
                                     <ArrowRight class="size-4 shrink-0" />
@@ -1039,13 +1033,13 @@ const speechBubbleTail = computed(() => {
                         </div>
 
                         <!-- Footer Navigation -->
-                        <div class="px-4 py-3 bg-muted/70 border-t border-border flex items-center justify-between shrink-0">
+                        <div class="flex shrink-0 items-center justify-between border-t border-border bg-muted/70 px-4 py-3">
                             <!-- Prev Button -->
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                class="h-8 text-xs px-3 gap-1 text-muted-foreground hover:text-foreground font-semibold cursor-pointer"
+                                class="h-8 cursor-pointer gap-1 px-3 text-xs font-semibold text-muted-foreground hover:text-foreground"
                                 :disabled="internalStep === 0"
                                 @click="prevStep"
                             >
@@ -1054,14 +1048,14 @@ const speechBubbleTail = computed(() => {
                             </Button>
 
                             <!-- Dot indicators -->
-                            <div class="flex items-center justify-center gap-1 max-w-[140px] sm:max-w-[190px] flex-wrap">
+                            <div class="flex max-w-[140px] flex-wrap items-center justify-center gap-1 sm:max-w-[190px]">
                                 <button
                                     v-for="(_, idx) in sections"
                                     :key="idx"
                                     type="button"
                                     @click="goToStep(idx)"
-                                    class="size-1.5 sm:size-2 rounded-full transition-all cursor-pointer"
-                                    :class="idx === internalStep ? 'bg-primary w-3 sm:w-4' : 'bg-muted-foreground/30 hover:bg-muted-foreground/60'"
+                                    class="size-1.5 cursor-pointer rounded-full transition-all sm:size-2"
+                                    :class="idx === internalStep ? 'w-3 bg-primary sm:w-4' : 'bg-muted-foreground/30 hover:bg-muted-foreground/60'"
                                     :title="idx === 0 ? 'Start: Product Guide' : `Part ${idx}`"
                                 ></button>
                             </div>
@@ -1070,10 +1064,12 @@ const speechBubbleTail = computed(() => {
                             <Button
                                 type="button"
                                 size="sm"
-                                class="h-8 text-xs px-3.5 gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-xs cursor-pointer"
+                                class="shadow-xs h-8 cursor-pointer gap-1.5 bg-primary px-3.5 text-xs font-bold text-primary-foreground hover:bg-primary/90"
                                 @click="nextStep"
                             >
-                                <span>{{ currentSection.id === 'start' ? 'Start Tour' : internalStep === sections.length - 1 ? 'Done' : 'Next' }}</span>
+                                <span>{{
+                                    currentSection.id === 'start' ? 'Start Tour' : internalStep === sections.length - 1 ? 'Done' : 'Next'
+                                }}</span>
                                 <ArrowRight v-if="internalStep < sections.length - 1" class="size-3.5" />
                                 <Check v-else class="size-3.5" />
                             </Button>

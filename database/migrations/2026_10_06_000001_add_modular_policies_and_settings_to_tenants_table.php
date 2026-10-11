@@ -31,9 +31,15 @@ return new class extends Migration
     {
         Schema::table('tenants', function (Blueprint $table) {
             $colsToDrop = [];
-            if (Schema::hasColumn('tenants', 'device_policy')) $colsToDrop[] = 'device_policy';
-            if (Schema::hasColumn('tenants', 'network_policy')) $colsToDrop[] = 'network_policy';
-            if (Schema::hasColumn('tenants', 'settings')) $colsToDrop[] = 'settings';
+            if (Schema::hasColumn('tenants', 'device_policy')) {
+                $colsToDrop[] = 'device_policy';
+            }
+            if (Schema::hasColumn('tenants', 'network_policy')) {
+                $colsToDrop[] = 'network_policy';
+            }
+            if (Schema::hasColumn('tenants', 'settings')) {
+                $colsToDrop[] = 'settings';
+            }
             if (! empty($colsToDrop)) {
                 $table->dropColumn($colsToDrop);
             }

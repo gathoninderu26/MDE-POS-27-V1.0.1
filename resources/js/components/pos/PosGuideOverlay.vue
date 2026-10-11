@@ -7,14 +7,12 @@ import {
     Check,
     Compass,
     CreditCard,
-    HelpCircle,
     Info,
     Keyboard,
     Package,
     ScanBarcode,
     ShieldCheck,
     ShoppingCart,
-    Sparkles,
     X,
     Zap,
 } from 'lucide-vue-next';
@@ -66,7 +64,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 10,
         icon: Compass,
-        usedFor: 'Welcome to MDE-POS! Please click the highlighted "Page Guide" button in the header right now to begin your interactive terminal walkthrough.',
+        usedFor:
+            'Welcome to MDE-POS! Please click the highlighted "Page Guide" button in the header right now to begin your interactive terminal walkthrough.',
         capabilities: [
             'Visual Screen Spotlight',
             'Cashier Frontline Procedures',
@@ -92,7 +91,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 16,
         icon: ScanBarcode,
-        usedFor: 'Universal product lookup engine connecting physical USB/Bluetooth barcode guns, mobile camera scanners, and live catalog search. Handles EAN-13, UPC, SKU numbers, IMEI numbers, and generic pharmaceutical names with auto-commit.',
+        usedFor:
+            'Universal product lookup engine connecting physical USB/Bluetooth barcode guns, mobile camera scanners, and live catalog search. Handles EAN-13, UPC, SKU numbers, IMEI numbers, and generic pharmaceutical names with auto-commit.',
         capabilities: [
             'USB & Bluetooth HID Gun',
             'Mobile Camera Scanner',
@@ -123,14 +123,9 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 18,
         icon: Package,
-        usedFor: 'Touch-friendly grid displaying active inventory with real-time stock balances, depletion color warnings, dual pricing tiers (Retail vs Wholesale / Trade), and vertical-specific identifiers (generic drug names, site delivery, table numbers).',
-        capabilities: [
-            'Touch-Friendly Grid',
-            'Real-Time Stock Depletion',
-            'Dual Pricing Tiers',
-            'Quick Category Pills',
-            'Batch & Expiry Badges',
-        ],
+        usedFor:
+            'Touch-friendly grid displaying active inventory with real-time stock balances, depletion color warnings, dual pricing tiers (Retail vs Wholesale / Trade), and vertical-specific identifiers (generic drug names, site delivery, table numbers).',
+        capabilities: ['Touch-Friendly Grid', 'Real-Time Stock Depletion', 'Dual Pricing Tiers', 'Quick Category Pills', 'Batch & Expiry Badges'],
         howToUse: [
             'Tap or click any product card to immediately add 1 unit to the active ticket — tap multiple times to quickly increment quantities.',
             'Use the horizontal category pills at the top to filter items by department (e.g. Antibiotics, Hardware Tools, Beverages, Dry Goods).',
@@ -154,7 +149,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 18,
         icon: ShoppingCart,
-        usedFor: 'Live customer order ledger managing item quantities, line-item percentage discounts, customer credit limit tracking, insurance co-pay details, and hold/resume sales for high-volume queue management.',
+        usedFor:
+            'Live customer order ledger managing item quantities, line-item percentage discounts, customer credit limit tracking, insurance co-pay details, and hold/resume sales for high-volume queue management.',
         capabilities: [
             'Customer Credit Limits',
             'Insurance Co-Pay Tracking',
@@ -185,7 +181,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 18,
         icon: CreditCard,
-        usedFor: 'Final transaction settlement engine providing real-time 16% VAT computation, bill-level discounts, instant tender buttons (M-Pesa Express, Cash Exact), split tender payments, and KRA-compliant 80mm thermal receipts.',
+        usedFor:
+            'Final transaction settlement engine providing real-time 16% VAT computation, bill-level discounts, instant tender buttons (M-Pesa Express, Cash Exact), split tender payments, and KRA-compliant 80mm thermal receipts.',
         capabilities: [
             'M-Pesa STK Push',
             'Cash Change Calculator',
@@ -216,7 +213,8 @@ const sections: TourSection[] = [
         shape: 'rect',
         rx: 14,
         icon: ShieldCheck,
-        usedFor: 'Terminal-level operations displaying store branch, active cashier identity, live network sync status, sandbox demo countdown, keyboard hotkeys reference, fullscreen kiosk toggle, and supervisor PIN lockout mode.',
+        usedFor:
+            'Terminal-level operations displaying store branch, active cashier identity, live network sync status, sandbox demo countdown, keyboard hotkeys reference, fullscreen kiosk toggle, and supervisor PIN lockout mode.',
         capabilities: [
             'Supervisor PIN Lockout',
             'Keyboard Hotkeys Cheatsheet',
@@ -248,7 +246,7 @@ watch(
             internalStep.value = val;
             updateTargetPosition();
         }
-    }
+    },
 );
 
 const currentSection = computed(() => sections[internalStep.value] || sections[0]);
@@ -375,7 +373,7 @@ watch(
             window.removeEventListener('keydown', handleKeyDown);
         }
     },
-    { immediate: true }
+    { immediate: true },
 );
 
 onMounted(() => {
@@ -532,9 +530,7 @@ const speechBubbleTail = computed(() => {
     }
     // CASE 3: Card is on the LEFT, Target is on the RIGHT (e.g. Cart, Checkout)
     if (c.left + (c.width || 380) <= t.left + 30) {
-        const targetAnchorY = currentSection.value.id === 'checkout'
-            ? t.top + t.height / 2
-            : t.top + Math.min(70, t.height / 2);
+        const targetAnchorY = currentSection.value.id === 'checkout' ? t.top + t.height / 2 : t.top + Math.min(70, t.height / 2);
         const offset = Math.max(28, Math.min((c.height || 400) - 28, targetAnchorY - c.top));
         return {
             placement: 'right' as const,
@@ -542,16 +538,13 @@ const speechBubbleTail = computed(() => {
         };
     }
     // CASE 4: Card is on the RIGHT, Target is on the LEFT (e.g. Search, Catalog)
-    const targetAnchorY = currentSection.value.id === 'catalog'
-        ? t.top + 90
-        : t.top + Math.min(60, t.height / 2);
+    const targetAnchorY = currentSection.value.id === 'catalog' ? t.top + 90 : t.top + Math.min(60, t.height / 2);
     const offset = Math.max(28, Math.min((c.height || 400) - 28, targetAnchorY - c.top));
     return {
         placement: 'left' as const,
         offset,
     };
 });
-
 </script>
 
 <template>
@@ -564,15 +557,9 @@ const speechBubbleTail = computed(() => {
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
         >
-            <div
-                v-if="open"
-                class="fixed inset-0 z-50 pointer-events-none select-none font-sans"
-            >
+            <div v-if="open" class="pointer-events-none fixed inset-0 z-50 select-none font-sans">
                 <!-- SVG Dimming Backdrop with EnjoyHint Cutout Hole & Bubble Connector -->
-                <svg
-                    class="absolute inset-0 w-full h-full pointer-events-none transition-all duration-300"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
+                <svg class="pointer-events-none absolute inset-0 h-full w-full transition-all duration-300" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <!-- EnjoyHint SVG Mask Hole -->
                         <mask id="enjoyhint-mask">
@@ -608,7 +595,7 @@ const speechBubbleTail = computed(() => {
                 <!-- Clickable Spotlight Hole: clicking highlighted button triggers action or advances step -->
                 <div
                     v-if="targetRect"
-                    class="absolute pointer-events-auto cursor-pointer z-40"
+                    class="pointer-events-auto absolute z-40 cursor-pointer"
                     :style="{
                         top: `${targetRect.top - 4}px`,
                         left: `${targetRect.left - 4}px`,
@@ -622,7 +609,7 @@ const speechBubbleTail = computed(() => {
                 <!-- EnjoyHint Glowing Target Boundary Ring (Clean frame without obstructing badges) -->
                 <div
                     v-if="targetRect"
-                    class="absolute pointer-events-none transition-all duration-300 ease-out border-2 border-primary shadow-[0_0_35px_rgba(16,185,129,0.5)] ring-4 ring-primary/30"
+                    class="pointer-events-none absolute border-2 border-primary shadow-[0_0_35px_rgba(16,185,129,0.5)] ring-4 ring-primary/30 transition-all duration-300 ease-out"
                     :style="{
                         top: `${targetRect.top - 8}px`,
                         left: `${targetRect.left - 8}px`,
@@ -633,25 +620,15 @@ const speechBubbleTail = computed(() => {
                 ></div>
 
                 <!-- Guided Callout Text Bubble (Speech bubble dialog pointing directly to target) -->
-                <div
-                    ref="cardRef"
-                    class="absolute z-50 pointer-events-auto transition-all duration-300 ease-out"
-                    :style="cardStyle"
-                    @click.stop
-                >
+                <div ref="cardRef" class="pointer-events-auto absolute z-50 transition-all duration-300 ease-out" :style="cardStyle" @click.stop>
                     <!-- Speech Bubble Tail: Top (points UP to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'top'"
-                        class="absolute -top-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -top-3.5 z-30"
                         :style="{ left: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="24" height="15" viewBox="0 0 24 15" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,15 L 12,0 L 24,15"
-                                class="fill-muted/95 stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,15 L 12,0 L 24,15" class="fill-muted/95 stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="1" y="14" width="22" height="3" class="fill-muted/95" />
                         </svg>
                     </div>
@@ -659,16 +636,11 @@ const speechBubbleTail = computed(() => {
                     <!-- Speech Bubble Tail: Bottom (points DOWN to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'bottom'"
-                        class="absolute -bottom-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -bottom-3.5 z-30"
                         :style="{ left: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="24" height="15" viewBox="0 0 24 15" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,0 L 12,15 L 24,0"
-                                class="fill-muted/80 stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,0 L 12,15 L 24,0" class="fill-muted/80 stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="1" y="-2" width="22" height="3" class="fill-muted/80" />
                         </svg>
                     </div>
@@ -676,16 +648,11 @@ const speechBubbleTail = computed(() => {
                     <!-- Speech Bubble Tail: Left (points LEFT to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'left'"
-                        class="absolute -left-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -left-3.5 z-30"
                         :style="{ top: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="15" height="24" viewBox="0 0 15 24" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 15,0 L 0,12 L 15,24"
-                                class="fill-card stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 15,0 L 0,12 L 15,24" class="fill-card stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="14" y="1" width="3" height="22" class="fill-card" />
                         </svg>
                     </div>
@@ -693,37 +660,39 @@ const speechBubbleTail = computed(() => {
                     <!-- Speech Bubble Tail: Right (points RIGHT to target) -->
                     <div
                         v-if="speechBubbleTail && speechBubbleTail.placement === 'right'"
-                        class="absolute -right-3.5 z-30 pointer-events-none"
+                        class="pointer-events-none absolute -right-3.5 z-30"
                         :style="{ top: `${speechBubbleTail.offset - 12}px` }"
                     >
                         <svg width="15" height="24" viewBox="0 0 15 24" class="overflow-visible drop-shadow-sm">
-                            <path
-                                d="M 0,0 L 15,12 L 0,24"
-                                class="fill-card stroke-border"
-                                stroke-width="2"
-                                stroke-linejoin="round"
-                            />
+                            <path d="M 0,0 L 15,12 L 0,24" class="fill-card stroke-border" stroke-width="2" stroke-linejoin="round" />
                             <rect x="-2" y="1" width="3" height="22" class="fill-card" />
                         </svg>
                     </div>
 
-                    <div class="rounded-2xl border-2 border-border bg-card shadow-2xl overflow-hidden text-card-foreground flex flex-col max-h-[calc(100vh-90px)] ring-1 ring-black/10 dark:ring-white/15">
+                    <div
+                        class="flex max-h-[calc(100vh-90px)] flex-col overflow-hidden rounded-2xl border-2 border-border bg-card text-card-foreground shadow-2xl ring-1 ring-black/10 dark:ring-white/15"
+                    >
                         <!-- Card Header with Visible Background -->
-                        <div class="px-3.5 py-2.5 sm:px-4 sm:py-3 bg-muted/80 border-b border-border flex items-center justify-between shrink-0">
-                            <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                                <div class="size-7.5 rounded-lg bg-primary/15 text-primary border border-primary/25 flex items-center justify-center font-bold text-xs shadow-2xs shrink-0">
+                        <div class="flex shrink-0 items-center justify-between border-b border-border bg-muted/80 px-3.5 py-2.5 sm:px-4 sm:py-3">
+                            <div class="flex min-w-0 flex-1 items-center gap-2.5">
+                                <div
+                                    class="size-7.5 shadow-2xs flex shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/15 text-xs font-bold text-primary"
+                                >
                                     <component :is="currentSection.icon" class="size-4" />
                                 </div>
                                 <div class="min-w-0 flex-1">
-                                    <div class="flex items-center gap-1.5 flex-wrap">
-                                        <Badge variant="outline" class="text-[9px] px-1.5 py-0 h-4 border-primary/40 bg-primary/10 text-primary uppercase font-mono font-bold shrink-0">
+                                    <div class="flex flex-wrap items-center gap-1.5">
+                                        <Badge
+                                            variant="outline"
+                                            class="h-4 shrink-0 border-primary/40 bg-primary/10 px-1.5 py-0 font-mono text-[9px] font-bold uppercase text-primary"
+                                        >
                                             {{ currentSection.id === 'start' ? 'ORIENTATION' : `Part ${currentSection.stepNumber}/5` }}
                                         </Badge>
-                                        <span class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                                             {{ currentSection.tag }}
                                         </span>
                                     </div>
-                                    <h3 class="text-xs sm:text-sm font-bold text-foreground leading-snug mt-0.5">
+                                    <h3 class="mt-0.5 text-xs font-bold leading-snug text-foreground sm:text-sm">
                                         {{ currentSection.title }}
                                     </h3>
                                 </div>
@@ -735,7 +704,7 @@ const speechBubbleTail = computed(() => {
                                 variant="ghost"
                                 size="sm"
                                 @click="close"
-                                class="h-6 px-2 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/80 shrink-0 gap-1 rounded-md ml-1"
+                                class="ml-1 h-6 shrink-0 gap-1 rounded-md px-2 text-[11px] font-semibold text-muted-foreground hover:bg-muted/80 hover:text-foreground"
                                 title="Exit Tour (Esc)"
                             >
                                 <span>Exit</span>
@@ -744,14 +713,14 @@ const speechBubbleTail = computed(() => {
                         </div>
 
                         <!-- Card Body (Clean & readable spacing with complete visibility) -->
-                        <div class="p-3.5 space-y-3 overflow-y-auto max-h-[min(500px,calc(100vh-200px))] text-xs">
+                        <div class="max-h-[min(500px,calc(100vh-200px))] space-y-3 overflow-y-auto p-3.5 text-xs">
                             <!-- 1. What it is used for -->
                             <div class="space-y-1.5">
                                 <div class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-primary">
                                     <Info class="size-3.5" />
                                     <span>Purpose & Function:</span>
                                 </div>
-                                <p class="text-xs text-foreground/90 font-normal leading-relaxed">
+                                <p class="text-xs font-normal leading-relaxed text-foreground/90">
                                     {{ currentSection.usedFor }}
                                 </p>
 
@@ -760,21 +729,23 @@ const speechBubbleTail = computed(() => {
                                     <span
                                         v-for="cap in currentSection.capabilities"
                                         :key="cap"
-                                        class="inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-md font-medium bg-muted/80 border border-border/80 text-foreground shadow-2xs"
+                                        class="shadow-2xs inline-flex items-center gap-1.5 rounded-md border border-border/80 bg-muted/80 px-2 py-0.5 text-[10px] font-medium text-foreground"
                                     >
-                                        <span class="size-1.5 rounded-full bg-primary/80 shrink-0"></span>
+                                        <span class="size-1.5 shrink-0 rounded-full bg-primary/80"></span>
                                         <span>{{ cap }}</span>
                                     </span>
                                 </div>
                             </div>
 
                             <!-- 2. Step-by-step guidance on how to use it -->
-                            <div class="p-3 rounded-lg bg-muted/30 border border-border/80 space-y-2">
+                            <div class="space-y-2 rounded-lg border border-border/80 bg-muted/30 p-3">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-[11px] font-bold uppercase tracking-wider text-foreground flex items-center gap-1">
+                                    <span class="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-foreground">
                                         <span>How to use on terminal:</span>
                                     </span>
-                                    <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border/50">
+                                    <span
+                                        class="rounded border border-border/50 bg-muted/60 px-1.5 py-0.5 font-mono text-[10px] font-bold text-muted-foreground"
+                                    >
                                         {{ currentSection.howToUse.length }} steps
                                     </span>
                                 </div>
@@ -784,10 +755,12 @@ const speechBubbleTail = computed(() => {
                                         :key="idx"
                                         class="flex items-start gap-2.5 text-xs text-foreground"
                                     >
-                                        <div class="size-4.5 rounded-full bg-primary text-primary-foreground font-mono font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                                        <div
+                                            class="size-4.5 shadow-2xs mt-0.5 flex shrink-0 items-center justify-center rounded-full bg-primary font-mono text-[10px] font-bold text-primary-foreground"
+                                        >
                                             {{ idx + 1 }}
                                         </div>
-                                        <span class="leading-relaxed font-normal text-foreground/95 flex-1 text-xs break-words">
+                                        <span class="flex-1 break-words text-xs font-normal leading-relaxed text-foreground/95">
                                             {{ step }}
                                         </span>
                                     </div>
@@ -795,14 +768,17 @@ const speechBubbleTail = computed(() => {
                             </div>
 
                             <!-- Keyboard Hotkeys Strip with styled key badges -->
-                            <div v-if="currentSection.shortcuts" class="px-3 py-2 rounded-lg bg-muted/40 border border-border/80 flex flex-wrap items-center justify-between gap-1.5 text-xs">
-                                <span class="font-bold text-muted-foreground flex items-center gap-1.5 text-[11px] shrink-0">
+                            <div
+                                v-if="currentSection.shortcuts"
+                                class="flex flex-wrap items-center justify-between gap-1.5 rounded-lg border border-border/80 bg-muted/40 px-3 py-2 text-xs"
+                            >
+                                <span class="flex shrink-0 items-center gap-1.5 text-[11px] font-bold text-muted-foreground">
                                     <Keyboard class="size-3.5 text-primary" />
                                     <span>Hotkeys:</span>
                                 </span>
                                 <div class="flex flex-wrap items-center gap-1.5 font-mono text-[10px]">
                                     <template v-for="(item, sIdx) in currentSection.shortcuts.split(' • ')" :key="sIdx">
-                                        <kbd class="px-1.5 py-0.5 rounded bg-background border border-border text-foreground font-bold shadow-2xs">
+                                        <kbd class="shadow-2xs rounded border border-border bg-background px-1.5 py-0.5 font-bold text-foreground">
                                             {{ item }}
                                         </kbd>
                                     </template>
@@ -810,12 +786,16 @@ const speechBubbleTail = computed(() => {
                             </div>
 
                             <!-- 3. Store Manager Pro Tip -->
-                            <div class="p-2.5 sm:p-3 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-950 dark:text-amber-100 space-y-1">
-                                <span class="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-300 text-[10px] uppercase tracking-wide">
-                                    <Zap class="size-3.5 text-amber-600 dark:text-amber-400 fill-amber-500/30 shrink-0" />
+                            <div
+                                class="space-y-1 rounded-lg border border-amber-500/25 bg-amber-500/10 p-2.5 text-amber-950 dark:text-amber-100 sm:p-3"
+                            >
+                                <span
+                                    class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-amber-900 dark:text-amber-300"
+                                >
+                                    <Zap class="size-3.5 shrink-0 fill-amber-500/30 text-amber-600 dark:text-amber-400" />
                                     <span>Store Manager Tip</span>
                                 </span>
-                                <p class="text-[11px] leading-relaxed font-medium">
+                                <p class="text-[11px] font-medium leading-relaxed">
                                     {{ currentSection.proTip }}
                                 </p>
                             </div>
@@ -825,7 +805,7 @@ const speechBubbleTail = computed(() => {
                                 <button
                                     type="button"
                                     @click="handleAction"
-                                    class="w-full py-2 px-3 rounded-lg bg-primary/15 hover:bg-primary/25 text-primary text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer border border-primary/30 shadow-2xs active:scale-[0.99]"
+                                    class="shadow-2xs flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/15 px-3 py-2 text-xs font-bold text-primary transition-colors hover:bg-primary/25 active:scale-[0.99]"
                                 >
                                     <span>{{ currentSection.actionLabel }}</span>
                                     <ArrowRight class="size-3.5 shrink-0" />
@@ -834,13 +814,13 @@ const speechBubbleTail = computed(() => {
                         </div>
 
                         <!-- EnjoyHint Navigation Footer -->
-                        <div class="px-3.5 py-2.5 bg-muted/70 border-t border-border flex items-center justify-between shrink-0">
+                        <div class="flex shrink-0 items-center justify-between border-t border-border bg-muted/70 px-3.5 py-2.5">
                             <!-- Previous Button -->
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                class="h-7 text-xs px-2.5 gap-1 text-muted-foreground hover:text-foreground font-semibold"
+                                class="h-7 gap-1 px-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground"
                                 :disabled="internalStep === 0"
                                 @click="prevStep"
                             >
@@ -855,8 +835,8 @@ const speechBubbleTail = computed(() => {
                                     :key="idx"
                                     type="button"
                                     @click="goToStep(idx)"
-                                    class="size-2 rounded-full transition-all cursor-pointer"
-                                    :class="idx === internalStep ? 'bg-primary w-4' : 'bg-muted-foreground/30 hover:bg-muted-foreground/60'"
+                                    class="size-2 cursor-pointer rounded-full transition-all"
+                                    :class="idx === internalStep ? 'w-4 bg-primary' : 'bg-muted-foreground/30 hover:bg-muted-foreground/60'"
                                     :title="idx === 0 ? 'Start: Page Guide' : `Part ${idx}`"
                                 ></button>
                             </div>
@@ -865,10 +845,12 @@ const speechBubbleTail = computed(() => {
                             <Button
                                 type="button"
                                 size="sm"
-                                class="h-7 text-xs px-3 gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-xs cursor-pointer"
+                                class="shadow-xs h-7 cursor-pointer gap-1.5 bg-primary px-3 text-xs font-bold text-primary-foreground hover:bg-primary/90"
                                 @click="nextStep"
                             >
-                                <span>{{ currentSection.id === 'start' ? 'Start Tour' : internalStep === sections.length - 1 ? 'Done' : 'Next' }}</span>
+                                <span>{{
+                                    currentSection.id === 'start' ? 'Start Tour' : internalStep === sections.length - 1 ? 'Done' : 'Next'
+                                }}</span>
                                 <ArrowRight v-if="internalStep < sections.length - 1" class="size-3" />
                                 <Check v-else class="size-3" />
                             </Button>
@@ -879,4 +861,3 @@ const speechBubbleTail = computed(() => {
         </transition>
     </teleport>
 </template>
-

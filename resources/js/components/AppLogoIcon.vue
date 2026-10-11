@@ -15,7 +15,7 @@ defineProps<Props>();
 <template>
     <div
         :class="[
-            'flex items-center justify-center rounded-xl bg-primary text-primary-foreground font-black tracking-tight select-none shadow-sm',
+            'flex select-none items-center justify-center rounded-xl bg-primary font-black tracking-tight text-primary-foreground shadow-sm',
             className,
         ]"
         v-bind="$attrs"

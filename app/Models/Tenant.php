@@ -40,14 +40,14 @@ class Tenant extends Model
     protected function casts(): array
     {
         return [
-            'is_demo'          => 'boolean',
-            'enabled_modules'  => 'array',
-            'custom_modules'   => 'array',
-            'device_policy'    => 'array',
-            'network_policy'   => 'array',
-            'settings'         => 'array',
+            'is_demo' => 'boolean',
+            'enabled_modules' => 'array',
+            'custom_modules' => 'array',
+            'device_policy' => 'array',
+            'network_policy' => 'array',
+            'settings' => 'array',
             'next_billing_date' => 'datetime',
-            'monthly_revenue'  => 'decimal:2',
+            'monthly_revenue' => 'decimal:2',
         ];
     }
 
@@ -136,6 +136,7 @@ class Tenant extends Model
         if ($this->enabled_modules === null) {
             return true;
         }
+
         return in_array($module, $this->enabled_modules);
     }
 
@@ -152,7 +153,10 @@ class Tenant extends Model
      */
     public function storageUsagePercent(): float
     {
-        if ($this->storage_quota_mb === 0) return 0;
+        if ($this->storage_quota_mb === 0) {
+            return 0;
+        }
+
         return round(($this->storage_used_mb / $this->storage_quota_mb) * 100, 1);
     }
 
@@ -173,7 +177,7 @@ class Tenant extends Model
         $port = request()->getPort();
         $portSuffix = (! $port || in_array($port, [80, 443])) ? '' : ":{$port}";
         $baseDomain = config('app.domain', 'localhost');
-        
+
         $cleanPath = ltrim($path, '/');
         $pathSegment = $cleanPath ? "/{$cleanPath}" : '';
 
@@ -181,6 +185,7 @@ class Tenant extends Model
         if ($baseDomain === 'localhost' || $baseDomain === '127.0.0.1' || str_contains($baseDomain, 'localhost')) {
             $prefix = $pathSegment ?: '/login';
             $separator = str_contains($prefix, '?') ? '&' : '?';
+
             return "{$scheme}://{$baseDomain}{$portSuffix}{$prefix}{$separator}tenant={$this->slug}";
         }
 

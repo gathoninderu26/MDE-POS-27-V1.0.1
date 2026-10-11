@@ -12,7 +12,7 @@ export function useBarcodeScanner(options: BarcodeScannerOptions) {
     const minChars = options.minChars ?? 3;
     const maxInterval = options.maxInterval ?? 45;
     const soundEnabled = ref(options.soundEnabled ?? true);
-    
+
     const isScanning = ref(false);
     const lastScannedBarcode = ref<string>('');
     const scanCount = ref(0);

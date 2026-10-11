@@ -61,7 +61,7 @@ class IdentifyTenantFromSubdomain
 
         $host = $request->getHost();
         $baseDomain = config('app.domain', 'localhost');
-        
+
         // If on the root/central domain itself or direct IP
         if ($host === $baseDomain || $host === '127.0.0.1' || empty($host)) {
             // Support query param or input 'tenant' for local dev or query fallback
@@ -108,6 +108,7 @@ class IdentifyTenantFromSubdomain
                         if ($request->user()) {
                             return redirect()->route('dashboard');
                         }
+
                         return redirect()->to($tenant->getSubdomainUrl('/login'));
                     }
 
@@ -122,7 +123,7 @@ class IdentifyTenantFromSubdomain
                                 $request->session()->regenerateToken();
                             }
                         } elseif ($user->isSuperAdmin()) {
-                            return redirect()->away(config('app.url', 'http://localhost:8000') . '/super-admin');
+                            return redirect()->away(config('app.url', 'http://localhost:8000').'/super-admin');
                         } elseif ($user->tenant_id && (int) $user->tenant_id !== (int) $tenant->id) {
                             Auth::guard('web')->logout();
                             $request->session()->invalidate();
@@ -151,6 +152,7 @@ class IdentifyTenantFromSubdomain
                         if ($request->user()) {
                             return redirect()->route('dashboard');
                         }
+
                         return redirect()->to($tenant->getSubdomainUrl('/login'));
                     }
                 }
@@ -160,7 +162,7 @@ class IdentifyTenantFromSubdomain
         }
 
         // Strip baseDomain from the end of the host
-        $subdomainPart = preg_replace('/\.' . preg_quote($baseDomain, '/') . '$/i', '', $host);
+        $subdomainPart = preg_replace('/\.'.preg_quote($baseDomain, '/').'$/i', '', $host);
 
         // If there were nested subdomains (e.g. store.previous.localhost), get the primary leftmost part
         $parts = explode('.', $subdomainPart);
@@ -206,6 +208,7 @@ class IdentifyTenantFromSubdomain
             if ($user) {
                 return redirect()->route('dashboard');
             }
+
             return redirect()->to($tenant->getSubdomainUrl('/login'));
         }
 
@@ -219,7 +222,7 @@ class IdentifyTenantFromSubdomain
                 }
             } elseif ($user->isSuperAdmin()) {
                 // Super admins should use central console
-                return redirect()->away(config('app.url', 'http://localhost:8000') . '/super-admin');
+                return redirect()->away(config('app.url', 'http://localhost:8000').'/super-admin');
             } elseif ($user->tenant_id && (int) $user->tenant_id !== (int) $tenant->id) {
                 // Cross-tenant credential isolation check
                 Auth::guard('web')->logout();

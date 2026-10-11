@@ -1,14 +1,7 @@
 import { usePage } from '@inertiajs/vue3';
 import { computed, reactive } from 'vue';
 
-export type UserRole =
-    | 'Owner'
-    | 'Administrator'
-    | 'Manager'
-    | 'Cashier'
-    | 'Inventory Manager'
-    | 'Accountant'
-    | 'Supervisor';
+export type UserRole = 'Owner' | 'Administrator' | 'Manager' | 'Cashier' | 'Inventory Manager' | 'Accountant' | 'Supervisor';
 
 export interface PermissionMatrix {
     [module: string]: {

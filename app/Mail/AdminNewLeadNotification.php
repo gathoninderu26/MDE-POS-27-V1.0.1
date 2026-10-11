@@ -47,15 +47,15 @@ class AdminNewLeadNotification extends Mailable
     private function buildHtml(): string
     {
         $lead = $this->lead;
-        $bizName     = htmlspecialchars($lead->business_name ?? 'N/A');
+        $bizName = htmlspecialchars($lead->business_name ?? 'N/A');
         $contactName = htmlspecialchars($lead->full_name ?? 'Not provided');
-        $email       = htmlspecialchars($lead->email ?? 'Not provided');
-        $phone       = htmlspecialchars($lead->phone ?? 'Not provided');
-        $typeLabel   = $lead->type === 'callback_request' ? 'Administrator Callback Request' : 'Early Access Waitlist Registration';
-        $bizType     = htmlspecialchars($lead->business_type ?? 'Retail');
-        $message     = htmlspecialchars($lead->message ?? 'No additional notes');
-        $leadId      = $lead->id ? '#' . str_pad((string) $lead->id, 5, '0', STR_PAD_LEFT) : 'Pending';
-        $createdAt   = $lead->created_at ? $lead->created_at->format('Y-m-d H:i:s') . ' EAT' : date('Y-m-d H:i:s') . ' EAT';
+        $email = htmlspecialchars($lead->email ?? 'Not provided');
+        $phone = htmlspecialchars($lead->phone ?? 'Not provided');
+        $typeLabel = $lead->type === 'callback_request' ? 'Administrator Callback Request' : 'Early Access Waitlist Registration';
+        $bizType = htmlspecialchars($lead->business_type ?? 'Retail');
+        $message = htmlspecialchars($lead->message ?? 'No additional notes');
+        $leadId = $lead->id ? '#'.str_pad((string) $lead->id, 5, '0', STR_PAD_LEFT) : 'Pending';
+        $createdAt = $lead->created_at ? $lead->created_at->format('Y-m-d H:i:s').' EAT' : date('Y-m-d H:i:s').' EAT';
 
         return <<<HTML
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
