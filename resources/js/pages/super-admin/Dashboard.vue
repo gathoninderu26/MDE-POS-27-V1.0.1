@@ -36,8 +36,15 @@ const props = defineProps<{
         active_tenants: number;
         suspended_tenants: number;
         trial_tenants: number;
+        demo_tenants: number;
         total_users: number;
         total_mrr: number;
+        total_branches: number;
+        plan_breakdown: {
+            Basic: number;
+            Pro: number;
+            Enterprise: number;
+        };
     };
 }>();
 

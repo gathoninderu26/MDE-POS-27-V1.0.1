@@ -16,10 +16,12 @@ import { useCart } from '@/composables/useCart';
 import { useDemoCountdown } from '@/composables/useDemoCountdown';
 import { useTenant } from '@/composables/useTenant';
 import { useToast } from '@/composables/useToast';
+import { isInputFocused } from '@/composables/useKeyboardNavigation';
 import { Link, usePage } from '@inertiajs/vue3';
 import {
     ArrowLeft,
     Clock,
+    Compass,
     Delete,
     HelpCircle,
     Keyboard,
@@ -35,6 +37,11 @@ import {
     Zap,
 } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+
+const emit = defineEmits<{
+    (e: 'open-tour'): void;
+    (e: 'open-tour-step', step: number): void;
+}>();
 
 const page = usePage();
 const { currentTenant, isDemo } = useTenant();
@@ -128,16 +135,25 @@ const updateClock = () => {
 
 let timer: any = null;
 
+const handlePosKeydown = (e: KeyboardEvent) => {
+    if ((e.altKey && (e.key === 'h' || e.key === 'H')) || (!isInputFocused() && e.key === '?')) {
+        e.preventDefault();
+        hotkeysOpen.value = !hotkeysOpen.value;
+    }
+};
+
 onMounted(() => {
     updateClock();
     timer = setInterval(updateClock, 1000);
     checkLockState();
     window.addEventListener('popstate', handlePopState);
+    window.addEventListener('keydown', handlePosKeydown);
 });
 
 onUnmounted(() => {
     if (timer) clearInterval(timer);
     window.removeEventListener('popstate', handlePopState);
+    window.removeEventListener('keydown', handlePosKeydown);
 });
 
 const toggleFullscreen = () => {
@@ -154,7 +170,7 @@ const toggleFullscreen = () => {
 <template>
     <div class="flex h-[100dvh] w-screen flex-col overflow-hidden bg-background text-foreground select-none">
         <!-- Top POS Bar -->
-        <header class="flex h-14 shrink-0 items-center justify-between border-b border-border/80 bg-card px-2.5 sm:px-4 shadow-sm z-20">
+        <header id="pos-tour-header" class="flex h-14 shrink-0 items-center justify-between border-b border-border/80 bg-card px-2.5 sm:px-4 shadow-sm z-20 relative">
             <!-- Left Brand & Branch -->
             <div class="flex items-center gap-2 sm:gap-3 min-w-0">
                 <!-- When UNLOCKED: Exit POS link + Lock button -->
@@ -216,6 +232,14 @@ const toggleFullscreen = () => {
                                 <Clock class="size-2.5 animate-spin" style="animation-duration: 8s" />
                                 <span>DEMO: {{ shortCountdown }}</span>
                             </span>
+                            <span
+                                v-else
+                                class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-mono font-bold uppercase tracking-wider shrink-0"
+                                title="Live Production Terminal"
+                            >
+                                <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span>LIVE</span>
+                            </span>
                         </h1>
                         <p class="text-[10px] sm:text-[11px] text-muted-foreground flex items-center gap-1 truncate">
                             <Store class="size-3 text-emerald-600 shrink-0" />
@@ -237,8 +261,38 @@ const toggleFullscreen = () => {
                 </div>
             </div>
 
-            <!-- Right Controls: Cashier, Hotkeys, Fullscreen -->
+            <!-- Right Controls: Guide, Cashier, Hotkeys, Fullscreen -->
             <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <!-- Visual Marker for Part ⑤: Header & Security -->
+                <button
+                    v-if="isDemo"
+                    type="button"
+                    @click="$emit('open-tour-step', 5)"
+                    class="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 text-[10px] font-mono font-bold cursor-pointer transition-all shadow-2xs"
+                    title="Part 5: Header Controls & Security (Click to inspect)"
+                >
+                    <span class="relative flex size-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                        <span class="relative inline-flex rounded-full size-2 bg-primary"></span>
+                    </span>
+                    <span>⑤ Till Security</span>
+                </button>
+
+                <!-- Interactive Page Guide Trigger Button -->
+                <Button
+                    v-if="isDemo"
+                    id="pos-tour-guide-btn"
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    class="h-8 px-2.5 gap-1.5 text-xs font-bold text-primary border-primary/40 bg-primary/10 hover:bg-primary/20 hover:border-primary/60 cursor-pointer shadow-2xs transition-all relative"
+                    @click="$emit('open-tour')"
+                    title="Start Interactive POS Screen Walkthrough"
+                >
+                    <Compass class="size-3.5 animate-spin" style="animation-duration: 12s" />
+                    <span class="hidden sm:inline">Page Guide</span>
+                </Button>
+
                 <div class="hidden sm:flex items-center gap-1.5 bg-muted/40 px-2.5 py-1 rounded-lg border border-border/60 text-xs">
                     <UserCheck class="size-3.5 text-primary" />
                     <span class="text-muted-foreground hidden md:inline">Cashier:</span>
@@ -278,7 +332,7 @@ const toggleFullscreen = () => {
         </main>
 
         <!-- Hotkeys Dialog -->
-        <Dialog :open="hotkeysOpen" @update:open="(v) => (hotkeysOpen = v)">
+        <Dialog :open="hotkeysOpen" spinnerText="Loading Keyboard Shortcuts..." @update:open="(v) => (hotkeysOpen = v)">
             <DialogContent class="w-[95vw] sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle class="text-base font-bold flex items-center gap-2">
@@ -311,12 +365,20 @@ const toggleFullscreen = () => {
                         <span class="text-muted-foreground">Select Customer</span>
                         <kbd class="px-2 py-0.5 bg-background border rounded font-mono font-bold">Alt + C</kbd>
                     </div>
+                    <div class="p-2 bg-muted/40 rounded-lg flex justify-between items-center">
+                        <span class="text-muted-foreground">Apply Cart Discount</span>
+                        <kbd class="px-2 py-0.5 bg-background border rounded font-mono font-bold">Alt + D</kbd>
+                    </div>
+                    <div class="p-2 bg-muted/40 rounded-lg flex justify-between items-center">
+                        <span class="text-muted-foreground">Payment Method Select</span>
+                        <kbd class="px-2 py-0.5 bg-background border rounded font-mono font-bold">1 - 5</kbd>
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>
 
         <!-- Passcode Unlock Dialog -->
-        <Dialog :open="unlockModalOpen" @update:open="(v) => (unlockModalOpen = v)">
+        <Dialog :open="unlockModalOpen" spinnerText="Opening Terminal Security..." @update:open="(v) => (unlockModalOpen = v)">
             <DialogContent class="w-[95vw] sm:max-w-xs">
                 <DialogHeader class="text-center sm:text-center">
                     <div class="mx-auto flex size-12 items-center justify-center rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-600 dark:text-amber-400 mb-1">

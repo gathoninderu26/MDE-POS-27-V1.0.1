@@ -13,6 +13,7 @@ import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
+import BranchGuideOverlay from '@/components/branches/BranchGuideOverlay.vue';
 import {
     Activity,
     AlertCircle,
@@ -22,6 +23,7 @@ import {
     Check,
     CheckCircle2,
     Clock,
+    Compass,
     DollarSign,
     GitBranch,
     Handshake,
@@ -40,6 +42,7 @@ import {
     Share2,
     ShieldAlert,
     ShieldCheck,
+    Sparkles,
     Store,
     TrendingUp,
     User,
@@ -48,7 +51,7 @@ import {
     Users,
     Wifi,
 } from 'lucide-vue-next';
-import { computed, ref, watchEffect } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue';
 
 const props = defineProps<{
     branches?: any[];
@@ -299,13 +302,60 @@ const handleAddStaffMember = () => {
     newStaff.value = { name: '', role: 'Sales Attendant', phone: '', shift: 'Morning' };
     success('Staff Assigned', `${member.name} assigned as ${member.role}`);
 };
+
+// --- Page Guide Overlay State ---
+const guideOverlayOpen = ref(false);
+const guideCurrentStep = ref(0);
+
+const openBranchGuide = (step = 0) => {
+    guideCurrentStep.value = step;
+    guideOverlayOpen.value = true;
+};
+
+const handleGuideAction = (actionType: string) => {
+    if (actionType === 'start-walkthrough') {
+        guideCurrentStep.value = 1;
+    } else if (actionType === 'open-create-branch') {
+        newBranch.value.parentBranchId = tenantActiveBranches.value[0]?.id || '';
+        newBranchModal.value = true;
+    } else if (actionType === 'open-colab-modal') {
+        selectedBranchToShare.value = tenantActiveBranches.value[0]?.id || '';
+        colabModal.value = true;
+    } else if (actionType === 'view-active-roster') {
+        openBranchDetail(currentBranch.value);
+    } else if (actionType === 'filter-own') {
+        activeFilter.value = 'own';
+    }
+};
+
+const handleNewItem = () => {
+    newBranchModal.value = true;
+};
+
+const handleSubmitForm = () => {
+    if (newBranchModal.value) {
+        handleCreateBranch();
+    } else if (colabModal.value) {
+        handleCreateColabLink();
+    }
+};
+
+onMounted(() => {
+    window.addEventListener('app:new-item', handleNewItem);
+    window.addEventListener('app:submit-form', handleSubmitForm);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('app:new-item', handleNewItem);
+    window.removeEventListener('app:submit-form', handleSubmitForm);
+});
 </script>
 
 <template>
     <Head title="Branch Outlets & Sub-Locations" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="p-4 md:p-8 space-y-6 max-w-[1500px] mx-auto">
+        <div class="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
             <!-- Header & Multi-Branch Subscription Quota -->
             <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
@@ -326,6 +376,18 @@ const handleAddStaffMember = () => {
 
                 <div class="flex items-center gap-2 flex-wrap">
                     <Button
+                        id="branch-tour-guide-btn"
+                        variant="outline"
+                        size="sm"
+                        class="h-9 text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold"
+                        @click="openBranchGuide(0)"
+                    >
+                        <Compass class="size-4" />
+                        Page Guide
+                    </Button>
+
+                    <Button
+                        id="branch-tour-colab-btn"
                         variant="outline"
                         size="sm"
                         class="h-9 text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
@@ -339,6 +401,7 @@ const handleAddStaffMember = () => {
                     </Button>
 
                     <Button
+                        id="branch-tour-create-btn"
                         size="sm"
                         class="h-9 text-xs gap-1.5 bg-primary text-primary-foreground font-bold shadow-sm"
                         @click="() => {
@@ -352,8 +415,9 @@ const handleAddStaffMember = () => {
                 </div>
             </div>
 
+
             <!-- Organization Branch Subscription Quota & Overview Bar -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div id="branch-tour-quota" class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <Card class="border border-border/80 bg-card p-3.5 space-y-1">
                     <div class="flex items-center justify-between text-xs text-muted-foreground">
                         <span>Branch Quota</span>
@@ -403,7 +467,7 @@ const handleAddStaffMember = () => {
             </div>
 
             <!-- Spotlight: Active Operating POS Station -->
-            <Card class="border-2 border-primary/40 bg-gradient-to-br from-card via-card to-primary/5 shadow-md">
+            <Card id="branch-tour-active-station" class="border-2 border-primary/40 bg-gradient-to-br from-card via-card to-primary/5 shadow-md">
                 <CardHeader class="pb-3 border-b border-border/60">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div class="space-y-1">
@@ -516,7 +580,7 @@ const handleAddStaffMember = () => {
 
             <!-- Filter Tabs (All vs Direct vs Colab Partner vs Suspended) -->
             <div class="flex items-center justify-between flex-wrap gap-3">
-                <div class="flex rounded-xl border border-border/80 p-1 bg-card text-xs font-semibold">
+                <div id="branch-tour-filters" class="flex rounded-xl border border-border/80 p-1 bg-card text-xs font-semibold">
                     <button
                         type="button"
                         :class="[
@@ -561,7 +625,7 @@ const handleAddStaffMember = () => {
             </div>
 
             <!-- Outlets List Cards -->
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div id="branch-tour-outlets-grid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <Card
                     v-for="b in displayedBranches"
                     :key="b.id"
@@ -984,5 +1048,12 @@ const handleAddStaffMember = () => {
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+
+        <!-- Interactive Branches & Sub-Locations Guide Overlay -->
+        <BranchGuideOverlay
+            v-model:open="guideOverlayOpen"
+            v-model:current-step="guideCurrentStep"
+            @action="handleGuideAction"
+        />
     </AppLayout>
 </template>

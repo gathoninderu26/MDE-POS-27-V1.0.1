@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useBranch } from '@/composables/useBranch';
+import { useFeatures } from '@/composables/useFeatures';
 import type { UserRole } from '@/composables/usePermissions';
 import { usePermissions } from '@/composables/usePermissions';
 import { useToast } from '@/composables/useToast';
@@ -24,6 +25,7 @@ import {
     CheckCircle2,
     Clock,
     Coins,
+    Compass,
     CreditCard,
     Crown,
     DollarSign,
@@ -54,6 +56,7 @@ import {
     Tablet,
     TrendingUp,
     Unlock,
+    Upload,
     UserCheck,
     Users,
     UserX,
@@ -63,7 +66,9 @@ import {
     XCircle,
     Zap,
 } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import StaffImportModal from '@/components/users/StaffImportModal.vue';
+import UsersGuideOverlay from '@/components/users/UsersGuideOverlay.vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const props = defineProps<{
     users?: any[];
@@ -77,9 +82,105 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const { currentRole, availableRoles, getRoleMatrix, updatePermission } = usePermissions();
 const { currentBranch, allBranches } = useBranch();
+const { isMultiBranch, hasFeature, isDemo } = useFeatures();
 const { success, warning, error, info } = useToast();
 
+const defaultBranchName = computed(() => props.branches?.[0]?.name || currentBranch.value?.name || 'Main HQ');
+
 const activeTab = ref<'staff' | 'matrix' | 'roster' | 'devices'>('staff');
+
+// Staff Directory Universal Document Import Modal State
+const staffImportModalOpen = ref(false);
+
+// Interactive Users & Permissions Guide Tour State
+const guideOverlayOpen = ref(false);
+const guideCurrentStep = ref(0);
+
+const openGuide = (step?: number) => {
+    if (step !== undefined) {
+        guideCurrentStep.value = step;
+    } else {
+        if (activeTab.value === 'roster') {
+            guideCurrentStep.value = 8;
+        } else if (activeTab.value === 'matrix') {
+            guideCurrentStep.value = 13;
+        } else if (activeTab.value === 'devices') {
+            guideCurrentStep.value = 17;
+        } else {
+            guideCurrentStep.value = 0;
+        }
+    }
+    guideOverlayOpen.value = true;
+};
+
+const handleGuideAction = (actionType: string) => {
+    if (actionType === 'start-walkthrough') {
+        guideCurrentStep.value = 1;
+    } else if (actionType === 'open-add-staff') {
+        activeTab.value = 'staff';
+        addStaffModal.value = true;
+    } else if (actionType === 'open-import-staff') {
+        activeTab.value = 'staff';
+        staffImportModalOpen.value = true;
+    } else if (actionType === 'view-first-staff') {
+        activeTab.value = 'staff';
+        if (usersList.value.length > 0) {
+            openViewUser(usersList.value[0]);
+        }
+    } else if (actionType === 'edit-first-staff') {
+        activeTab.value = 'staff';
+        if (usersList.value.length > 0) {
+            openEditUser(usersList.value[0]);
+        }
+    } else if (actionType === 'open-schedule-shift') {
+        activeTab.value = 'roster';
+        newShiftModal.value = true;
+    } else if (actionType === 'publish-roster') {
+        activeTab.value = 'roster';
+        handlePublishRoster();
+    } else if (actionType === 'select-cashier-role') {
+        activeTab.value = 'matrix';
+        selectedMatrixRole.value = 'Cashier';
+    } else if (actionType === 'open-add-wifi') {
+        activeTab.value = 'devices';
+        newWifiModal.value = true;
+    } else if (actionType === 'view-devices') {
+        activeTab.value = 'devices';
+    }
+};
+
+const handleGuideTabSwitch = (tab: 'staff' | 'roster' | 'matrix' | 'devices') => {
+    activeTab.value = tab;
+};
+
+const handleNewItem = () => {
+    activeTab.value = 'staff';
+    addStaffModal.value = true;
+};
+
+const handleSubmitForm = () => {
+    if (addStaffModal.value) {
+        handleCreateStaff();
+    }
+};
+
+onMounted(() => {
+    window.addEventListener('app:new-item', handleNewItem);
+    window.addEventListener('app:submit-form', handleSubmitForm);
+
+    // Auto-prompt guide on first visit to Users & Permissions in this session (same as Dashboard & POS terminal)
+    if (!sessionStorage.getItem('mde_users_guide_prompted')) {
+        sessionStorage.setItem('mde_users_guide_prompted', 'true');
+        setTimeout(() => {
+            openGuide(0);
+        }, 600);
+    }
+});
+
+onUnmounted(() => {
+    window.removeEventListener('app:new-item', handleNewItem);
+    window.removeEventListener('app:submit-form', handleSubmitForm);
+});
 
 export type DeviceCategory = 'POS Terminal' | 'Desktop PC' | 'Tablet' | 'Smartphone';
 export type NetworkType = 'Store Wi-Fi (Verified)' | 'Cellular SIM (4G/5G)' | 'VPN / Proxy' | 'Mobile Hotspot';
@@ -102,8 +203,8 @@ export interface UserDeviceSession {
     bound: boolean;
 }
 
-// Connected & registered devices state
-const userDevices = ref<UserDeviceSession[]>([
+// Demo devices for simulated preview
+const demoUserDevices: UserDeviceSession[] = [
     {
         id: 'DEV-001',
         staffId: '3',
@@ -184,7 +285,11 @@ const userDevices = ref<UserDeviceSession[]>([
         lastActive: 'Active right now',
         bound: true,
     },
-]);
+];
+
+// Connected & registered devices state: clean for real accounts, demo data only if isDemo
+const userDevices = ref<UserDeviceSession[]>(isDemo.value ? demoUserDevices : []);
+
 
 // Network & security restriction toggles
 const networkPolicies = ref({
@@ -196,18 +301,18 @@ const networkPolicies = ref({
     enforceSingleSessionPerCashier: true,
 });
 
-// Whitelisted Store Wi-Fi SSIDs
-const whitelistedWifi = ref([
+// Whitelisted Store Wi-Fi SSIDs: clean for real accounts, demo data only if isDemo
+const whitelistedWifi = ref(isDemo.value ? [
     { id: 'W-1', ssid: 'NairobiFresh-POS-5GHz', bssid: 'F4:8C:50:A1:3B:90', subnet: '192.168.10.0/24', branch: 'Westlands Mega Store', status: 'Active' },
     { id: 'W-2', ssid: 'CBD-Terminal-Private', bssid: '78:45:C4:B2:1A:10', subnet: '192.168.20.0/24', branch: 'CBD City Square Branch', status: 'Active' },
-]);
+] : []);
 
 const newWifiModal = ref(false);
 const newWifiForm = ref({
     ssid: '',
     bssid: '',
     subnet: '192.168.1.0/24',
-    branch: 'Westlands Mega Store',
+    branch: defaultBranchName.value,
 });
 
 const isSavingWifi = ref(false);
@@ -305,7 +410,7 @@ const usersList = computed<StaffUserItem[]>(() => {
                 name: u.name,
                 email: u.email,
                 role: u.role,
-                branch: u.branch || (props.branches?.[0]?.name ?? 'Westlands Mega Store'),
+                branch: u.branch || defaultBranchName.value,
                 phone: u.phone || 'N/A',
                 status: u.status || 'Active',
                 lastLogin: lastSession || 'Active recently',
@@ -321,149 +426,153 @@ const usersList = computed<StaffUserItem[]>(() => {
             };
         });
     }
-    // Rich fallback data for testing/demo
-    return [
-        {
-            id: '1',
-            name: 'Wamtesh K.',
-            email: 'owner@nairobi-fresh-mart.mdepos.co.ke',
-            role: 'Owner',
-            branch: 'Westlands Mega Store',
-            phone: '+254 712 345 678',
-            status: 'Active',
-            lastLogin: 'Active right now',
-            created_at: '2026-01-10',
-            created_at_formatted: '10 Jan 2026',
-            sales_count: 58,
-            sales_total: 312500,
-            sales_profit: 68400,
-            avg_ticket: 5387.93,
-            recent_sales: [
-                { id: 101, receipt_number: 'REC-260908-T1-0182', total: 14500, profit: 3200, payment_method: 'M-Pesa Buy Goods Till', payment_status: 'Completed', customer_name: 'David Karanja', created_at: '08 Sep 2026, 17:42' },
-                { id: 102, receipt_number: 'REC-260908-T1-0179', total: 4200, profit: 950, payment_method: 'Cash', payment_status: 'Completed', customer_name: 'Mercy Achieng', created_at: '08 Sep 2026, 16:15' },
-                { id: 103, receipt_number: 'REC-260908-T1-0165', total: 8900, profit: 1850, payment_method: 'Visa / Mastercard', payment_status: 'Completed', customer_name: 'Apex Supplies Ltd', created_at: '08 Sep 2026, 14:05' },
-            ],
-            clock_sessions: [
-                { id: 1, branch_name: 'Westlands Mega Store', clocked_in_at: '08 Sep 2026, 06:30', clocked_out_at: null, duration: 'Active Shift', status: 'Active' },
-                { id: 2, branch_name: 'Westlands Mega Store', clocked_in_at: '07 Sep 2026, 06:30', clocked_out_at: '07 Sep 2026, 15:00', duration: '8.5 hrs', status: 'Completed' },
-            ],
-            sessions: [
-                { id: 's1', ip_address: '192.168.10.2 (HQ Secure LAN)', user_agent: 'MacBook Pro M3 Max / Chrome 128', last_active: 'Active right now' },
-                { id: 's2', ip_address: '105.161.44.12 (Safaricom Fiber)', user_agent: 'iPhone 15 Pro / Safari Mobile', last_active: '07 Sep 2026, 21:14' },
-            ],
-        },
-        {
-            id: '2',
-            name: 'David Mwangi',
-            email: 'manager@nairobi-fresh-mart.mdepos.co.ke',
-            role: 'Manager',
-            branch: 'Westlands Mega Store',
-            phone: '+254 722 112 233',
-            status: 'Active',
-            lastLogin: '12 mins ago',
-            created_at: '2026-02-15',
-            created_at_formatted: '15 Feb 2026',
-            sales_count: 34,
-            sales_total: 186400,
-            sales_profit: 41200,
-            avg_ticket: 5482.35,
-            recent_sales: [
-                { id: 104, receipt_number: 'REC-260908-T1-0175', total: 22800, profit: 5100, payment_method: 'M-Pesa Buy Goods Till', payment_status: 'Completed', customer_name: 'Kariuki Wholesalers', created_at: '08 Sep 2026, 15:30' },
-                { id: 105, receipt_number: 'REC-260908-T1-0160', total: 7600, profit: 1650, payment_method: 'Cash', payment_status: 'Completed', customer_name: 'Walk-in Customer', created_at: '08 Sep 2026, 13:20' },
-            ],
-            clock_sessions: [
-                { id: 3, branch_name: 'Westlands Mega Store', clocked_in_at: '08 Sep 2026, 06:30', clocked_out_at: null, duration: 'Active Shift', status: 'Active' },
-                { id: 4, branch_name: 'Westlands Mega Store', clocked_in_at: '07 Sep 2026, 06:30', clocked_out_at: '07 Sep 2026, 14:30', duration: '8.0 hrs', status: 'Completed' },
-            ],
-            sessions: [
-                { id: 's3', ip_address: '192.168.10.102 (Manager VLAN)', user_agent: 'Dell OptiPlex / Edge 128', last_active: '12 mins ago' },
-            ],
-        },
-        {
-            id: '3',
-            name: 'Grace Wanjiku',
-            email: 'cashier@nairobi-fresh-mart.mdepos.co.ke',
-            role: 'Cashier',
-            branch: 'CBD City Square Branch',
-            phone: '+254 733 998 877',
-            status: 'Active',
-            lastLogin: 'Active on Register #01',
-            created_at: '2026-03-01',
-            created_at_formatted: '01 Mar 2026',
-            sales_count: 142,
-            sales_total: 489300,
-            sales_profit: 97860,
-            avg_ticket: 3445.77,
-            recent_sales: [
-                { id: 106, receipt_number: 'REC-260908-T1-0185', total: 3100, profit: 650, payment_method: 'Cash', payment_status: 'Completed', customer_name: 'Walk-in Customer', created_at: '08 Sep 2026, 18:10' },
-                { id: 107, receipt_number: 'REC-260908-T1-0184', total: 6450, profit: 1380, payment_method: 'M-Pesa Buy Goods Till', payment_status: 'Completed', customer_name: 'Gladys Muthoni', created_at: '08 Sep 2026, 18:02' },
-                { id: 108, receipt_number: 'REC-260908-T1-0181', total: 1850, profit: 420, payment_method: 'Cash', payment_status: 'Completed', customer_name: 'Walk-in Customer', created_at: '08 Sep 2026, 17:30' },
-            ],
-            clock_sessions: [
-                { id: 5, branch_name: 'CBD City Square Branch', clocked_in_at: '08 Sep 2026, 06:30', clocked_out_at: null, duration: 'Active Shift', status: 'Active' },
-            ],
-            sessions: [
-                { id: 's4', ip_address: '192.168.10.15 (Sunmi POS LAN)', user_agent: 'Sunmi V2 Pro Kiosk POS / Android 11', last_active: 'Active right now' },
-            ],
-        },
-        {
-            id: '4',
-            name: 'Kevin Otieno',
-            email: 'inventory@nairobi-fresh-mart.mdepos.co.ke',
-            role: 'Inventory Manager',
-            branch: 'Westlands Mega Store',
-            phone: '+254 701 445 566',
-            status: 'Active',
-            lastLogin: '45 mins ago',
-            created_at: '2026-03-12',
-            created_at_formatted: '12 Mar 2026',
-            sales_count: 12,
-            sales_total: 94000,
-            sales_profit: 18800,
-            avg_ticket: 7833.33,
-            recent_sales: [
-                { id: 109, receipt_number: 'REC-260907-T1-0150', total: 45000, profit: 9000, payment_method: 'Bank Wire / Invoice', payment_status: 'Completed', customer_name: 'Nairobi Hospital Canteen', created_at: '07 Sep 2026, 11:20' },
-            ],
-            clock_sessions: [
-                { id: 6, branch_name: 'Westlands Mega Store', clocked_in_at: '08 Sep 2026, 08:00', clocked_out_at: null, duration: 'Active Shift', status: 'Active' },
-            ],
-            sessions: [
-                { id: 's5', ip_address: '105.161.44.82 (Corporate SIM)', user_agent: 'Samsung Galaxy Tab Active 4 / Android 14', last_active: '45 mins ago' },
-            ],
-        },
-        {
-            id: '5',
-            name: 'Hassan Ali',
-            email: 'accountant@nairobi-fresh-mart.mdepos.co.ke',
-            role: 'Accountant',
-            branch: 'HQ Central',
-            phone: '+254 788 334 455',
-            status: 'Active',
-            lastLogin: 'Blocked at 09:15 AM',
-            created_at: '2026-04-01',
-            created_at_formatted: '01 Apr 2026',
-            sales_count: 0,
-            sales_total: 0,
-            sales_profit: 0,
-            avg_ticket: 0,
-            recent_sales: [],
-            clock_sessions: [],
-            sessions: [
-                { id: 's6', ip_address: '185.220.101.5 (NordVPN Exit Node)', user_agent: 'iPhone 15 Pro / Safari Mobile', last_active: 'Blocked at 09:15 AM' },
-            ],
-        },
-    ];
+    // Rich fallback data for testing/demo only
+    if (isDemo.value) {
+        return [
+            {
+                id: '1',
+                name: 'Wamtesh K.',
+                email: 'owner@nairobi-fresh-mart.mdepos.co.ke',
+                role: 'Owner',
+                branch: 'Westlands Mega Store',
+                phone: '+254 712 345 678',
+                status: 'Active',
+                lastLogin: 'Active right now',
+                created_at: '2026-01-10',
+                created_at_formatted: '10 Jan 2026',
+                sales_count: 58,
+                sales_total: 312500,
+                sales_profit: 68400,
+                avg_ticket: 5387.93,
+                recent_sales: [
+                    { id: 101, receipt_number: 'REC-260908-T1-0182', total: 14500, profit: 3200, payment_method: 'M-Pesa Buy Goods Till', payment_status: 'Completed', customer_name: 'David Karanja', created_at: '08 Sep 2026, 17:42' },
+                    { id: 102, receipt_number: 'REC-260908-T1-0179', total: 4200, profit: 950, payment_method: 'Cash', payment_status: 'Completed', customer_name: 'Mercy Achieng', created_at: '08 Sep 2026, 16:15' },
+                    { id: 103, receipt_number: 'REC-260908-T1-0165', total: 8900, profit: 1850, payment_method: 'Visa / Mastercard', payment_status: 'Completed', customer_name: 'Apex Supplies Ltd', created_at: '08 Sep 2026, 14:05' },
+                ],
+                clock_sessions: [
+                    { id: 1, branch_name: 'Westlands Mega Store', clocked_in_at: '08 Sep 2026, 06:30', clocked_out_at: null, duration: 'Active Shift', status: 'Active' },
+                    { id: 2, branch_name: 'Westlands Mega Store', clocked_in_at: '07 Sep 2026, 06:30', clocked_out_at: '07 Sep 2026, 15:00', duration: '8.5 hrs', status: 'Completed' },
+                ],
+                sessions: [
+                    { id: 's1', ip_address: '192.168.10.2 (HQ Secure LAN)', user_agent: 'MacBook Pro M3 Max / Chrome 128', last_active: 'Active right now' },
+                    { id: 's2', ip_address: '105.161.44.12 (Safaricom Fiber)', user_agent: 'iPhone 15 Pro / Safari Mobile', last_active: '07 Sep 2026, 21:14' },
+                ],
+            },
+            {
+                id: '2',
+                name: 'David Mwangi',
+                email: 'manager@nairobi-fresh-mart.mdepos.co.ke',
+                role: 'Manager',
+                branch: 'Westlands Mega Store',
+                phone: '+254 722 112 233',
+                status: 'Active',
+                lastLogin: '12 mins ago',
+                created_at: '2026-02-15',
+                created_at_formatted: '15 Feb 2026',
+                sales_count: 34,
+                sales_total: 186400,
+                sales_profit: 41200,
+                avg_ticket: 5482.35,
+                recent_sales: [
+                    { id: 104, receipt_number: 'REC-260908-T1-0175', total: 22800, profit: 5100, payment_method: 'M-Pesa Buy Goods Till', payment_status: 'Completed', customer_name: 'Kariuki Wholesalers', created_at: '08 Sep 2026, 15:30' },
+                    { id: 105, receipt_number: 'REC-260908-T1-0160', total: 7600, profit: 1650, payment_method: 'Cash', payment_status: 'Completed', customer_name: 'Walk-in Customer', created_at: '08 Sep 2026, 13:20' },
+                ],
+                clock_sessions: [
+                    { id: 3, branch_name: 'Westlands Mega Store', clocked_in_at: '08 Sep 2026, 06:30', clocked_out_at: null, duration: 'Active Shift', status: 'Active' },
+                    { id: 4, branch_name: 'Westlands Mega Store', clocked_in_at: '07 Sep 2026, 06:30', clocked_out_at: '07 Sep 2026, 14:30', duration: '8.0 hrs', status: 'Completed' },
+                ],
+                sessions: [
+                    { id: 's3', ip_address: '192.168.10.102 (Manager VLAN)', user_agent: 'Dell OptiPlex / Edge 128', last_active: '12 mins ago' },
+                ],
+            },
+            {
+                id: '3',
+                name: 'Grace Wanjiku',
+                email: 'cashier@nairobi-fresh-mart.mdepos.co.ke',
+                role: 'Cashier',
+                branch: 'CBD City Square Branch',
+                phone: '+254 733 998 877',
+                status: 'Active',
+                lastLogin: 'Active on Register #01',
+                created_at: '2026-03-01',
+                created_at_formatted: '01 Mar 2026',
+                sales_count: 142,
+                sales_total: 489300,
+                sales_profit: 97860,
+                avg_ticket: 3445.77,
+                recent_sales: [
+                    { id: 106, receipt_number: 'REC-260908-T1-0185', total: 3100, profit: 650, payment_method: 'Cash', payment_status: 'Completed', customer_name: 'Walk-in Customer', created_at: '08 Sep 2026, 18:10' },
+                    { id: 107, receipt_number: 'REC-260908-T1-0184', total: 6450, profit: 1380, payment_method: 'M-Pesa Buy Goods Till', payment_status: 'Completed', customer_name: 'Gladys Muthoni', created_at: '08 Sep 2026, 18:02' },
+                    { id: 108, receipt_number: 'REC-260908-T1-0181', total: 1850, profit: 420, payment_method: 'Cash', payment_status: 'Completed', customer_name: 'Walk-in Customer', created_at: '08 Sep 2026, 17:30' },
+                ],
+                clock_sessions: [
+                    { id: 5, branch_name: 'CBD City Square Branch', clocked_in_at: '08 Sep 2026, 06:30', clocked_out_at: null, duration: 'Active Shift', status: 'Active' },
+                ],
+                sessions: [
+                    { id: 's4', ip_address: '192.168.10.15 (Sunmi POS LAN)', user_agent: 'Sunmi V2 Pro Kiosk POS / Android 11', last_active: 'Active right now' },
+                ],
+            },
+            {
+                id: '4',
+                name: 'Kevin Otieno',
+                email: 'inventory@nairobi-fresh-mart.mdepos.co.ke',
+                role: 'Inventory Manager',
+                branch: 'Westlands Mega Store',
+                phone: '+254 701 445 566',
+                status: 'Active',
+                lastLogin: '45 mins ago',
+                created_at: '2026-03-12',
+                created_at_formatted: '12 Mar 2026',
+                sales_count: 12,
+                sales_total: 94000,
+                sales_profit: 18800,
+                avg_ticket: 7833.33,
+                recent_sales: [
+                    { id: 109, receipt_number: 'REC-260907-T1-0150', total: 45000, profit: 9000, payment_method: 'Bank Wire / Invoice', payment_status: 'Completed', customer_name: 'Nairobi Hospital Canteen', created_at: '07 Sep 2026, 11:20' },
+                ],
+                clock_sessions: [
+                    { id: 6, branch_name: 'Westlands Mega Store', clocked_in_at: '08 Sep 2026, 08:00', clocked_out_at: null, duration: 'Active Shift', status: 'Active' },
+                ],
+                sessions: [
+                    { id: 's5', ip_address: '105.161.44.82 (Corporate SIM)', user_agent: 'Samsung Galaxy Tab Active 4 / Android 14', last_active: '45 mins ago' },
+                ],
+            },
+            {
+                id: '5',
+                name: 'Hassan Ali',
+                email: 'accountant@nairobi-fresh-mart.mdepos.co.ke',
+                role: 'Accountant',
+                branch: 'HQ Central',
+                phone: '+254 788 334 455',
+                status: 'Active',
+                lastLogin: 'Blocked at 09:15 AM',
+                created_at: '2026-04-01',
+                created_at_formatted: '01 Apr 2026',
+                sales_count: 0,
+                sales_total: 0,
+                sales_profit: 0,
+                avg_ticket: 0,
+                recent_sales: [],
+                clock_sessions: [],
+                sessions: [
+                    { id: 's6', ip_address: '185.220.101.5 (NordVPN Exit Node)', user_agent: 'iPhone 15 Pro / Safari Mobile', last_active: 'Blocked at 09:15 AM' },
+                ],
+            },
+        ];
+    }
+    return [];
+
 });
 
-const staffColumns = [
+const staffColumns = computed(() => [
     { key: 'name', label: 'Staff Member & Email' },
     { key: 'role', label: 'Assigned Role', align: 'center' as const },
-    { key: 'branch', label: 'Assigned Branch' },
+    ...(isMultiBranch.value ? [{ key: 'branch', label: 'Assigned Branch' }] : []),
     { key: 'phone', label: 'Phone' },
     { key: 'status', label: 'Status', align: 'center' as const },
     { key: 'lastLogin', label: 'Last Login' },
     { key: 'actions', label: 'Actions', align: 'right' as const },
-];
+]);
 
 // Permission Matrix state
 const selectedMatrixRole = ref<UserRole>('Cashier');
@@ -499,7 +608,8 @@ export interface ShiftEntry {
     status: 'Scheduled' | 'Clocked In' | 'Completed' | 'On Leave';
 }
 
-const dutyRoster = ref<ShiftEntry[]>([
+// Duty roster state: clean for real accounts, demo data only if isDemo
+const dutyRoster = ref<ShiftEntry[]>(isDemo.value ? [
     {
         id: 'SH-01',
         staffId: '2',
@@ -560,7 +670,7 @@ const dutyRoster = ref<ShiftEntry[]>([
         station: 'Off Duty',
         status: 'On Leave',
     },
-]);
+] : []);
 
 const rosterColumns = [
     { key: 'staffName', label: 'Staff Member & Role' },
@@ -575,8 +685,8 @@ const rosterColumns = [
 // New Shift Entry Modal
 const newShiftModal = ref(false);
 const newShiftForm = ref({
-    staffId: '3',
-    branch: 'Westlands Mega Store',
+    staffId: '',
+    branch: defaultBranchName.value,
     shiftDate: '2026-08-24 (Tomorrow)',
     shiftType: 'Morning' as ShiftEntry['shiftType'],
     station: 'POS Register #01 (Front)',
@@ -624,7 +734,7 @@ const newStaff = ref({
     email: '',
     phone: '',
     role: 'Cashier' as UserRole,
-    branch: 'Westlands Mega Store',
+    branch: defaultBranchName.value,
 });
 
 const isCreatingStaff = ref(false);
@@ -642,7 +752,7 @@ const handleCreateStaff = () => {
     }, {
         onSuccess: () => {
             addStaffModal.value = false;
-            newStaff.value = { name: '', email: '', phone: '', role: 'Cashier', branch: 'Westlands Mega Store' };
+            newStaff.value = { name: '', email: '', phone: '', role: 'Cashier', branch: defaultBranchName.value };
             success('Staff Member Created', 'Staff account created successfully.');
         },
         onError: (errs) => error('Creation Failed', Object.values(errs)[0] as string),
@@ -672,7 +782,7 @@ const openEditUser = (user: any) => {
         email: user.email,
         phone: user.phone === 'N/A' ? '' : user.phone,
         role: user.role as UserRole,
-        branch: user.branch || 'Westlands Mega Store',
+        branch: user.branch || defaultBranchName.value,
         status: user.status || 'Active',
         password: '',
     };
@@ -965,7 +1075,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
     <Head title="Staff & Permissions" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="p-4 md:p-8 space-y-6 max-w-[1600px] mx-auto">
+        <div class="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
             <!-- Header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -987,7 +1097,31 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
                 <div class="flex items-center gap-2">
                     <Button
+                        id="users-tour-guide-btn"
+                        size="sm"
+                        variant="outline"
+                        class="h-9 text-xs gap-1.5 border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 font-semibold shadow-xs"
+                        @click="openGuide()"
+                    >
+                        <Compass class="size-4 animate-spin-slow text-primary" />
+                        <span>Page Guide</span>
+                    </Button>
+
+                    <Button
                         v-if="isOwner"
+                        id="users-tour-btn-import-staff"
+                        size="sm"
+                        variant="outline"
+                        class="h-9 text-xs gap-1.5 border-border hover:bg-primary/10 hover:text-primary hover:border-primary/40 transition-colors shadow-2xs"
+                        @click="staffImportModalOpen = true"
+                    >
+                        <Upload class="size-3.5" />
+                        Import Staff
+                    </Button>
+
+                    <Button
+                        v-if="isOwner"
+                        id="users-tour-btn-add-staff"
                         size="sm"
                         class="h-9 text-xs gap-1.5 bg-primary"
                         @click="addStaffModal = true"
@@ -999,7 +1133,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
             </div>
 
             <!-- Navigation Tabs -->
-            <div class="flex rounded-xl border border-border/80 p-1 bg-card w-fit text-xs font-semibold">
+            <div id="users-tour-tabs" class="flex rounded-xl border border-border/80 p-1 bg-card w-fit text-xs font-semibold">
                 <button
                     type="button"
                     :class="[
@@ -1013,6 +1147,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                 </button>
 
                 <button
+                    v-if="hasFeature('duty_roster')"
                     type="button"
                     :class="[
                         'px-4 py-2 rounded-lg transition-all flex items-center gap-2',
@@ -1039,6 +1174,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                 </button>
 
                 <button
+                    v-if="hasFeature('device_binding')"
                     type="button"
                     :class="[
                         'px-4 py-2 rounded-lg transition-all flex items-center gap-2',
@@ -1053,27 +1189,59 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
             </div>
 
             <!-- Tab 1: Staff Directory -->
-            <div v-if="activeTab === 'staff'">
+            <div v-if="activeTab === 'staff'" class="space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-muted/20 p-3.5 rounded-xl border border-border/80">
+                    <div class="flex items-center gap-2.5">
+                        <div class="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                            <Users class="size-4" />
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-foreground flex items-center gap-2">
+                                <span>Staff Personnel Directory</span>
+                                <Badge variant="outline" class="font-mono text-[10px]">{{ usersList?.length || 0 }} Active Records</Badge>
+                            </p>
+                            <p class="text-[11px] text-muted-foreground mt-0.5">
+                                Add individual staff accounts or batch import personnel rosters from Word, PDF, Excel spreadsheets, or CSV text.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div v-if="isOwner" class="flex items-center gap-2">
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            class="h-8 text-xs gap-1.5 border-border bg-card hover:bg-primary/10 hover:text-primary hover:border-primary/40 font-semibold transition-colors shadow-xs"
+                            @click="staffImportModalOpen = true"
+                        >
+                            <Upload class="size-3.5 text-primary" />
+                            <span>Import (Word / PDF / Excel)</span>
+                        </Button>
+                    </div>
+                </div>
+
                 <DataTable
                     :columns="staffColumns"
                     :data="usersList"
-                    search-placeholder="Search staff, email, phone, role, branch..."
-                    :search-keys="['name', 'email', 'role', 'branch', 'phone']"
+                    :search-placeholder="isMultiBranch ? 'Search staff, email, phone, role, branch...' : 'Search staff, email, phone, role...'"
+                    :search-keys="isMultiBranch ? ['name', 'email', 'role', 'branch', 'phone'] : ['name', 'email', 'role', 'phone']"
+                    search-id="users-tour-search"
                 >
                     <template #cell-name="{ row }">
-                        <div>
+                        <div :id="row.id === usersList[0]?.id ? 'users-tour-col-staff' : undefined">
                             <span class="font-bold text-foreground">{{ row.name }}</span>
                             <div class="text-[11px] text-muted-foreground">{{ row.email }}</div>
                         </div>
                     </template>
 
                     <template #cell-role="{ row }">
-                        <Badge
-                            :variant="row.role === 'Owner' ? 'default' : row.role === 'Manager' ? 'info' : 'outline'"
-                            class="font-bold font-mono"
-                        >
-                            {{ row.role }}
-                        </Badge>
+                        <div :id="row.id === usersList[0]?.id ? 'users-tour-col-role' : undefined">
+                            <Badge
+                                :variant="row.role === 'Owner' ? 'default' : row.role === 'Manager' ? 'info' : 'outline'"
+                                class="font-bold font-mono"
+                            >
+                                {{ row.role }}
+                            </Badge>
+                        </div>
                     </template>
 
                     <template #cell-phone="{ row }">
@@ -1081,7 +1249,9 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     </template>
 
                     <template #cell-status="{ row }">
-                        <Badge :variant="row.status === 'Active' ? 'success' : 'destructive'">{{ row.status }}</Badge>
+                        <div :id="row.id === usersList[0]?.id ? 'users-tour-col-status' : undefined">
+                            <Badge :variant="row.status === 'Active' ? 'success' : 'destructive'">{{ row.status }}</Badge>
+                        </div>
                     </template>
 
                     <template #cell-lastLogin="{ row }">
@@ -1092,8 +1262,9 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     </template>
 
                     <template #cell-actions="{ row }">
-                        <div class="flex items-center justify-end gap-1.5">
+                        <div :id="row.id === usersList[0]?.id ? 'users-tour-staff-actions' : undefined" class="flex items-center justify-end gap-1.5">
                             <Button
+                                :id="row.id === usersList[0]?.id ? 'users-tour-btn-view' : undefined"
                                 variant="outline"
                                 size="sm"
                                 class="h-7 px-2.5 text-xs gap-1.5 border-sky-500/30 text-sky-700 dark:text-sky-300 hover:bg-sky-500/10 hover:border-sky-500/50 transition-colors shadow-2xs"
@@ -1104,6 +1275,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                 <span class="font-medium">View</span>
                             </Button>
                             <Button
+                                :id="row.id === usersList[0]?.id ? 'users-tour-btn-edit' : undefined"
                                 variant="outline"
                                 size="sm"
                                 class="h-7 px-2.5 text-xs gap-1.5 border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10 hover:border-amber-500/50 transition-colors shadow-2xs"
@@ -1120,7 +1292,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
             <!-- Tab 2: Duty Roster & Shift Planning (Owner Feature) -->
             <div v-if="activeTab === 'roster'" class="space-y-4">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-muted/20 p-4 rounded-xl border border-border/80">
+                <div id="users-tour-roster-bar" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-muted/20 p-4 rounded-xl border border-border/80">
                     <div>
                         <h3 class="text-base font-bold text-foreground flex items-center gap-2">
                             <Clock class="size-4 text-emerald-600" />
@@ -1133,6 +1305,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
                     <div class="flex items-center gap-2">
                         <Button
+                            id="users-tour-btn-publish"
                             variant="outline"
                             size="sm"
                             class="h-8 text-xs gap-1.5 border-emerald-600/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10"
@@ -1142,6 +1315,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                             Publish & Broadcast Roster
                         </Button>
                         <Button
+                            id="users-tour-btn-schedule"
                             size="sm"
                             class="h-8 text-xs gap-1.5 bg-primary"
                             @click="newShiftModal = true"
@@ -1153,7 +1327,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                 </div>
 
                 <!-- Shift KPI overview -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div id="users-tour-roster-kpis" class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                     <div class="p-3 bg-card rounded-xl border border-border/80">
                         <span class="text-muted-foreground">Morning Shift (06:30 - 14:30)</span>
                         <p class="text-base font-bold font-mono text-foreground mt-1">2 Staff on Duty</p>
@@ -1173,60 +1347,62 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                 </div>
 
                 <!-- Duty Roster Table -->
-                <DataTable
-                    :columns="rosterColumns"
-                    :data="dutyRoster"
-                    search-placeholder="Search shift by staff, role, station, branch..."
-                    :search-keys="['staffName', 'role', 'station', 'branch', 'shiftType']"
-                >
-                    <template #cell-staffName="{ row }">
-                        <div>
-                            <span class="font-bold text-foreground">{{ row.staffName }}</span>
-                            <div class="text-[11px] text-muted-foreground">{{ row.role }}</div>
-                        </div>
-                    </template>
+                <div id="users-tour-roster-table">
+                    <DataTable
+                        :columns="rosterColumns"
+                        :data="dutyRoster"
+                        search-placeholder="Search shift by staff, role, station, branch..."
+                        :search-keys="['staffName', 'role', 'station', 'branch', 'shiftType']"
+                    >
+                        <template #cell-staffName="{ row }">
+                            <div>
+                                <span class="font-bold text-foreground">{{ row.staffName }}</span>
+                                <div class="text-[11px] text-muted-foreground">{{ row.role }}</div>
+                            </div>
+                        </template>
 
-                    <template #cell-shiftType="{ row }">
-                        <div>
+                        <template #cell-shiftType="{ row }">
+                            <div>
+                                <Badge
+                                    :variant="row.shiftType === 'Morning' ? 'success' : row.shiftType === 'Evening' ? 'info' : row.shiftType === 'Full Day' ? 'default' : 'outline'"
+                                    class="font-semibold"
+                                >
+                                    {{ row.shiftType }}
+                                </Badge>
+                                <div class="text-[10px] text-muted-foreground font-mono mt-0.5">{{ row.shiftHours }}</div>
+                            </div>
+                        </template>
+
+                        <template #cell-station="{ row }">
+                            <span class="font-mono text-xs font-semibold">{{ row.station }}</span>
+                        </template>
+
+                        <template #cell-status="{ row }">
                             <Badge
-                                :variant="row.shiftType === 'Morning' ? 'success' : row.shiftType === 'Evening' ? 'info' : row.shiftType === 'Full Day' ? 'default' : 'outline'"
-                                class="font-semibold"
+                                :variant="row.status === 'Clocked In' ? 'success' : row.status === 'Scheduled' ? 'warning' : 'outline'"
                             >
-                                {{ row.shiftType }}
+                                {{ row.status }}
                             </Badge>
-                            <div class="text-[10px] text-muted-foreground font-mono mt-0.5">{{ row.shiftHours }}</div>
-                        </div>
-                    </template>
+                        </template>
 
-                    <template #cell-station="{ row }">
-                        <span class="font-mono text-xs font-semibold">{{ row.station }}</span>
-                    </template>
-
-                    <template #cell-status="{ row }">
-                        <Badge
-                            :variant="row.status === 'Clocked In' ? 'success' : row.status === 'Scheduled' ? 'warning' : 'outline'"
-                        >
-                            {{ row.status }}
-                        </Badge>
-                    </template>
-
-                    <template #cell-actions="{ row }">
-                        <div class="flex items-center justify-end">
-                            <Button
-                                v-if="row.status === 'Scheduled'"
-                                size="sm"
-                                class="h-7 text-xs bg-emerald-600 hover:bg-emerald-700"
-                                @click="() => {
-                                    row.status = 'Clocked In';
-                                    success('Clock In', `${row.staffName} clocked in for ${row.shiftType} shift.`);
-                                }"
-                            >
-                                Clock In
-                            </Button>
-                            <Badge v-else variant="success">Active</Badge>
-                        </div>
-                    </template>
-                </DataTable>
+                        <template #cell-actions="{ row }">
+                            <div class="flex items-center justify-end">
+                                <Button
+                                    v-if="row.status === 'Scheduled'"
+                                    size="sm"
+                                    class="h-7 text-xs bg-emerald-600 hover:bg-emerald-700"
+                                    @click="() => {
+                                        row.status = 'Clocked In';
+                                        success('Clock In', `${row.staffName} clocked in for ${row.shiftType} shift.`);
+                                    }"
+                                >
+                                    Clock In
+                                </Button>
+                                <Badge v-else variant="success">Active</Badge>
+                            </div>
+                        </template>
+                    </DataTable>
+                </div>
             </div>
 
             <!-- Tab 3: Permissions Matrix (With Owner Restriction Enforcement) -->
@@ -1234,6 +1410,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                 <!-- Non-Owner Restriction Warning Banner -->
                 <div
                     v-if="!isOwner"
+                    id="users-tour-matrix-restriction"
                     class="p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs flex items-start gap-3 text-amber-900 dark:text-amber-200"
                 >
                     <ShieldAlert class="size-5 shrink-0 text-amber-600 mt-0.5" />
@@ -1246,7 +1423,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     </div>
                 </div>
 
-                <Card class="border-border/80">
+                <Card id="users-tour-matrix-grid" class="border-border/80">
                     <CardHeader class="pb-3 border-b border-border/70 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div>
                             <CardTitle class="text-base font-bold flex items-center gap-2">
@@ -1259,7 +1436,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         </div>
 
                         <!-- Role Selector Pills -->
-                        <div class="flex items-center gap-1 overflow-x-auto pb-1 text-xs">
+                        <div id="users-tour-matrix-roles" class="flex items-center gap-1 overflow-x-auto pb-1 text-xs">
                             <button
                                 v-for="r in availableRoles"
                                 :key="r"
@@ -1291,6 +1468,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                 <tr
                                     v-for="mod in modulesList"
                                     :key="mod"
+                                    :id="mod === modulesList[0] ? 'users-tour-matrix-toggles' : undefined"
                                     class="hover:bg-muted/20 transition-colors"
                                 >
                                     <td class="px-6 py-3 font-bold uppercase text-foreground">
@@ -1366,9 +1544,9 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
             <!-- Tab 4: Device & Network Restrictions -->
             <div v-if="activeTab === 'devices'" class="space-y-6">
                 <!-- Network Policies Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div id="users-tour-devices-policies" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     <!-- Policy 1: VPN Guard -->
-                    <Card class="border-border/80">
+                    <Card id="users-tour-policy-vpn" class="border-border/80">
                         <CardHeader class="pb-3">
                             <div class="flex items-center justify-between">
                                 <CardTitle class="text-sm font-bold flex items-center gap-2">
@@ -1394,7 +1572,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     </Card>
 
                     <!-- Policy 2: Store Wi-Fi Whitelist -->
-                    <Card class="border-border/80">
+                    <Card id="users-tour-policy-wifi" class="border-border/80">
                         <CardHeader class="pb-3">
                             <div class="flex items-center justify-between">
                                 <CardTitle class="text-sm font-bold flex items-center gap-2">
@@ -1525,7 +1703,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                 </div>
 
                 <!-- Whitelisted Store Wi-Fi Networks Section -->
-                <Card class="border-border/80">
+                <Card id="users-tour-wifi-whitelist" class="border-border/80">
                     <CardHeader class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3">
                         <div>
                             <CardTitle class="text-base font-bold flex items-center gap-2">
@@ -1538,6 +1716,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         </div>
                         <Button
                             v-if="isOwner"
+                            id="users-tour-btn-add-wifi"
                             size="sm"
                             class="h-8 text-xs gap-1.5 bg-primary"
                             @click="newWifiModal = true"
@@ -1572,7 +1751,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                 </Card>
 
                 <!-- Live Connected Staff Devices Table -->
-                <Card class="border-border/80 overflow-hidden">
+                <Card id="users-tour-devices-table" class="border-border/80 overflow-hidden">
                     <CardHeader class="pb-3">
                         <div class="flex items-center justify-between">
                             <div>
@@ -1669,6 +1848,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                             <div class="flex items-center justify-end gap-1.5">
                                                 <Button
                                                     v-if="dev.status !== 'Blocked (VPN Detected)'"
+                                                    :id="dev.id === userDevices[0]?.id ? 'users-tour-btn-remote-lock' : undefined"
                                                     size="sm"
                                                     variant="ghost"
                                                     class="h-7 text-[11px] text-rose-600 hover:bg-rose-500/10 gap-1"
@@ -1711,14 +1891,14 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
         <!-- Add Whitelisted Store Wi-Fi Modal -->
         <Dialog :open="newWifiModal" @update:open="(v) => (newWifiModal = v)">
-            <DialogContent class="sm:max-w-md">
-                <DialogHeader>
+            <DialogContent class="w-[92vw] sm:max-w-md max-h-[85vh] flex flex-col p-0 overflow-hidden shadow-xl">
+                <DialogHeader class="p-4 border-b border-border/80 bg-muted/20 shrink-0">
                     <DialogTitle class="text-base font-bold flex items-center gap-2">
                         <Wifi class="size-4 text-emerald-500" />
                         Whitelist Store Wi-Fi Network
                     </DialogTitle>
                 </DialogHeader>
-                <div class="space-y-3 py-2 text-xs">
+                <div class="p-4 overflow-y-auto flex-1 space-y-3 text-xs">
                     <div>
                         <Label class="text-xs">Wi-Fi Network SSID (Name)</Label>
                         <Input v-model="newWifiForm.ssid" placeholder="e.g. NairobiFresh-POS-Store5G" class="mt-1 text-xs" />
@@ -1741,7 +1921,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         </select>
                     </div>
                 </div>
-                <DialogFooter class="gap-2">
+                <DialogFooter class="p-3 border-t border-border/80 bg-muted/20 gap-2 shrink-0">
                     <Button variant="ghost" size="sm" @click="newWifiModal = false">Cancel</Button>
                     <Button size="sm" class="bg-primary" :loading="isSavingWifi" @click="handleAddWifi">Save & Whitelist Wi-Fi</Button>
                 </DialogFooter>
@@ -1750,11 +1930,11 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
         <!-- Schedule Shift Modal -->
         <Dialog :open="newShiftModal" @update:open="(v) => (newShiftModal = v)">
-            <DialogContent class="sm:max-w-md">
-                <DialogHeader>
+            <DialogContent class="w-[92vw] sm:max-w-md max-h-[85vh] flex flex-col p-0 overflow-hidden shadow-xl">
+                <DialogHeader class="p-4 border-b border-border/80 bg-muted/20 shrink-0">
                     <DialogTitle class="text-base font-bold">Assign Staff Duty Shift</DialogTitle>
                 </DialogHeader>
-                <div class="space-y-3 py-2 text-xs">
+                <div class="p-4 overflow-y-auto flex-1 space-y-3 text-xs">
                     <div>
                         <Label class="text-xs">Select Staff Member</Label>
                         <select v-model="newShiftForm.staffId" class="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs">
@@ -1793,7 +1973,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         </select>
                     </div>
                 </div>
-                <DialogFooter class="gap-2">
+                <DialogFooter class="p-3 border-t border-border/80 bg-muted/20 gap-2 shrink-0">
                     <Button variant="ghost" size="sm" @click="newShiftModal = false">Cancel</Button>
                     <Button size="sm" class="bg-primary" :loading="isSavingShift" @click="handleAddShift">Assign Shift</Button>
                 </DialogFooter>
@@ -1802,11 +1982,11 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
         <!-- Add Staff Modal -->
         <Dialog :open="addStaffModal" @update:open="(v) => (addStaffModal = v)">
-            <DialogContent class="sm:max-w-md">
-                <DialogHeader>
+            <DialogContent class="w-[92vw] sm:max-w-md max-h-[85vh] flex flex-col p-0 overflow-hidden shadow-xl">
+                <DialogHeader class="p-4 border-b border-border/80 bg-muted/20 shrink-0">
                     <DialogTitle class="text-base font-bold">Add New Staff Member</DialogTitle>
                 </DialogHeader>
-                <div class="space-y-3 py-2 text-xs">
+                <div class="p-4 overflow-y-auto flex-1 space-y-3 text-xs">
                     <div>
                         <Label class="text-xs">Full Name</Label>
                         <Input v-model="newStaff.name" placeholder="e.g. Brian Kipkorir" class="mt-1 text-xs" />
@@ -1819,14 +1999,14 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         <Label class="text-xs">Phone Number (M-Pesa / SMS)</Label>
                         <Input v-model="newStaff.phone" placeholder="+254 7XX XXX XXX" class="mt-1 text-xs font-mono" />
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div :class="['grid gap-3', isMultiBranch ? 'grid-cols-2' : 'grid-cols-1']">
                         <div>
                             <Label class="text-xs">Assigned Role</Label>
                             <select v-model="newStaff.role" class="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs">
                                 <option v-for="r in availableRoles" :key="r" :value="r">{{ r }}</option>
                             </select>
                         </div>
-                        <div>
+                        <div v-if="isMultiBranch">
                             <Label class="text-xs">Branch Outlet</Label>
                             <select v-model="newStaff.branch" class="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs">
                                 <option v-for="b in allBranches" :key="b.id" :value="b.name">{{ b.name }}</option>
@@ -1834,7 +2014,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         </div>
                     </div>
                 </div>
-                <DialogFooter class="gap-2">
+                <DialogFooter class="p-3 border-t border-border/80 bg-muted/20 gap-2 shrink-0">
                     <Button variant="ghost" size="sm" @click="addStaffModal = false">Cancel</Button>
                     <Button size="sm" class="bg-primary" :loading="isCreatingStaff" @click="handleCreateStaff">Save & Send Invite</Button>
                 </DialogFooter>
@@ -1843,8 +2023,8 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
         <!-- Edit Staff Member Modal -->
         <Dialog :open="editStaffModal" @update:open="(v) => (editStaffModal = v)">
-            <DialogContent class="sm:max-w-lg">
-                <DialogHeader>
+            <DialogContent class="w-[92vw] sm:max-w-md max-h-[85vh] flex flex-col p-0 overflow-hidden shadow-xl">
+                <DialogHeader class="p-4 border-b border-border/80 bg-muted/20 shrink-0">
                     <DialogTitle class="text-base font-bold flex items-center gap-2">
                         <Pencil class="size-4 text-amber-500" />
                         <span>Edit Staff Member</span>
@@ -1852,7 +2032,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     </DialogTitle>
                 </DialogHeader>
 
-                <div class="space-y-3.5 py-2 text-xs">
+                <div class="p-4 overflow-y-auto flex-1 space-y-3.5 text-xs">
                     <div>
                         <Label class="text-xs font-semibold">Full Name</Label>
                         <Input v-model="editStaffForm.name" placeholder="e.g. David Mwangi" class="mt-1 text-xs" />
@@ -1876,8 +2056,8 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
+                    <div :class="['grid gap-3', isMultiBranch ? 'grid-cols-2' : 'grid-cols-1']">
+                        <div v-if="isMultiBranch">
                             <Label class="text-xs font-semibold">Assigned Branch Location</Label>
                             <select v-model="editStaffForm.branch" class="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs">
                                 <option v-for="b in allBranches" :key="b.id" :value="b.name">{{ b.name }}</option>
@@ -1922,7 +2102,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     </div>
                 </div>
 
-                <DialogFooter class="gap-2 sm:gap-0">
+                <DialogFooter class="p-3 border-t border-border/80 bg-muted/20 gap-2 shrink-0">
                     <Button variant="ghost" size="sm" @click="editStaffModal = false">Cancel</Button>
                     <Button
                         size="sm"
@@ -1939,17 +2119,17 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
 
         <!-- View Staff Profile & Activity Details Modal -->
         <Dialog :open="viewStaffModal" @update:open="(v) => (viewStaffModal = v)">
-            <DialogContent v-if="viewUserTarget" class="sm:max-w-5xl md:max-w-6xl xl:max-w-7xl w-[96vw] h-[92vh] max-h-[92vh] flex flex-col p-0 overflow-hidden shadow-2xl rounded-2xl border-border/80">
+            <DialogContent v-if="viewUserTarget" class="w-[94vw] sm:max-w-3xl md:max-w-4xl max-h-[85vh] flex flex-col p-0 overflow-hidden shadow-2xl rounded-2xl border-border/80">
                 <!-- User Profile Header Banner -->
-                <div class="p-6 border-b border-border/70 bg-gradient-to-r from-primary/10 via-card to-card shrink-0">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div class="flex items-center gap-4">
-                            <div class="size-14 rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground flex items-center justify-center font-bold text-xl shadow-md ring-4 ring-primary/10">
+                <div class="p-4 sm:p-5 border-b border-border/70 bg-gradient-to-r from-primary/10 via-card to-card shrink-0">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="size-11 rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground flex items-center justify-center font-bold text-lg shadow-md ring-4 ring-primary/10">
                                 {{ viewUserTarget.name.charAt(0).toUpperCase() }}
                             </div>
                             <div>
                                 <div class="flex items-center gap-2 flex-wrap">
-                                    <h3 class="text-lg font-bold text-foreground">{{ viewUserTarget.name }}</h3>
+                                    <h3 class="text-base font-bold text-foreground">{{ viewUserTarget.name }}</h3>
                                     <Badge
                                         :variant="viewUserTarget.role === 'Owner' ? 'default' : viewUserTarget.role === 'Manager' ? 'info' : 'outline'"
                                         class="font-mono text-xs font-semibold"
@@ -1960,7 +2140,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                         {{ viewUserTarget.status }}
                                     </Badge>
                                 </div>
-                                <div class="flex items-center gap-3 text-xs text-muted-foreground mt-1 flex-wrap">
+                                <div class="flex items-center gap-2.5 text-xs text-muted-foreground mt-0.5 flex-wrap">
                                     <span class="font-mono">{{ viewUserTarget.email }}</span>
                                     <span>•</span>
                                     <span class="font-mono">{{ viewUserTarget.phone || 'No phone' }}</span>
@@ -1974,13 +2154,13 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                class="h-8 text-xs gap-1.5 border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10"
+                                class="h-7 text-xs gap-1.5 border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10"
                                 @click="() => {
                                     viewStaffModal = false;
                                     openEditUser(viewUserTarget);
                                 }"
                             >
-                                <Pencil class="size-3.5" />
+                                <Pencil class="size-3" />
                                 Edit User
                             </Button>
                             <Button
@@ -1988,26 +2168,26 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                                 variant="outline"
                                 size="sm"
                                 :class="[
-                                    'h-8 text-xs gap-1.5',
+                                    'h-7 text-xs gap-1.5',
                                     viewUserTarget.status === 'Active'
                                         ? 'border-rose-500/30 text-rose-700 dark:text-rose-300 hover:bg-rose-500/10'
                                         : 'border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10'
                                 ]"
                                 @click="handleToggleStatus(viewUserTarget)"
                             >
-                                <Ban v-if="viewUserTarget.status === 'Active'" class="size-3.5" />
-                                <CheckCircle2 v-else class="size-3.5" />
+                                <Ban v-if="viewUserTarget.status === 'Active'" class="size-3" />
+                                <CheckCircle2 v-else class="size-3" />
                                 {{ viewUserTarget.status === 'Active' ? 'Suspend' : 'Reactivate' }}
                             </Button>
                         </div>
                     </div>
 
                     <!-- Inner Navigation Tabs -->
-                    <div class="flex items-center gap-1 border-t border-border/60 mt-4 pt-3 overflow-x-auto text-xs font-semibold scrollbar-none">
+                    <div class="flex items-center gap-1 border-t border-border/60 mt-3 pt-2.5 overflow-x-auto text-xs font-semibold scrollbar-none">
                         <button
                             type="button"
                             :class="[
-                                'px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap',
+                                'px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap',
                                 viewUserTab === 'overview' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
                             ]"
                             @click="viewUserTab = 'overview'"
@@ -2052,7 +2232,7 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                 </div>
 
                 <!-- Tab Content Body -->
-                <div class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 scrollbar-thin">
+                <div class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 scrollbar-thin">
                     <!-- ── TAB 1: OVERVIEW & RELATIVE INFO ───────────────────── -->
                     <div v-if="viewUserTab === 'overview'" class="space-y-4">
                         <!-- Quick KPI Grid -->
@@ -2671,9 +2851,9 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                     </div>
                 </div>
 
-                <div class="p-4 px-6 border-t border-border/70 bg-muted/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shrink-0 text-xs">
-                    <div class="text-muted-foreground flex items-center gap-2 flex-wrap">
-                        <span>Staff Member Record: <strong class="text-foreground font-mono">#STF-{{ viewUserTarget.id }}</strong></span>
+                <div class="p-3 sm:p-4 px-4 sm:px-5 border-t border-border/70 bg-muted/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 shrink-0 text-xs">
+                    <div class="text-muted-foreground flex items-center gap-2 flex-wrap text-[11px]">
+                        <span>Staff Record: <strong class="text-foreground font-mono">#STF-{{ viewUserTarget.id }}</strong></span>
                         <span>•</span>
                         <span>Branch: <strong class="text-foreground">{{ viewUserTarget.branch }}</strong></span>
                         <span>•</span>
@@ -2683,21 +2863,36 @@ const handleQuickClockIn = (shift: ShiftEntry) => {
                         <Button
                             variant="outline"
                             size="sm"
-                            class="h-8 text-xs gap-1.5 border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10"
+                            class="h-7 text-xs gap-1.5 border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10"
                             @click="() => {
                                 viewStaffModal = false;
                                 openEditUser(viewUserTarget);
                             }"
                         >
-                            <Pencil class="size-3.5" />
+                            <Pencil class="size-3" />
                             Edit Staff Member
                         </Button>
-                        <Button variant="default" size="sm" class="h-8 text-xs bg-primary px-4" @click="viewStaffModal = false">
+                        <Button variant="default" size="sm" class="h-7 text-xs bg-primary px-3.5" @click="viewStaffModal = false">
                             Done / Close
                         </Button>
                     </div>
                 </div>
             </DialogContent>
         </Dialog>
+
+        <!-- Universal Staff Directory Import Modal (Excel, Word, PDF, CSV) -->
+        <StaffImportModal
+            v-model:open="staffImportModalOpen"
+            :branches="branches || allBranches"
+        />
+
+        <!-- Interactive Users & Permissions Guide Overlay -->
+        <UsersGuideOverlay
+            v-model:open="guideOverlayOpen"
+            v-model:current-step="guideCurrentStep"
+            :active-tab="activeTab"
+            @action="handleGuideAction"
+            @switch-tab="handleGuideTabSwitch"
+        />
     </AppLayout>
 </template>

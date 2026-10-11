@@ -18,9 +18,10 @@ class BarcodeLookupService
      * Look up product details by barcode across multi-tier sources.
      *
      * @param string $barcode
+     * @param int|null $tenantId
      * @return array{found: bool, name?: string, brand?: string, category?: string, description?: string, imageUrl?: string, source?: string}
      */
-    public function lookup(string $barcode): array
+    public function lookup(string $barcode, ?int $tenantId = null): array
     {
         $barcode = trim($barcode);
         if (strlen($barcode) < 4) {
@@ -28,16 +29,25 @@ class BarcodeLookupService
         }
 
         // Tier 1: Check Cache / Master Record
-        $cacheKey = "barcode:{$barcode}";
-        $cached = Cache::get($cacheKey);
-        if ($cached && !empty($cached['name'])) {
-            return array_merge($cached, ['found' => true, 'source' => $cached['source'] ?? 'cached']);
+        if ($tenantId) {
+            $tenantCached = Cache::get("barcode:t{$tenantId}:{$barcode}");
+            if ($tenantCached && !empty($tenantCached['name'])) {
+                return array_merge($tenantCached, ['found' => true, 'source' => $tenantCached['source'] ?? 'cached']);
+            }
         }
 
-        // Tier 2: Check Local & Cross-Tenant Database
-        $dbMatch = $this->searchDatabase($barcode);
+        $cached = Cache::get("barcode:{$barcode}");
+        if ($cached && !empty($cached['name'])) {
+            // Only return global cache if public source or tenant matches
+            if (($cached['source'] ?? '') !== 'pos_catalog' || empty($cached['tenant_id']) || $cached['tenant_id'] === $tenantId) {
+                return array_merge($cached, ['found' => true, 'source' => $cached['source'] ?? 'cached']);
+            }
+        }
+
+        // Tier 2: Check Local Database (scoped to tenant)
+        $dbMatch = $this->searchDatabase($barcode, $tenantId);
         if ($dbMatch['found']) {
-            $this->remember($barcode, $dbMatch);
+            $this->remember($barcode, $dbMatch, $tenantId);
             return $dbMatch;
         }
 
@@ -68,7 +78,7 @@ class BarcodeLookupService
     /**
      * Store a verified product lookup in the master cache.
      */
-    public function remember(string $barcode, array $data): void
+    public function remember(string $barcode, array $data, ?int $tenantId = null): void
     {
         $barcode = trim($barcode);
         if (empty($barcode) || empty($data['name'])) {
@@ -83,22 +93,31 @@ class BarcodeLookupService
             'description' => isset($data['description']) ? mb_substr(trim($data['description']), 0, 500) : null,
             'imageUrl' => $data['imageUrl'] ?? null,
             'source' => $data['source'] ?? 'pos_catalog',
+            'tenant_id' => $tenantId,
         ];
 
-        Cache::put("barcode:{$barcode}", $payload, now()->addDays(self::CACHE_TTL_DAYS));
+        if ($payload['source'] === 'pos_catalog' && $tenantId) {
+            Cache::put("barcode:t{$tenantId}:{$barcode}", $payload, now()->addDays(self::CACHE_TTL_DAYS));
+        } else {
+            Cache::put("barcode:{$barcode}", $payload, now()->addDays(self::CACHE_TTL_DAYS));
+        }
     }
 
     /**
      * Search existing products in the database.
      */
-    protected function searchDatabase(string $barcode): array
+    protected function searchDatabase(string $barcode, ?int $tenantId = null): array
     {
         try {
-            $existing = Product::where('barcode', $barcode)
+            $query = Product::where('barcode', $barcode)
                 ->whereNotNull('name')
-                ->where('name', '!=', '')
-                ->latest()
-                ->first();
+                ->where('name', '!=', '');
+
+            if ($tenantId !== null) {
+                $query->where('tenant_id', $tenantId);
+            }
+
+            $existing = $query->latest()->first();
 
             if ($existing) {
                 return [

@@ -6,6 +6,11 @@ import tailwindcss from 'tailwindcss';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+    server: {
+        host: '127.0.0.1',
+        port: 5173,
+        cors: true,
+    },
     plugins: [
         laravel({
             input: ['resources/js/app.ts'],

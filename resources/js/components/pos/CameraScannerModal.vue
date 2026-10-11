@@ -249,7 +249,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Dialog :open="open" @update:open="(v) => emit('update:open', v)">
+    <Dialog :open="open" spinnerText="Opening Camera Scanner..." @update:open="(v) => emit('update:open', v)">
         <DialogContent class="w-[95vw] sm:max-w-md p-0 overflow-hidden bg-zinc-950 text-zinc-100 border-zinc-800 shadow-2xl flex flex-col max-h-[95vh]">
             <!-- Header -->
             <DialogHeader class="p-3.5 border-b border-zinc-800/80 flex flex-row items-center justify-between bg-zinc-900/90 shrink-0">

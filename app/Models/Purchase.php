@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Purchase extends Model
 {
@@ -58,4 +59,10 @@ class Purchase extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function invoice(): HasOne
+    {
+        return $this->hasOne(PurchaseInvoice::class)->latestOfMany();
+    }
 }
+

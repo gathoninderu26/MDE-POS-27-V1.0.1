@@ -9,10 +9,12 @@ import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
+import ReportsGuideOverlay from '@/components/reports/ReportsGuideOverlay.vue';
 import {
     BarChart3,
     Calendar,
     CircleDollarSign,
+    Compass,
     Download,
     FileSpreadsheet,
     FileText,
@@ -20,7 +22,7 @@ import {
     Printer,
     TrendingUp,
 } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 const props = defineProps<{
     pnl?: {
@@ -97,13 +99,34 @@ const handleExportCSV = () => {
     document.body.removeChild(link);
     success('CSV Exported', 'Downloaded ledger CSV file.');
 };
+
+// --- Page Guide Overlay State ---
+const guideOverlayOpen = ref(false);
+const guideCurrentStep = ref(0);
+
+const openGuide = (step = 0) => {
+    guideCurrentStep.value = step;
+    guideOverlayOpen.value = true;
+};
+
+const handleGuideAction = (actionType: string) => {
+    if (actionType === 'start-walkthrough') {
+        guideCurrentStep.value = 1;
+    } else if (actionType === 'filter-month') {
+        switchRange('month');
+    } else if (actionType === 'export-csv') {
+        handleExportCSV();
+    } else if (actionType === 'print-statement') {
+        handleExportPDF();
+    }
+};
 </script>
 
 <template>
     <Head title="Business Reports & P&L" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="p-4 md:p-8 space-y-6 max-w-[1600px] mx-auto">
+        <div class="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
             <!-- Header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -114,7 +137,18 @@ const handleExportCSV = () => {
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2">
-                    <div class="flex rounded-lg border border-border p-0.5 bg-card text-xs font-medium">
+                    <Button
+                        id="reports-tour-guide-btn"
+                        variant="outline"
+                        size="sm"
+                        class="h-9 gap-1.5 border-primary/30 text-primary hover:bg-primary/5 text-xs font-semibold"
+                        @click="openGuide(0)"
+                    >
+                        <Compass class="size-3.5" />
+                        Page Guide
+                    </Button>
+
+                    <div id="reports-tour-date-filter" class="flex rounded-lg border border-border p-0.5 bg-card text-xs font-medium">
                         <button
                             type="button"
                             :class="['px-2.5 py-1 rounded-md transition-colors', selectedRange === 'today' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
@@ -145,11 +179,11 @@ const handleExportCSV = () => {
                         </button>
                     </div>
 
-                    <Button variant="outline" size="sm" class="h-9 text-xs gap-1.5" @click="handleExportCSV">
+                    <Button id="reports-tour-export-csv" variant="outline" size="sm" class="h-9 text-xs gap-1.5" @click="handleExportCSV">
                         <FileSpreadsheet class="size-3.5" />
                         Export Excel / CSV
                     </Button>
-                    <Button size="sm" class="h-9 text-xs gap-1.5 bg-primary" @click="handleExportPDF">
+                    <Button id="reports-tour-print-pdf" size="sm" class="h-9 text-xs gap-1.5 bg-primary" @click="handleExportPDF">
                         <Download class="size-3.5" />
                         Print Statement
                     </Button>
@@ -157,7 +191,7 @@ const handleExportCSV = () => {
             </div>
 
             <!-- P&L Summary Cards -->
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <div id="reports-tour-kpis" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
                 <StatCard
                     title="Gross Sales Revenue"
                     :value="formatCurrency(pnl.revenue)"
@@ -197,7 +231,7 @@ const handleExportCSV = () => {
             </div>
 
             <!-- Profit & Loss Statement Table Component -->
-            <Card class="border-border/80">
+            <Card id="reports-tour-pnl-table" class="border-border/80">
                 <CardHeader class="pb-3 flex flex-row items-center justify-between border-b border-border/70">
                     <div>
                         <CardTitle class="text-base font-bold">Comprehensive Profit & Loss Statement</CardTitle>
@@ -236,7 +270,7 @@ const handleExportCSV = () => {
             <!-- Bottom Row: Category Performance & Cashier Auditing -->
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 <!-- Category Breakdown -->
-                <Card class="border-border/80">
+                <Card id="reports-tour-category-breakdown" class="border-border/80">
                     <CardHeader class="pb-3">
                         <CardTitle class="text-base font-bold">Category Profitability</CardTitle>
                         <CardDescription class="text-xs">Sales contribution and profit margin by department</CardDescription>
@@ -263,7 +297,7 @@ const handleExportCSV = () => {
                 </Card>
 
                 <!-- Cashier Performance Auditing -->
-                <Card class="border-border/80">
+                <Card id="reports-tour-cashier-performance" class="border-border/80">
                     <CardHeader class="pb-3">
                         <CardTitle class="text-base font-bold">Cashier Shift Performance</CardTitle>
                         <CardDescription class="text-xs">Transaction volume & average basket size per operator</CardDescription>
@@ -288,5 +322,12 @@ const handleExportCSV = () => {
                 </Card>
             </div>
         </div>
+
+        <!-- Reports & P&L Interactive Tour Overlay -->
+        <ReportsGuideOverlay
+            v-model:open="guideOverlayOpen"
+            v-model:current-step="guideCurrentStep"
+            @action="handleGuideAction"
+        />
     </AppLayout>
 </template>

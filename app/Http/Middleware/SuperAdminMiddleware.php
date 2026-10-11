@@ -17,8 +17,12 @@ class SuperAdminMiddleware
     {
         $user = $request->user();
 
-        if (! $user || ! $user->isSuperAdmin()) {
-            abort(404);
+        if (! $user) {
+            return redirect()->route('super-admin.login');
+        }
+
+        if (! $user->isSuperAdmin()) {
+            abort(403, 'Access denied. Administrative security clearance required.');
         }
 
         return $next($request);

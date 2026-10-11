@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import {
     AlertTriangle,
     ArrowRight,
@@ -38,6 +38,18 @@ import {
     Zap,
 } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
+
+const page = usePage();
+
+// If accessed on a tenant subdomain or with tenant context, lock out and redirect immediately
+onMounted(() => {
+    const tenant = (page.props as any)?.tenant;
+    const isSubdomain = (page.props as any)?.isSubdomain;
+    if (tenant || isSubdomain) {
+        const targetUrl = tenant?.subdomain_url || '/login';
+        window.location.href = targetUrl;
+    }
+});
 
 interface DemoTenant {
     name: string;
@@ -82,7 +94,6 @@ const inputError = ref('');
 const loadingTenant = ref<string | null>(null);
 
 // Collapsible Demo Section State
-// Always collapsed on every page visit/refresh (including Inertia SPA navigations)
 const isDemoSectionOpen = ref(false);
 onMounted(() => {
     isDemoSectionOpen.value = false;
@@ -152,11 +163,11 @@ const demoRoles: DemoRole[] = [
 
 // Demo Period Options
 const demoPeriods: DemoPeriod[] = [
-    { id: '1day', days: 1, label: '1 Day (24-Hour Express Trial) — KES 50', price: 50 },
-    { id: '3days', days: 3, label: '3 Days (Evaluation Sandbox) — KES 150', price: 150 },
-    { id: '7days', days: 7, label: '7 Days (1 Week Team Pilot - Recommended) — KES 300', price: 300 },
-    { id: '14days', days: 14, label: '14 Days (2 Weeks Extended Pilot) — KES 550', price: 550 },
-    { id: '30days', days: 30, label: '30 Days (1 Month Enterprise Sandbox) — KES 990', price: 990 },
+    { id: '1day', days: 1, label: '1 Day (24-Hour Express Trial) â€” KES 50', price: 50 },
+    { id: '3days', days: 3, label: '3 Days (Evaluation Sandbox) â€” KES 150', price: 150 },
+    { id: '7days', days: 7, label: '7 Days (1 Week Team Pilot - Recommended) â€” KES 300', price: 300 },
+    { id: '14days', days: 14, label: '14 Days (2 Weeks Extended Pilot) â€” KES 550', price: 550 },
+    { id: '30days', days: 30, label: '30 Days (1 Month Enterprise Sandbox) â€” KES 990', price: 990 },
     { id: 'custom', days: 5, label: 'Custom Period...', price: 225 },
 ];
 
@@ -179,7 +190,7 @@ const demoDataModes: DemoDataMode[] = [
     },
     {
         id: 'own',
-        label: 'Demo without Mock Data (Clean slate — start fresh with your own products & sales)',
+        label: 'Demo without Mock Data (Clean slate â€” start fresh with your own products & sales)',
         badge: 'Clean Slate Sandbox',
         description: 'Clean slate environment without sample records. Perfect for testing setup with your own business inventory and staff from scratch.',
     },
@@ -410,7 +421,6 @@ const launchDemoTerminal = (overrideSlug?: string, overrideRole?: string) => {
         '/demo-login',
         { tenant: slug, role: role, days: days, data_mode: dataMode },
         {
-            preserveScroll: true,
             onError: (errors) => {
                 console.error('Demo login error:', errors);
                 const firstErr = Object.values(errors)[0];
@@ -568,9 +578,9 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
         <main class="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 max-w-xl mx-auto w-full space-y-5">
             <!-- Header Title -->
             <div class="text-center space-y-1.5 w-full">
-                <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[11px] font-bold">
+                <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[11px] font-bold backdrop-blur-sm">
                     <Sparkles class="size-3" />
-                    <span>Instant Demo Access & Merchant Terminal</span>
+                    <span>Instant Demo Access &amp; Merchant Terminal</span>
                 </div>
                 <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
                     Client Store Terminal Login
@@ -581,10 +591,9 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
             </div>
 
             <!-- Unified Card Container -->
-            <div class="w-full rounded-2xl border border-border/80 bg-card/95 backdrop-blur-sm shadow-xl overflow-hidden">
-
-                <!-- 1. Merchant Store Subdomain (Disabled with Coming Soon & Waitlist Note) -->
-                <div class="p-5 sm:p-6 space-y-3.5 bg-card border-b border-border/60">
+            <div class="w-full rounded-2xl border border-border/60 bg-card shadow-2xl overflow-hidden">
+                <!-- Client Store Subdomain — visible when demo is closed -->
+                <div v-show="!isDemoSectionOpen" class="p-5 sm:p-6 space-y-3.5 bg-card border-t border-border/60">
                     <div class="flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
                         <span class="flex items-center gap-1.5 text-foreground">
                             <Building2 class="size-3.5 text-primary" />
@@ -596,7 +605,6 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                         </Badge>
                     </div>
 
-                    <!-- Disabled Subdomain Input Strip -->
                     <div class="space-y-3">
                         <div class="flex items-center rounded-xl border border-input/60 bg-muted/40 shadow-inner overflow-hidden opacity-80 cursor-not-allowed">
                             <div class="pl-3.5 pr-1 text-muted-foreground/60">
@@ -612,42 +620,25 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                             </div>
                         </div>
 
-                        <!-- Notice Note: Coming Soon & Register for Waitlist -->
                         <div class="p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs space-y-2.5">
                             <div class="flex items-start gap-2.5">
                                 <Sparkles class="size-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                                 <div class="space-y-1">
-                                    <h4 class="font-bold text-foreground text-xs leading-tight">
-                                        Self-Service Merchant Subdomains Launching Soon!
-                                    </h4>
+                                    <h4 class="font-bold text-foreground text-xs leading-tight">Self-Service Merchant Subdomains Launching Soon!</h4>
                                     <p class="text-[11px] text-muted-foreground leading-relaxed">
-                                        Direct merchant onboarding and automated subdomain setup is opening soon. Join our early-access waitlist for priority setup and launch discounts.
+                                        Join our early-access waitlist for priority setup and launch discounts.
                                     </p>
                                 </div>
                             </div>
-
-                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    class="h-8 text-xs font-bold gap-1.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white shadow-xs cursor-pointer flex-1"
-                                    @click="showWaitlistModal = true"
-                                >
-                                    <Clock class="size-3.5" />
-                                    <span>Register for Waitlist</span>
-                                </Button>
-
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    class="h-8 text-xs font-bold gap-1.5 border-primary/40 text-primary hover:bg-primary/10 cursor-pointer flex-1"
-                                    @click="scrollToDemos"
-                                >
-                                    <Zap class="size-3.5" />
-                                    <span>Try Live Demos Below &darr;</span>
-                                </Button>
-                            </div>
+                            <Button
+                                type="button"
+                                size="sm"
+                                class="w-full h-8 text-xs font-bold gap-1.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white shadow-xs cursor-pointer"
+                                @click="showWaitlistModal = true"
+                            >
+                                <Clock class="size-3.5" />
+                                <span>Register for Waitlist</span>
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -665,13 +656,13 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                         </div>
                         <div>
                             <span class="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
-                                <span>Or Try a Demo Sandbox Account</span>
+                                <span>Try a Demo Sandbox Account</span>
                                 <Badge variant="outline" class="text-[9px] font-mono text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10">
                                     Evaluation
                                 </Badge>
                             </span>
                             <span class="text-[10px] text-muted-foreground block">
-                                Pre-configured supermarket & wholesale test environments
+                                Pre-configured supermarket &amp; wholesale test environments
                             </span>
                         </div>
                     </div>
@@ -688,8 +679,9 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                     </div>
                 </button>
 
-                <!-- 2. Toggled Demo Configuration Form -->
-                <div v-show="isDemoSectionOpen" class="p-5 sm:p-6 bg-card/50 space-y-4">
+                <!-- Demo Configuration Form (scrollable) -->
+                <div v-show="isDemoSectionOpen" class="p-5 sm:p-6 bg-card/50 space-y-4 max-h-[60vh] overflow-y-auto overscroll-contain scrollbar-thin">
+
 
 
                     <!-- Prominent Non-Production Sandbox Disclaimer Notice -->
@@ -865,7 +857,7 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                     <!-- Professional Demo Dropdowns & Details Form -->
                     <form v-else @submit.prevent="triggerMpesaStkPush" class="space-y-3.5">
 
-                        <!-- 1. Demo Business Selection — Card Selector -->
+                        <!-- 1. Demo Business Selection â€” Card Selector -->
                         <div class="space-y-1.5">
                             <div class="flex items-center justify-between text-xs">
                                 <label class="font-bold text-muted-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
@@ -920,7 +912,7 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                             </div>
                         </div>
 
-                        <!-- 2. Demo Data Mode — Card Selector -->
+                        <!-- 2. Demo Data Mode â€” Card Selector -->
                         <div class="space-y-1.5">
                             <div class="flex items-center gap-1.5 flex-wrap text-xs">
                                 <label class="font-bold text-muted-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
@@ -1018,7 +1010,7 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                             </div>
                         </div>
 
-                        <!-- 3. User Persona — Card Selector -->
+                        <!-- 3. User Persona â€” Card Selector -->
                         <div class="space-y-1.5">
                             <div class="flex items-center gap-1.5 flex-wrap text-xs">
                                 <label class="font-bold text-muted-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
@@ -1183,7 +1175,10 @@ const quickLaunchDemo = (slug: 'nairobi-fresh-mart' | 'metro-wholesale-retail', 
                         </div>
                     </form>
                 </div>
+
+
             </div>
+
         </main>
 
         <!-- Interactive Contact System Administrator Modal -->

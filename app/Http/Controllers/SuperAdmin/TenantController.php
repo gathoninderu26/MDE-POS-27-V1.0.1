@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\TenantProvisioningService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -24,27 +26,48 @@ class TenantController extends Controller
             ->latest()
             ->get()
             ->map(fn($t) => [
-                'id'             => $t->id,
-                'name'           => $t->name,
-                'slug'           => $t->slug,
-                'kra_pin'        => $t->kra_pin,
-                'email'          => $t->email,
-                'phone'          => $t->phone,
-                'country'        => $t->country,
-                'currency'       => $t->currency,
-                'business_type'  => $t->business_type,
-                'plan'           => $t->plan,
-                'billing_cycle'  => $t->billing_cycle,
-                'status'         => $t->status,
-                'is_demo'        => (bool) $t->is_demo,
-                'branch_count'   => $t->branch_count,
-                'user_count'     => $t->users_count,
-                'monthly_revenue' => $t->monthly_revenue,
+                'id'              => $t->id,
+                'name'            => $t->name,
+                'slug'            => $t->slug,
+                'kraPin'          => $t->kra_pin,
+                'kra_pin'         => $t->kra_pin,
+                'email'           => $t->email,
+                'phone'           => $t->phone,
+                'country'         => $t->country,
+                'currency'        => $t->currency,
+                'businessType'    => $t->business_type,
+                'business_type'   => $t->business_type,
+                'plan'            => $t->plan,
+                'billingCycle'    => $t->billing_cycle,
+                'billing_cycle'   => $t->billing_cycle,
+                'status'          => $t->status,
+                'is_demo'         => (bool) $t->is_demo,
+                'branchCount'     => $t->branch_count,
+                'branch_count'    => $t->branch_count,
+                'userCount'       => $t->users_count,   // actual real count
+                'user_count'      => $t->users_count,
+                'monthlyRevenue'  => (float) $t->monthly_revenue,
+                'monthly_revenue' => (float) $t->monthly_revenue,
+                'storageUsedMB'   => $t->storage_used_mb,
                 'storage_used_mb' => $t->storage_used_mb,
+                'storageQuotaMB'  => $t->storage_quota_mb,
                 'storage_quota_mb' => $t->storage_quota_mb,
+                'enabledModules'  => $t->enabled_modules ?? [],
                 'enabled_modules' => $t->enabled_modules ?? [],
-                'registered_at'  => $t->created_at?->toDateString(),
-                'last_active'    => $t->updated_at?->diffForHumans(),
+                'customModules'   => $t->custom_modules ?? [],
+                'device_policy'   => $t->device_policy ?? [],
+                'network_policy'  => $t->network_policy ?? [],
+                'settings'        => $t->settings ?? [],
+                'is_multi_branch' => $t->isMultiBranch(),
+                'registeredAt'    => $t->created_at?->toDateString(),
+                'registered_at'   => $t->created_at?->toDateString(),
+                'lastActive'      => $t->updated_at?->diffForHumans(),
+                'last_active'     => $t->updated_at?->diffForHumans(),
+                'nextBillingDate' => $t->next_billing_date?->toDateString(),
+                'next_billing_date' => $t->next_billing_date?->toDateString(),
+                // Alias for back-compat
+                'subdomain'       => $t->slug,
+                'subdomain_url'   => $t->getSubdomainUrl(),
             ]);
 
         return Inertia::render('super-admin/Tenants', [
@@ -57,92 +80,105 @@ class TenantController extends Controller
     }
 
     /**
-     * Register a new tenant + create their Owner user account and default branch.
+     * Display the module manager with live tenant records from the database.
      */
-    public function store(Request $request): RedirectResponse
+    public function modules(): Response
+    {
+        $tenants = Tenant::withCount('users')
+            ->latest()
+            ->get()
+            ->map(fn($t) => [
+                'id'              => (string) $t->id,
+                'name'            => $t->name,
+                'slug'            => $t->slug,
+                'kraPin'          => $t->kra_pin,
+                'email'           => $t->email,
+                'phone'           => $t->phone,
+                'country'         => $t->country,
+                'currency'        => $t->currency,
+                'plan'            => $t->plan,
+                'status'          => $t->status,
+                'businessType'    => $t->business_type,
+                'business_type'   => $t->business_type,
+                'userCount'       => $t->users_count,
+                'branchCount'     => $t->branch_count ?? 1,
+                'monthlyRevenue'  => (float) $t->monthly_revenue,
+                'billingCycle'    => $t->billing_cycle ?? 'Monthly',
+                'nextBillingDate' => $t->next_billing_date?->toDateString() ?? now()->addMonth()->toDateString(),
+                'registeredAt'    => $t->created_at?->toDateString(),
+                'lastActive'      => $t->updated_at?->diffForHumans(),
+                'storageUsedMB'   => $t->storage_used_mb ?? 0,
+                'storageQuotaMB'  => $t->storage_quota_mb ?? 5120,
+                'enabledModules'  => $t->enabled_modules ?? [],
+                'enabled_modules' => $t->enabled_modules ?? [],
+                'customModules'   => $t->custom_modules ?? [],
+                'is_multi_branch' => $t->isMultiBranch(),
+            ]);
+
+        return Inertia::render('super-admin/ModuleManager', [
+            'tenants' => $tenants,
+        ]);
+    }
+
+    /**
+     * Register a new tenant + create their Owner user account and default branch using TenantProvisioningService.
+     */
+    public function store(Request $request, TenantProvisioningService $provisioner): RedirectResponse
     {
         $validated = $request->validate([
-            'name'           => 'required|string|max:255',
-            'slug'           => 'nullable|string|max:100',
-            'kra_pin'        => 'nullable|string|max:20',
-            'email'          => 'required|email|unique:tenants,email',
-            'phone'          => 'nullable|string|max:20',
-            'country'        => 'nullable|string|max:50',
-            'currency'       => 'nullable|string|max:5',
-            'business_type'  => 'required|string',
-            'plan'           => 'required|in:Basic,Pro,Enterprise',
-            'billing_cycle'  => 'required|in:Weekly,Monthly,Quarterly,Semi-Annual,Annual',
-            'branch_count'   => 'nullable|integer|min:1',
-            'user_count'     => 'nullable|integer|min:1',
-            'owner_email'    => 'nullable|email',
-            'owner_password' => 'nullable|string|min:6',
+            'name'                       => 'required|string|max:255',
+            'slug'                       => 'nullable|string|max:100',
+            'kra_pin'                    => 'nullable|string|max:20',
+            'email'                      => 'required|email|unique:tenants,email',
+            'phone'                      => 'nullable|string|max:20',
+            'country'                    => 'nullable|string|max:50',
+            'currency'                   => 'nullable|string|max:5',
+            'business_type'              => 'required|string',
+            'plan'                       => 'required|in:Basic,Pro,Enterprise',
+            'billing_cycle'              => 'required|in:Weekly,Monthly,Quarterly,Semi-Annual,Annual',
+            'branch_count'               => 'nullable|integer|min:1',
+            'user_count'                 => 'nullable|integer|min:1',
+            'owner_email'                => 'nullable|email',
+            'owner_password'             => 'nullable|string|min:6',
+            // Device & Hardware binding
+            'selected_device_types'      => 'nullable|array',
+            'selected_device_types.*'    => 'string',
+            'require_device_binding'     => 'nullable|boolean',
+            'pos_hardware_count'         => 'nullable|integer|min:1',
+            'single_session_per_cashier' => 'nullable|boolean',
+            // Network & Connection security
+            'block_vpn'                  => 'nullable|boolean',
+            'require_store_wifi'         => 'nullable|boolean',
+            'primary_store_wifi_ssid'    => 'nullable|string|max:100',
+            'block_hotspot'              => 'nullable|boolean',
+            'cellular_policy'            => 'nullable|string|in:allow_all,field_roles_only,block_cellular',
+            // Module overrides
+            'enabled_modules'            => 'nullable|array',
+            'enabled_modules.*'          => 'string',
+            // Payment channels configuration
+            'enable_cash'                => 'nullable|boolean',
+            'cash_drawer_label'          => 'nullable|string|max:100',
+            'enable_mpesa_till'          => 'nullable|boolean',
+            'mpesa_till_number'          => 'nullable|string|max:50',
+            'mpesa_store_name'           => 'nullable|string|max:100',
+            'enable_mpesa_paybill'       => 'nullable|boolean',
+            'mpesa_paybill_number'       => 'nullable|string|max:50',
+            'mpesa_paybill_account'      => 'nullable|string|max:100',
+            'enable_card'                => 'nullable|boolean',
+            'card_terminal_id'           => 'nullable|string|max:100',
+            'card_bank_name'             => 'nullable|string|max:100',
+            'enable_bank'                => 'nullable|boolean',
+            'bank_name'                  => 'nullable|string|max:100',
+            'bank_account_number'        => 'nullable|string|max:100',
+            'enable_credit'              => 'nullable|boolean',
+            'payment_methods'            => 'nullable|array',
         ]);
 
-        $baseSlug = !empty($validated['slug']) ? Str::slug($validated['slug']) : Str::slug($validated['name']);
-        $slug = $baseSlug;
-        $i = 1;
-        while (Tenant::where('slug', $slug)->exists()) {
-            $slug = $baseSlug . '-' . $i++;
-        }
-
-        $allModules = [
-            'pos', 'sales', 'products', 'inventory', 'purchases',
-            'customers', 'suppliers', 'expenses', 'reports',
-            'users', 'branches', 'settings',
-        ];
-
-        $tenantData = $validated;
-        unset($tenantData['owner_email'], $tenantData['owner_password']);
-
-        $tenant = Tenant::create([
-            ...$tenantData,
-            'slug'            => $slug,
-            'status'          => 'Trial',
-            'is_demo'         => false,
-            'storage_quota_mb' => 5120,
-            'enabled_modules' => $allModules,
-        ]);
-
-        $ownerEmail = !empty($validated['owner_email']) ? $validated['owner_email'] : $validated['email'];
-        $ownerPassword = !empty($validated['owner_password']) ? $validated['owner_password'] : 'Owner@' . rand(1000, 9999) . '!';
-
-        // Create the Owner user account for this tenant
-        $owner = User::create([
-            'name'              => $validated['name'] . ' Owner',
-            'email'             => $ownerEmail,
-            'password'          => Hash::make($ownerPassword),
-            'tenant_id'         => $tenant->id,
-            'role'              => 'Owner',
-            'is_super_admin'    => false,
-            'status'            => 'Active',
-            'email_verified_at' => now(),
-        ]);
-
-        // Create primary default branch
-        Branch::create([
-            'tenant_id'       => $tenant->id,
-            'name'            => $tenant->name . ' (Main HQ)',
-            'code'            => 'HQ-01',
-            'type'            => 'Main HQ',
-            'location'        => $tenant->country ?? 'Main Location',
-            'phone'           => $tenant->phone ?? 'N/A',
-            'manager'         => $owner->name,
-            'operating_hours' => '08:00 AM - 08:00 PM',
-            'status'          => 'Active',
-            'is_main'         => true,
-        ]);
-
-        $subdomainUrl = $tenant->getSubdomainUrl('/login');
+        $result = $provisioner->provision($validated);
 
         return back()->with([
-            'success' => "Tenant \"{$tenant->name}\" registered successfully.",
-            'createdCredentials' => [
-                'tenant_name'    => $tenant->name,
-                'subdomain'      => $tenant->slug,
-                'subdomain_url'  => $subdomainUrl,
-                'owner_email'    => $ownerEmail,
-                'owner_password' => $ownerPassword,
-            ],
+            'success' => "Tenant \"{$result['tenant']->name}\" registered successfully with complete security and module configuration.",
+            'createdCredentials' => $result['credentials'],
         ]);
     }
 
@@ -231,5 +267,66 @@ class TenantController extends Controller
 
         $label = $enabled ? 'enabled' : 'disabled';
         return back()->with('success', "Module \"{$module}\" has been {$label} for {$tenant->name}.");
+    }
+
+    /**
+     * Direct one-click login into a tenant workspace as the Owner.
+     */
+    public function impersonate(Tenant $tenant): RedirectResponse
+    {
+        $owner = $tenant->users()->where('role', 'Owner')->first() ?? $tenant->users()->first();
+
+        if (! $owner) {
+            return back()->with('error', "No user account exists for {$tenant->name}.");
+        }
+
+        $adminId = Auth::id();
+
+        // Cleanly switch session from Super Admin to Tenant Owner
+        Auth::guard('web')->logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+
+        Auth::guard('web')->login($owner);
+        request()->session()->regenerate();
+
+        if ($adminId) {
+            request()->session()->put('impersonated_by_admin_id', $adminId);
+        }
+        request()->session()->put('active_tenant_id', $tenant->id);
+        request()->session()->put('active_tenant_slug', $tenant->slug);
+        app()->instance('currentTenant', $tenant);
+
+        if ($owner->role === 'Cashier') {
+            return redirect()->route('pos');
+        }
+
+        return redirect()->route('dashboard');
+    }
+
+    /**
+     * Revert impersonation back to the Super Admin session.
+     */
+    public function stopImpersonating(Request $request): RedirectResponse
+    {
+        $adminId = $request->session()->get('impersonated_by_admin_id');
+
+        if (! $adminId) {
+            return redirect()->route('dashboard');
+        }
+
+        $admin = User::find($adminId);
+        if (! $admin || ! $admin->isSuperAdmin()) {
+            return redirect()->route('login');
+        }
+
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        Auth::guard('web')->login($admin);
+        $request->session()->regenerate();
+
+        return redirect()->route('super-admin.tenants')->with('success', 'Returned to Super Admin console.');
     }
 }

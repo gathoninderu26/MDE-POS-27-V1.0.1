@@ -46,6 +46,7 @@ class TenantUserController extends Controller
                 'id'            => $tenant->id,
                 'name'          => $tenant->name,
                 'slug'          => $tenant->slug,
+                'subdomain_url' => $tenant->getSubdomainUrl('/login'),
                 'email'         => $tenant->email,
                 'business_type' => $tenant->business_type,
                 'plan'          => $tenant->plan,

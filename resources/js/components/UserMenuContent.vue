@@ -2,14 +2,15 @@
 import UserInfo from '@/components/UserInfo.vue';
 import { DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { User } from '@/types';
-import { Link } from '@inertiajs/vue3';
-import { LogOut, Settings } from 'lucide-vue-next';
+import { Link, usePage } from '@inertiajs/vue3';
+import { LogOut, Settings, ShieldCheck } from 'lucide-vue-next';
 
 interface Props {
     user: User;
 }
 
 defineProps<Props>();
+const page = usePage();
 </script>
 
 <template>
@@ -28,6 +29,12 @@ defineProps<Props>();
         </DropdownMenuItem>
     </DropdownMenuGroup>
     <DropdownMenuSeparator />
+    <DropdownMenuItem v-if="(page.props.auth as any)?.is_impersonating" :as-child="true">
+        <Link class="block w-full text-amber-600 dark:text-amber-400 font-medium" method="post" href="/super-admin/stop-impersonating" as="button">
+            <ShieldCheck class="mr-2 h-4 w-4" />
+            Exit Impersonation
+        </Link>
+    </DropdownMenuItem>
     <DropdownMenuItem :as-child="true">
         <Link class="block w-full" method="post" :href="route('logout')" as="button">
             <LogOut class="mr-2 h-4 w-4" />

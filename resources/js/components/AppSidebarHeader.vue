@@ -12,10 +12,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import ToastContainer from '@/components/ui/ToastContainer.vue';
+import KeyboardShortcutsModal from '@/components/ui/KeyboardShortcutsModal.vue';
 import { useAppearance } from '@/composables/useAppearance';
 import { useBranch } from '@/composables/useBranch';
 import type { UserRole } from '@/composables/usePermissions';
 import { useDemoCountdown } from '@/composables/useDemoCountdown';
+import { useKeyboardNavigation } from '@/composables/useKeyboardNavigation';
 import { usePermissions } from '@/composables/usePermissions';
 import { useTenant } from '@/composables/useTenant';
 import { useToast } from '@/composables/useToast';
@@ -28,13 +30,15 @@ import {
     ChevronDown,
     Clock,
     Crown,
+    Keyboard,
     Moon,
     ShoppingCart,
     Store,
     Sun,
     Zap,
 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { useFeatures } from '@/composables/useFeatures';
+import { computed, onMounted, onUnmounted } from 'vue';
 
 defineProps<{
     breadcrumbs?: BreadcrumbItemType[];
@@ -42,6 +46,7 @@ defineProps<{
 
 const page = usePage();
 const { currentTenant, hasModule, isDemo } = useTenant();
+const { isMultiBranch } = useFeatures();
 const { currentBranch, branchesForCurrentTenant, setBranch } = useBranch();
 const { currentRole, setRole, can } = usePermissions();
 const { appearance, updateAppearance } = useAppearance();
@@ -69,6 +74,17 @@ const toggleDarkMode = () => {
     const next = appearance.value === 'dark' ? 'light' : 'dark';
     updateAppearance(next);
 };
+
+// Global Keyboard Navigation & Shortcuts
+const { openShortcuts, handleGlobalKeydown } = useKeyboardNavigation();
+
+onMounted(() => {
+    window.addEventListener('keydown', handleGlobalKeydown);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('keydown', handleGlobalKeydown);
+});
 </script>
 
 <template>
@@ -102,8 +118,18 @@ const toggleDarkMode = () => {
                 <span class="text-xs">{{ countdownText }}</span>
             </div>
 
-            <!-- Branch Switcher -->
-            <DropdownMenu>
+            <!-- Live Production Account Indicator -->
+            <div
+                v-else
+                class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-semibold shrink-0 shadow-xs"
+                title="Live Enterprise Production Workspace"
+            >
+                <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-[10px] font-bold uppercase tracking-wider">LIVE</span>
+            </div>
+
+            <!-- Multi-Branch Switcher: Only displayed if business operates multiple branches -->
+            <DropdownMenu v-if="isMultiBranch">
                 <DropdownMenuTrigger as-child>
                     <Button variant="ghost" size="sm" class="h-9 gap-1.5 text-xs text-muted-foreground hover:text-foreground hidden md:flex shrink-0">
                         <Store class="size-3.5 text-emerald-600" />
@@ -165,6 +191,17 @@ const toggleDarkMode = () => {
                     <span class="hidden sm:inline">POS</span>
                 </Button>
             </Link>
+
+            <!-- Keyboard Shortcuts Trigger -->
+            <Button
+                variant="ghost"
+                size="icon"
+                class="size-8 text-muted-foreground hover:text-foreground hidden sm:inline-flex"
+                @click="openShortcuts"
+                title="Keyboard Shortcuts & Navigation (?)"
+            >
+                <Keyboard class="size-4" />
+            </Button>
 
             <!-- Dark / Light Toggle -->
             <Button variant="ghost" size="icon" class="size-8" @click="toggleDarkMode" title="Toggle theme">
@@ -243,4 +280,7 @@ const toggleDarkMode = () => {
 
     <!-- Global Toast Container -->
     <ToastContainer />
+
+    <!-- Global Keyboard Shortcuts Cheatsheet -->
+    <KeyboardShortcutsModal />
 </template>

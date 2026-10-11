@@ -2,6 +2,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import DataTable from '@/components/ui/DataTable.vue';
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -103,12 +104,26 @@ const handleRecordPayment = () => {
     });
 };
 
-const handleDeleteSupplier = (s: any) => {
-    if (!confirm(`Are you sure you want to remove supplier ${s.name}?`)) return;
+const deleteConfirmOpen = ref(false);
+const supplierToDelete = ref<any>(null);
+const isDeletingSupplier = ref(false);
 
-    router.delete(`/suppliers/${s.id}`, {
-        onSuccess: () => success('Supplier Removed', 'Supplier deleted successfully.'),
-        onError: (errs) => error('Error', Object.values(errs)[0] as string),
+const openDeleteSupplier = (s: any) => {
+    supplierToDelete.value = s;
+    deleteConfirmOpen.value = true;
+};
+
+const confirmDeleteSupplier = () => {
+    if (!supplierToDelete.value) return;
+    isDeletingSupplier.value = true;
+
+    router.delete(`/suppliers/${supplierToDelete.value.id}`, {
+        onSuccess: () => {
+            success('Supplier Removed', `${supplierToDelete.value?.name} removed from vendor directory.`);
+            deleteConfirmOpen.value = false;
+        },
+        onError: (errs) => error('Delete Failed', (Object.values(errs)[0] as string) || 'Could not delete supplier.'),
+        onFinish: () => (isDeletingSupplier.value = false),
     });
 };
 </script>
@@ -117,7 +132,7 @@ const handleDeleteSupplier = (s: any) => {
     <Head title="Supplier Management" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="p-4 md:p-8 space-y-6 max-w-[1600px] mx-auto">
+        <div class="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
             <!-- Header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -194,7 +209,7 @@ const handleDeleteSupplier = (s: any) => {
                             variant="ghost"
                             size="icon"
                             class="h-7 w-7 text-muted-foreground hover:text-destructive"
-                            @click="handleDeleteSupplier(row)"
+                            @click="openDeleteSupplier(row)"
                         >
                             <Trash2 class="size-3.5" />
                         </Button>
@@ -269,5 +284,17 @@ const handleDeleteSupplier = (s: any) => {
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+
+        <!-- Delete Supplier Warning Alert Dialog -->
+        <ConfirmDialog
+            v-model:open="deleteConfirmOpen"
+            title="Delete Vendor / Supplier"
+            description="Are you sure you want to permanently delete this supplier account? All associated vendor records and supply links will be removed."
+            :item-name="supplierToDelete ? `${supplierToDelete.name} (${supplierToDelete.phone || 'No phone'})` : undefined"
+            :warning-note="supplierToDelete && supplierToDelete.outstandingBalance > 0 ? `Caution: There is an active outstanding payable balance of ${formatCurrency(supplierToDelete.outstandingBalance)} recorded for this vendor. Settle all open bills first to avoid discrepancies.` : undefined"
+            confirm-text="Yes, Delete Supplier"
+            :loading="isDeletingSupplier"
+            @confirm="confirmDeleteSupplier"
+        />
     </AppLayout>
 </template>

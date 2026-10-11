@@ -56,11 +56,17 @@ const emit = defineEmits<{
     (e: 'focus-search'): void;
     (e: 'open-customer-modal'): void;
     (e: 'open-pay-modal'): void;
+    (e: 'open-tour-overlay', step?: number): void;
+    (e: 'step-change', step: number): void;
 }>();
 
 // Navigation Mode: 'missions' (practice checklist) vs 'tour' (section-by-section breakdown)
 const activeTab = ref<'tour' | 'missions'>('tour');
 const currentTourStep = ref(0);
+
+watch(currentTourStep, (newStep) => {
+    emit('step-change', newStep);
+});
 
 const isCollapsed = ref(false);
 const isDismissed = ref(false);
@@ -79,46 +85,49 @@ const tourSections = [
     {
         id: 'search',
         title: '1. Barcode Scanner & Instant Search',
-        subtitle: 'Hardware Scanner Ready',
+        subtitle: 'Hardware Barcode Guns & Camera Scan',
         icon: ScanBarcode,
-        description: 'Hardware USB & Bluetooth barcode scanners automatically type into this input with zero setup. You can also search by product name, SKU, brand, or IMEI.',
+        description: 'Universal product lookup engine connecting physical USB/Bluetooth barcode scanners, mobile camera scanning, and live catalog search. Scanned items auto-commit instantly.',
         features: [
-            'Instant barcode lookup on Enter or scanner trigger',
-            'Mobile & tablet camera scanner integration',
-            'Full text fuzzy search across your catalog',
+            'Plug & play USB/Bluetooth barcode guns without software drivers',
+            'F2 global hotkey jumps straight to barcode input from anywhere',
+            'Full-text fuzzy search by product name, SKU, brand, or IMEI',
+            'Mobile camera scanning with real-time barcode auto-focus',
         ],
-        proTip: 'Plug in any standard USB barcode scanner; it works immediately without software drivers.',
-        actionLabel: 'Highlight Search Bar',
+        proTip: 'Hardware barcode guns send a trailing Enter keystroke by default, querying and adding items in under 100ms.',
+        actionLabel: 'Highlight Search Bar (F2)',
         action: () => emit('focus-search'),
     },
     {
         id: 'catalog',
         title: '2. Product Grid & Stock Intelligence',
-        subtitle: 'Live Inventory & Price Tiers',
+        subtitle: 'Real-Time Inventory & Pricing Tiers',
         icon: Package,
-        description: 'Visual product tiles showing live inventory quantities, stock warnings, and dual pricing tiers (Retail vs Wholesale / Trade).',
+        description: 'Touch-friendly product tiles showing live inventory quantities, stock depletion warnings, dual pricing tiers (Retail vs Wholesale / Trade), and vertical-specific specs.',
         features: [
-            'Category quick-filter pills for rapid navigation',
-            'Color-coded stock badges (Red <= 5, Amber <= 15)',
-            'Automatic price switching based on active customer tier',
+            'Horizontal category pills for rapid department navigation',
+            'Color-coded stock badges (Red <= 5 critical, Amber <= 15 low)',
+            'Automatic price switching based on active customer tier or wholesale toggle',
+            'Pharmacy batch/expiry and hardware job site attributes on tiles',
         ],
-        proTip: 'Clicking any product card instantly increments its quantity on the active ticket.',
+        proTip: 'Tapping any product card multiple times quickly increments its quantity on the active ticket.',
         actionLabel: null,
         action: null,
     },
     {
         id: 'cart',
         title: '3. Active Cart & Customer Profile',
-        subtitle: 'Customer Accounts & Credit Balances',
+        subtitle: 'Credit Limits & Line Item Discounts',
         icon: ShoppingCart,
-        description: 'Manage current customer profiles, credit limits, and line items. Supports custom line discounts, price overrides, and retail/wholesale toggles.',
+        description: 'Live order ledger for adjusting ordered quantities, applying per-item discounts, tracking customer credit ceilings, insurance co-pay, and parking tickets.',
         features: [
-            'Customer attachment with credit limit tracking',
-            'Real-time subtotal, tax (VAT), and discount calculations',
-            'Quick-create new customer accounts directly from POS',
+            'Customer attachment with live store credit limit tracking',
+            'Real-time subtotal, 16% tax (VAT), and promotional discount computation',
+            'Quantity steppers and line-item percentage discount overrides',
+            'Hold & resume ticket park (F4) to serve queues without losing work',
         ],
-        proTip: 'Attach a customer to track loyalty, reward points, or allow purchases on store credit.',
-        actionLabel: 'Open Customer Modal',
+        proTip: 'Selecting a Wholesale customer profile automatically recalculates all existing ticket lines to trade pricing.',
+        actionLabel: 'Open Customer Modal (Alt+C)',
         action: () => emit('open-customer-modal'),
     },
     {
@@ -126,14 +135,15 @@ const tourSections = [
         title: '4. Fast Checkout & Multi-Tender Bar',
         subtitle: 'Cash, M-Pesa STK & Split Payments',
         icon: CreditCard,
-        description: 'Execute transactions with instant change calculation, automated M-Pesa STK push prompts, credit ledger recording, or split payments across multiple tenders.',
+        description: 'Final transaction settlement engine providing real-time change calculation, automated M-Pesa STK push prompts, credit recording, or split payments across multiple tenders.',
         features: [
-            'Direct M-Pesa STK push prompt to customer phone',
-            'Instant tender buttons (Exact, KES 500, KES 1000, KES 2000)',
-            'Hold & resume sales tickets for waiting customers',
+            'Automated M-Pesa STK push prompt to customer phone in 5s',
+            'Quick-tender cash denomination buttons (Exact, KES 500, 1000, 2000)',
+            'Split payments across Cash, M-Pesa, Card, and Store Credit',
+            'Automatic 80mm thermal receipt generation with KRA PIN audit',
         ],
-        proTip: 'Use the Hold Sale button when a customer forgets an item and you need to serve the next person in line.',
-        actionLabel: 'Open Payment Modal',
+        proTip: 'Press Spacebar or F12 from anywhere on the register to open the checkout modal without using your mouse.',
+        actionLabel: 'Open Payment Modal (F12)',
         action: () => emit('open-pay-modal'),
     },
     {
@@ -141,13 +151,14 @@ const tourSections = [
         title: '5. Header Controls & Terminal Security',
         subtitle: 'Lockout Mode & Shift Management',
         icon: ShieldCheck,
-        description: 'The top navigation bar displays active branch, cashier ID, online sync status, and security controls.',
+        description: 'The top navigation bar displays active branch, cashier ID, live cloud sync status, keyboard hotkeys guide, fullscreen kiosk mode, and supervisor lockout controls.',
         features: [
-            'Terminal Lockout mode (requires PIN to prevent cashier tampering)',
-            'Keyboard hotkeys modal for mouse-free checkout speed',
-            'Shift close drawer & audit log access',
+            'Terminal Lockout mode (requires 4-digit PIN 1234 to prevent cashier tampering)',
+            'Keyboard hotkeys reference table for rapid mouse-free operations',
+            'Shift close drawer & audit tally access for daily financial balancing',
+            'Distraction-free fullscreen kiosk toggle for dedicated counter hardware',
         ],
-        proTip: 'Click the Lock icon when a cashier steps away from the till to prevent unauthorized sales.',
+        proTip: 'Locking the terminal hides the Exit POS button and traps browser back navigation, keeping staff restricted to the till.',
         actionLabel: null,
         action: null,
     },
@@ -456,6 +467,17 @@ onMounted(() => {
                         </p>
                     </div>
                 </div>
+
+                <!-- Launch On-Screen Spotlight Button -->
+                <button
+                    type="button"
+                    @click="emit('open-tour-overlay', currentTourStep)"
+                    class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-primary/15 via-emerald-500/10 to-primary/15 hover:from-primary/25 hover:to-primary/25 border border-primary/30 text-primary text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs active:scale-98"
+                >
+                    <Sparkles class="size-3.5 animate-pulse" />
+                    <span>Spotlight & Mark on Terminal</span>
+                    <span class="text-[10px] font-mono opacity-70">Part {{ currentTourStep + 1 }}/5 &rarr;</span>
+                </button>
 
                 <!-- Explanation Body -->
                 <p class="text-xs text-muted-foreground leading-relaxed">

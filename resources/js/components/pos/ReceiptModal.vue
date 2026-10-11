@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useBusinessTerms } from '@/composables/useBusinessTerms';
@@ -8,18 +7,103 @@ import { formatCurrency, formatDateTime } from '@/composables/useCurrency';
 import { useToast } from '@/composables/useToast';
 import { CheckCircle2, Download, Mail, Pill, Printer, Truck, Utensils, X } from 'lucide-vue-next';
 
-const props = defineProps<{
+import { computed, onUnmounted, watch } from 'vue';
+
+const props = withDefaults(defineProps<{
     open: boolean;
     sale: CompletedSale | null;
     kraPin?: string;
-}>();
+    phone?: string;
+    address?: string;
+    autoPrint?: boolean;
+}>(), {
+    autoPrint: false,
+});
 
 const emit = defineEmits<{
     (e: 'update:open', val: boolean): void;
 }>();
 
+const handleReceiptKeydown = (e: KeyboardEvent) => {
+    if (!props.open) return;
+    const key = e.key.toLowerCase();
+    if (key === 'p') {
+        e.preventDefault();
+        handlePrint();
+    } else if (key === 'c' || e.key === 'Escape') {
+        e.preventDefault();
+        emit('update:open', false);
+    }
+};
+
+watch(
+    () => props.open,
+    (isOpen) => {
+        if (isOpen) {
+            window.addEventListener('keydown', handleReceiptKeydown);
+            if (props.autoPrint) {
+                setTimeout(() => {
+                    handlePrint();
+                }, 300);
+            }
+        } else {
+            window.removeEventListener('keydown', handleReceiptKeydown);
+        }
+    }
+);
+
+onUnmounted(() => {
+    window.removeEventListener('keydown', handleReceiptKeydown);
+});
+
 const { terms } = useBusinessTerms();
 const { success } = useToast();
+
+// Standard Code 39 vector barcode generator for the receipt number
+const CODE39_MAP: Record<string, string> = {
+    '0': '000110100', '1': '100100001', '2': '001100001', '3': '101100000',
+    '4': '000110001', '5': '100110000', '6': '001110000', '7': '000100101',
+    '8': '100100100', '9': '001100100', 'A': '100001001', 'B': '001001001',
+    'C': '101001000', 'D': '000011001', 'E': '100011000', 'F': '001011000',
+    'G': '000001101', 'H': '100001100', 'I': '001001100', 'J': '000011100',
+    'K': '100000011', 'L': '001000011', 'M': '101000010', 'N': '000010011',
+    'O': '100010010', 'P': '001010010', 'Q': '000000111', 'R': '100000110',
+    'S': '001000110', 'T': '000010110', 'U': '110000001', 'V': '011000001',
+    'W': '111000000', 'X': '010010001', 'Y': '110010000', 'Z': '011010000',
+    '-': '010000101', '.': '110000100', ' ': '011000100', '$': '010101000',
+    '/': '010100010', '+': '010001010', '%': '000101010', '*': '010010100',
+};
+
+const barcodeSvg = computed(() => {
+    const raw = props.sale?.receiptNumber || 'REC-0000';
+    const clean = '*' + raw.toUpperCase().replace(/[^0-9A-Z\-\. \$\/\+\%]/g, '') + '*';
+    const narrow = 1.6;
+    const wide = 3.6;
+    const gap = 1.6;
+
+    const bars: { x: number; width: number }[] = [];
+    let currentX = 8; // Left quiet zone
+
+    for (let i = 0; i < clean.length; i++) {
+        const char = clean[i];
+        const pattern = CODE39_MAP[char] || CODE39_MAP['-'];
+
+        for (let j = 0; j < 9; j++) {
+            const isBar = j % 2 === 0;
+            const isWide = pattern[j] === '1';
+            const width = isWide ? wide : narrow;
+
+            if (isBar) {
+                bars.push({ x: currentX, width });
+            }
+            currentX += width;
+        }
+
+        currentX += gap;
+    }
+
+    return { bars, totalWidth: currentX + 8 };
+});
 
 const handlePrint = () => {
     window.print();
@@ -31,14 +115,14 @@ const handleEmail = () => {
 };
 
 const handleDownload = () => {
-    success('Download Started', 'PDF receipt format downloaded successfully');
+    window.print();
 };
 </script>
 
 <template>
-    <Dialog :open="open" @update:open="(v) => emit('update:open', v)">
-        <DialogContent class="w-[95vw] sm:max-w-md p-0 max-h-[92vh] flex flex-col overflow-hidden bg-background">
-            <DialogHeader class="px-4 sm:px-6 pt-4 sm:pt-5 pb-3 border-b border-border/70 flex flex-row items-center justify-between shrink-0">
+    <Dialog :open="open" spinnerText="Generating Receipt..." @update:open="(v) => emit('update:open', v)">
+        <DialogContent class="w-[95vw] sm:max-w-md p-0 max-h-[92vh] flex flex-col overflow-hidden bg-background print:border-none print:shadow-none print:bg-transparent print:p-0 print:m-0 print:max-h-none print:overflow-visible print:w-auto print:max-w-none print:static print:transform-none">
+            <DialogHeader class="px-4 sm:px-6 pt-4 sm:pt-5 pb-3 border-b border-border/70 flex flex-row items-center justify-between shrink-0 print:hidden">
                 <div>
                     <DialogTitle class="text-base font-bold flex items-center gap-2">
                         <CheckCircle2 class="size-5 text-emerald-500" />
@@ -49,17 +133,18 @@ const handleDownload = () => {
             </DialogHeader>
 
             <!-- Printable Thermal Receipt (80mm styling) -->
-            <div class="px-3 sm:px-6 py-4 overflow-y-auto print:max-h-none print:p-0 flex-1">
+            <div class="px-3 sm:px-6 py-4 overflow-y-auto print:max-h-none print:p-0 print:overflow-visible flex-1">
                 <div id="thermal-receipt" class="mx-auto bg-card border border-border/70 p-4 sm:p-5 rounded-lg shadow-sm font-mono text-xs space-y-3 text-card-foreground">
                     <!-- Business Header -->
                     <div class="text-center space-y-0.5 border-b border-dashed border-border/90 pb-3">
-                        <h4 class="text-sm font-black uppercase tracking-wider font-sans">{{ sale?.tenantName || 'Retail Business' }}</h4>
-                        <p class="text-[11px] text-muted-foreground">{{ sale?.branchName || 'Main Store Branch' }}</p>
-                        <p class="text-[11px] text-muted-foreground">KRA PIN: {{ kraPin || 'P051234567Z' }}</p>
-                        <p class="text-[11px] text-muted-foreground">Tel: +254 712 345 678</p>
-                        <Badge variant="outline" class="text-[9px] font-sans font-bold uppercase mt-1">
+                        <h4 class="text-sm font-black uppercase tracking-wider font-sans">{{ sale?.tenantName }}</h4>
+                        <p class="text-[11px] text-muted-foreground">{{ sale?.branchName }}</p>
+                        <p v-if="address" class="text-[11px] text-muted-foreground">{{ address }}</p>
+                        <p v-if="phone" class="text-[11px] text-muted-foreground">Tel: {{ phone }}</p>
+                        <p class="text-[11px] font-semibold text-foreground">Customer: {{ sale?.customer?.name || 'Walk-in Customer' }}</p>
+                        <p class="text-[11px] font-bold tracking-widest uppercase font-mono mt-1 text-foreground">
                             {{ terms.receiptTitle }}
-                        </Badge>
+                        </p>
                     </div>
 
                     <!-- Meta Details & Vertical Specific Meta -->
@@ -109,9 +194,9 @@ const handleDownload = () => {
                             </div>
                         </template>
 
-                        <div v-if="sale?.mpesaCode" class="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold">
-                            <span>M-Pesa Ref:</span>
-                            <span>{{ sale.mpesaCode }}</span>
+                        <div v-if="sale?.mpesaCode || sale?.payments?.some((p) => p.method === 'M-Pesa' || p.method?.toLowerCase().includes('mpesa') || p.method?.toLowerCase().includes('till') || p.method?.toLowerCase().includes('paybill'))" class="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold">
+                            <span>M-Pesa Code:</span>
+                            <span class="font-mono">{{ sale?.mpesaCode || sale?.payments?.find((p) => p.method === 'M-Pesa' || p.method?.toLowerCase().includes('mpesa') || p.method?.toLowerCase().includes('till') || p.method?.toLowerCase().includes('paybill'))?.reference || 'CONFIRMED' }}</span>
                         </div>
                     </div>
 
@@ -173,10 +258,20 @@ const handleDownload = () => {
                     </div>
 
                     <!-- Payments & Change -->
-                    <div class="text-[11px] space-y-0.5 border-b border-dashed border-border/90 pb-2 font-mono">
-                        <div v-for="(p, idx) in sale?.payments || []" :key="idx" class="flex justify-between">
-                            <span class="text-muted-foreground">Payment ({{ p.method }}):</span>
-                            <span>{{ formatCurrency(p.amount) }}</span>
+                    <div class="text-[11px] space-y-1 border-b border-dashed border-border/90 pb-2 font-mono">
+                        <div v-for="(p, idx) in sale?.payments || []" :key="idx" class="space-y-0.5">
+                            <div class="flex justify-between">
+                                <span class="text-muted-foreground">Payment ({{ p.method }}):</span>
+                                <span>{{ formatCurrency(p.amount) }}</span>
+                            </div>
+                            <div v-if="p.method === 'M-Pesa' || p.method?.toLowerCase().includes('mpesa') || p.method?.toLowerCase().includes('till') || p.method?.toLowerCase().includes('paybill')" class="flex justify-between text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+                                <span>M-Pesa Code:</span>
+                                <span class="font-mono">{{ p.reference || sale?.mpesaCode || 'CONFIRMED' }}</span>
+                            </div>
+                            <div v-else-if="p.reference" class="flex justify-between text-[10px] text-muted-foreground font-mono">
+                                <span>Ref / Auth:</span>
+                                <span>{{ p.reference }}</span>
+                            </div>
                         </div>
                         <div v-if="(sale?.changeGiven || 0) > 0" class="flex justify-between font-bold text-foreground">
                             <span>Change Returned:</span>
@@ -201,15 +296,33 @@ const handleDownload = () => {
                             Goods once sold cannot be returned without original receipt.
                         </p>
 
-                        <div class="font-mono text-xs tracking-widest py-1 bg-muted/60 rounded">
-                            ||||| | |||| || |||||| | ||||| ||||
+                        <!-- Thermal Barcode for Scanner Lookup -->
+                        <div class="pt-2 flex flex-col items-center justify-center select-none">
+                            <svg
+                                :viewBox="`0 0 ${barcodeSvg.totalWidth} 40`"
+                                class="w-full max-w-[210px] h-9 mx-auto"
+                                preserveAspectRatio="none"
+                            >
+                                <rect
+                                    v-for="(bar, idx) in barcodeSvg.bars"
+                                    :key="idx"
+                                    :x="bar.x"
+                                    y="0"
+                                    :width="bar.width"
+                                    height="40"
+                                    fill="#000000"
+                                />
+                            </svg>
+                            <div class="font-mono text-[9px] tracking-[0.22em] font-bold text-center mt-1 text-foreground">
+                                {{ sale?.receiptNumber }}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Modal Action Buttons -->
-            <DialogFooter class="px-6 py-3.5 bg-muted/40 border-t border-border/70 flex sm:justify-between items-center gap-2">
+            <DialogFooter class="px-6 py-3.5 bg-muted/40 border-t border-border/70 flex sm:justify-between items-center gap-2 print:hidden">
                 <div class="flex items-center gap-1.5">
                     <Button variant="outline" size="sm" class="h-8 gap-1.5 text-xs" @click="handleEmail">
                         <Mail class="size-3.5" />
@@ -223,14 +336,65 @@ const handleDownload = () => {
 
                 <div class="flex items-center gap-2">
                     <Button variant="ghost" size="sm" class="h-8 text-xs" @click="emit('update:open', false)">
-                        Close
+                        Close (C)
                     </Button>
                     <Button size="sm" class="h-8 gap-1.5 text-xs bg-primary text-primary-foreground font-bold" @click="handlePrint">
                         <Printer class="size-3.5" />
-                        Print Thermal
+                        Print Thermal (P)
                     </Button>
                 </div>
             </DialogFooter>
         </DialogContent>
     </Dialog>
 </template>
+
+<style>
+@media print {
+    @page {
+        size: auto;
+        margin: 0mm 2mm;
+    }
+
+    /* Hide entire page and chrome */
+    body * {
+        visibility: hidden !important;
+    }
+
+    /* Isolate and display only the thermal receipt slip */
+    #thermal-receipt,
+    #thermal-receipt * {
+        visibility: visible !important;
+    }
+
+    #thermal-receipt {
+        position: absolute !important;
+        left: 0 !important;
+        right: 0 !important;
+        top: 0 !important;
+        margin: 0 auto !important;
+        width: 76mm !important;
+        max-width: 100% !important;
+        padding: 2mm 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        color: #000000 !important;
+    }
+
+    #thermal-receipt .text-muted-foreground {
+        color: #333333 !important;
+    }
+
+    #thermal-receipt .border-border\/90,
+    #thermal-receipt .border-border\/70,
+    #thermal-receipt .border-border\/40,
+    #thermal-receipt .border-border\/30 {
+        border-color: #111111 !important;
+    }
+
+    #thermal-receipt .bg-muted\/60 {
+        background: transparent !important;
+    }
+}
+</style>

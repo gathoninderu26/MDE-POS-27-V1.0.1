@@ -1,0 +1,308 @@
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<meta charset="utf-8">
+<title>MDE-POS Multi-Tenant Payment Methods & Custom Channels Implementation Guide</title>
+<!--[if gte mso 9]>
+<xml>
+ <w:WordDocument>
+  <w:View>Print</w:View>
+  <w:Zoom>100</w:Zoom>
+  <w:DoNotOptimizeForBrowser/>
+ </w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+  @page {
+    size: 8.5in 11.0in;
+    margin: 1.0in 1.0in 1.0in 1.0in;
+    mso-header-margin: 0.5in;
+    mso-footer-margin: 0.5in;
+  }
+  body {
+    font-family: 'Segoe UI', Calibri, Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.5;
+    color: #1f2937;
+    background-color: #ffffff;
+  }
+  h1 {
+    font-size: 24pt;
+    font-weight: 700;
+    color: #0f172a;
+    border-bottom: 2pt solid #059669;
+    padding-bottom: 6pt;
+    margin-top: 18pt;
+    margin-bottom: 12pt;
+  }
+  h2 {
+    font-size: 16pt;
+    font-weight: 700;
+    color: #065f46;
+    border-bottom: 1pt solid #cbd5e1;
+    padding-bottom: 4pt;
+    margin-top: 20pt;
+    margin-bottom: 8pt;
+  }
+  h3 {
+    font-size: 13pt;
+    font-weight: 600;
+    color: #047857;
+    margin-top: 14pt;
+    margin-bottom: 6pt;
+  }
+  p {
+    margin-top: 4pt;
+    margin-bottom: 6pt;
+  }
+  ul, ol {
+    margin-top: 4pt;
+    margin-bottom: 8pt;
+    padding-left: 20pt;
+  }
+  li {
+    margin-bottom: 3pt;
+  }
+  code {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 9.5pt;
+    background-color: #f1f5f9;
+    padding: 1pt 3pt;
+    border: 1px solid #e2e8f0;
+    border-radius: 3pt;
+    color: #0f172a;
+  }
+  pre {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 9pt;
+    background-color: #0f172a;
+    color: #f8fafc;
+    padding: 10pt;
+    border-radius: 4pt;
+    margin-top: 6pt;
+    margin-bottom: 10pt;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 8pt;
+    margin-bottom: 12pt;
+    font-size: 10pt;
+  }
+  th, td {
+    border: 1px solid #cbd5e1;
+    padding: 6pt 8pt;
+    text-align: left;
+  }
+  th {
+    background-color: #f8fafc;
+    font-weight: 600;
+    color: #0f172a;
+  }
+  .callout {
+    background-color: #ecfdf5;
+    border-left: 4pt solid #10b981;
+    padding: 8pt 12pt;
+    margin-top: 8pt;
+    margin-bottom: 10pt;
+    border-radius: 2pt;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2pt 6pt;
+    font-size: 8.5pt;
+    font-weight: 600;
+    border-radius: 3pt;
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+</style>
+</head>
+<body>
+
+<h1>MDE-POS Multi-Tenant Payment Methods & Custom Channels Implementation Guide</h1>
+
+<div class="callout">
+  <strong>System Version:</strong> MDE-POS v1.0.1+<br>
+  <strong>Module:</strong> Multi-Tenant Provisioning, Store Settings & POS Checkout Engine<br>
+  <strong>Scope:</strong> Turnkey Super Admin Onboarding, Store Self-Service, POS Dynamic Hotkeys, Daraja Express STK Routing
+</div>
+
+<h2>1. Executive Summary & Architecture</h2>
+<p>
+  MDE-POS provides a hybrid, multi-tiered payment configuration architecture designed specifically for modern East African retail and commercial verticals. Store owners can configure and accept payments through Safaricom M-Pesa Buy Goods Tills, Paybill shortcodes, Bank wire / Pesalink, PDQ card swipe machines, Cash drawers, and customer credit balance accounts.
+</p>
+
+<h3>The Hybrid Operating Model</h3>
+<ol>
+  <li>
+    <strong>Super Admin Turnkey Provisioning:</strong> During tenant account creation, the Super Admin wizard features a dedicated <em>"2. Payment Channels"</em> tab where primary Till numbers, Paybill shortcodes, card terminals, and cash drawer labels are initialized. Stores are 100% operationally ready the moment they are provisioned.
+  </li>
+  <li>
+    <strong>Store Owner Self-Service:</strong> Store owners and managers have full access to <code>/settings</code> &rarr; <em>"Payment Methods & Tills"</em> to enable/disable channels, update Till numbers when SIM cards change, configure bank account details, and register custom payment options.
+  </li>
+  <li>
+    <strong>Super Admin Live Oversight:</strong> Super Admins can inspect and edit payment configurations for any tenant directly from <code>/super-admin/tenants/{id}</code>.
+  </li>
+  <li>
+    <strong>Dynamic POS Terminal:</strong> The POS checkout modal dynamically renders only enabled store channels, assigns automated keyboard hotkeys (1..N), displays the active Till/Paybill number directly on the cashier screen, and dispatches Safaricom Daraja STK Push requests.
+  </li>
+</ol>
+
+<h2>2. JSON Data Model & Persistence</h2>
+<p>
+  Payment channel definitions are stored in the existing <code>tenants.settings</code> JSON column. This eliminates any database schema migrations while providing full extensibility.
+</p>
+
+<pre>
+{
+  "mpesa_till_number": "523910",
+  "payment_methods": [
+    {
+      "id": "cash",
+      "name": "Cash",
+      "type": "Cash",
+      "enabled": true,
+      "details": {
+        "drawer_label": "Main Cash Drawer",
+        "allow_change": true
+      }
+    },
+    {
+      "id": "mpesa-till",
+      "name": "M-Pesa Buy Goods",
+      "type": "Mobile Money",
+      "enabled": true,
+      "details": {
+        "till_number": "523910",
+        "store_name": "Nairobi Fresh Mart",
+        "stk_push": true
+      }
+    },
+    {
+      "id": "mpesa-paybill",
+      "name": "M-Pesa Paybill",
+      "type": "Mobile Money",
+      "enabled": false,
+      "details": {
+        "business_number": "247247",
+        "account_number": "STORE-001"
+      }
+    },
+    {
+      "id": "card-pdq",
+      "name": "Card (PDQ Terminal)",
+      "type": "Card",
+      "enabled": true,
+      "details": {
+        "terminal_id": "POS-98102",
+        "bank_name": "Equity Bank"
+      }
+    },
+    {
+      "id": "bank-transfer",
+      "name": "Bank Transfer / Pesalink",
+      "type": "Bank",
+      "enabled": false,
+      "details": {
+        "bank_name": "KCB Bank",
+        "account_number": "1122334455"
+      }
+    },
+    {
+      "id": "credit",
+      "name": "Customer Credit",
+      "type": "Credit",
+      "enabled": true,
+      "details": {}
+    }
+  ]
+}
+</pre>
+
+<h2>3. Super Admin Tenant Creation Wizard</h2>
+<p>
+  Located in <code>resources/js/pages/super-admin/Tenants.vue</code>, the tenant creation dialog contains 4 tabs:
+</p>
+<table>
+  <thead>
+    <tr>
+      <th>Tab Step</th>
+      <th>Key Configuration Fields</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1. Profile & Admin</strong></td>
+      <td>Store Name, Subdomain, Currency (KES/USD/UGX/TZS), Business Type, Initial Admin Account.</td>
+    </tr>
+    <tr>
+      <td><strong>2. Payment Channels</strong></td>
+      <td>
+        &bull; Cash Drawer (Default on, custom drawer label)<br>
+        &bull; M-Pesa Buy Goods Till (Till number, branding name, STK push toggle)<br>
+        &bull; M-Pesa Paybill (Business number & Account number)<br>
+        &bull; Card PDQ (Terminal ID & Bank name)<br>
+        &bull; Bank Transfer / Pesalink (Bank & Account number)<br>
+        &bull; Customer Credit Accounts
+      </td>
+    </tr>
+    <tr>
+      <td><strong>3. Devices & POS</strong></td>
+      <td>PC Hardware Lock ID, Auto-print on complete, Offline sync interval.</td>
+    </tr>
+    <tr>
+      <td><strong>4. Network & Domain</strong></td>
+      <td>Dedicated custom domain and IP access restrictions.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>4. Tenant Store Self-Service (/settings)</h2>
+<p>
+  Store owners and managers manage channels in <code>resources/js/pages/settings/SettingsIndex.vue</code>:
+</p>
+<ul>
+  <li><strong>Instant Toggle:</strong> Switch channels on or off in real-time. Deactivated channels immediately disappear from the checkout modal.</li>
+  <li><strong>Edit Channel Dialog:</strong> Click <em>"Edit"</em> to update Till numbers, Paybill codes, or Bank credentials.</li>
+  <li><strong>Bespoke Custom Channels:</strong> Register custom tender methods (e.g. "Gift Voucher", "Pesalink Wire", "Cheque").</li>
+</ul>
+
+<h2>5. POS Terminal Checkout Experience</h2>
+<p>
+  Located in <code>resources/js/components/pos/PaymentModal.vue</code>:
+</p>
+<ul>
+  <li><strong>Dynamic Hotkeys:</strong> Methods are assigned numeric badges (1..N). Pressing keys 1 through N switches methods instantly.</li>
+  <li><strong>Live Till / Paybill Guidance Strip:</strong> An emerald banner displays the active Till number (e.g. <code>Buy Goods Till: 523910</code>) so cashiers can read it to walk-in customers.</li>
+  <li><strong>Express STK Push:</strong> Enter the customer's phone number and press <code>S</code> or <em>"Send STK Push"</em>. Safaricom prompts the customer for their PIN and automatically confirms the sale.</li>
+  <li><strong>Split Payments:</strong> Cashiers can split sales across multiple tender types (e.g., KES 1,000 Cash + KES 1,500 M-Pesa Till).</li>
+</ul>
+
+<h2>6. Safaricom Daraja Multi-Tenant Routing</h2>
+<p>
+  Implemented in <code>app/Http/Controllers/MpesaController.php</code>:
+</p>
+<p>
+  The STK Push engine checks whether the current tenant has configured custom Daraja credentials (<code>mpesa_consumer_key</code>, <code>mpesa_consumer_secret</code>, <code>mpesa_passkey</code>). If present, requests are routed directly to Safaricom using the tenant's shortcode. If not specified, the system transparently falls back to central application credentials in <code>.env</code>.
+</p>
+
+<h2>7. Thermal Receipt Layout</h2>
+<p>
+  Thermal receipts generated by <code>resources/js/components/pos/ReceiptModal.vue</code> include:
+</p>
+<ul>
+  <li>Store details, tax invoice number, and cashier identifier.</li>
+  <li>Tender breakdown (e.g. <code>Payment (M-Pesa Buy Goods): KES 2,500.00</code>).</li>
+  <li>M-Pesa transaction confirmation code (e.g. <code>M-Pesa Code: QKL83910</code>).</li>
+  <li>Card terminal authorization code (e.g. <code>Ref / Auth: POS-98102</code>).</li>
+  <li>Code 39 vector barcode for optical return and audit scanning.</li>
+</ul>
+
+<div class="callout">
+  <strong>Summary:</strong> All tenant payment method workflows are operational, backward compatible, and fully integrated across backend provisioning, self-service settings, checkout POS, and thermal receipt printing.
+</div>
+
+</body>
+</html>

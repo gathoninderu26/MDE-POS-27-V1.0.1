@@ -1,0 +1,572 @@
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<meta charset="utf-8">
+<title>MDE-POS Local XAMPP and Supabase Cloud Synchronization Guide</title>
+<!--[if gte mso 9]>
+<xml>
+ <w:WordDocument>
+  <w:View>Print</w:View>
+  <w:Zoom>100</w:Zoom>
+  <w:DoNotOptimizeForBrowser/>
+ </w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+  @page {
+    size: 8.5in 11.0in;
+    margin: 1.0in 1.0in 1.0in 1.0in;
+    mso-header-margin: 0.5in;
+    mso-footer-margin: 0.5in;
+  }
+  body {
+    font-family: 'Segoe UI', Calibri, Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.5;
+    color: #1f2937;
+    background-color: #ffffff;
+  }
+  h1 {
+    font-size: 24pt;
+    font-weight: 700;
+    color: #0f172a;
+    border-bottom: 2pt solid #2563eb;
+    padding-bottom: 6pt;
+    margin-top: 18pt;
+    margin-bottom: 12pt;
+  }
+  h2 {
+    font-size: 16pt;
+    font-weight: 700;
+    color: #1e3a8a;
+    border-bottom: 1pt solid #cbd5e1;
+    padding-bottom: 4pt;
+    margin-top: 20pt;
+    margin-bottom: 8pt;
+  }
+  h3 {
+    font-size: 13pt;
+    font-weight: 600;
+    color: #1d4ed8;
+    margin-top: 14pt;
+    margin-bottom: 6pt;
+  }
+  p {
+    margin-top: 4pt;
+    margin-bottom: 6pt;
+  }
+  ul, ol {
+    margin-top: 4pt;
+    margin-bottom: 8pt;
+    padding-left: 20pt;
+  }
+  li {
+    margin-bottom: 3pt;
+  }
+  pre, code {
+    font-family: 'Consolas', 'Courier New', monospace;
+  }
+  pre {
+    background-color: #0f172a;
+    color: #e2e8f0;
+    padding: 10pt;
+    border-radius: 4pt;
+    font-size: 9.5pt;
+    line-height: 1.4;
+    overflow-x: auto;
+    border: 1pt solid #334155;
+    margin-top: 6pt;
+    margin-bottom: 10pt;
+  }
+  code.inline {
+    background-color: #f1f5f9;
+    color: #b91c1c;
+    padding: 1pt 4pt;
+    border-radius: 3pt;
+    font-size: 10pt;
+    border: 1pt solid #e2e8f0;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 8pt;
+    margin-bottom: 14pt;
+    font-size: 10pt;
+  }
+  table, th, td {
+    border: 1pt solid #cbd5e1;
+  }
+  th {
+    background-color: #1e40af;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 6pt 8pt;
+    text-align: left;
+  }
+  td {
+    padding: 5pt 8pt;
+    background-color: #ffffff;
+  }
+  tr:nth-child(even) td {
+    background-color: #f8fafc;
+  }
+  .callout-info {
+    background-color: #eff6ff;
+    border-left: 4pt solid #3b82f6;
+    padding: 8pt 12pt;
+    margin: 10pt 0;
+    border-radius: 0 4pt 4pt 0;
+  }
+  .callout-warning {
+    background-color: #fffbeb;
+    border-left: 4pt solid #f59e0b;
+    padding: 8pt 12pt;
+    margin: 10pt 0;
+    border-radius: 0 4pt 4pt 0;
+  }
+  .callout-success {
+    background-color: #f0fdf4;
+    border-left: 4pt solid #22c55e;
+    padding: 8pt 12pt;
+    margin: 10pt 0;
+    border-radius: 0 4pt 4pt 0;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2pt 6pt;
+    font-size: 8.5pt;
+    font-weight: bold;
+    border-radius: 3pt;
+    color: white;
+  }
+  .badge-blue { background-color: #2563eb; }
+  .badge-green { background-color: #16a34a; }
+  .badge-amber { background-color: #d97706; }
+  .doc-header {
+    background: linear-gradient(135deg, #1e3a8a, #0f172a);
+    color: #ffffff;
+    padding: 18pt 20pt;
+    border-radius: 6pt;
+    margin-bottom: 20pt;
+  }
+  .doc-header h1 {
+    color: #ffffff;
+    border-bottom: none;
+    margin: 0;
+    padding: 0;
+    font-size: 22pt;
+  }
+  .doc-header p {
+    color: #93c5fd;
+    font-size: 11pt;
+    margin-top: 6pt;
+    margin-bottom: 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="doc-header">
+  <h1>MDE-POS Engineering Operations Guide</h1>
+  <p>Local XAMPP (MySQL) Installation, Machine Tenant Lockdown & Supabase Cloud Synchronization Engine</p>
+  <p style="font-size: 9pt; color: #cbd5e1; margin-top: 8pt;">Document Version 1.0.0 &bull; Architecture Specification &bull; Offline-First Production Deployment</p>
+</div>
+
+<h2>Executive Summary & System Architecture</h2>
+<p>
+This manual specifies the production architecture for operating <strong>MDE-POS</strong> in retail stores where local transaction performance, barcode scanning responsiveness, and zero internet reliance are mandatory, while maintaining centralized cloud reporting, analytics, and backup via <strong>Supabase (PostgreSQL)</strong>.
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 25%;">Layer / Component</th>
+      <th style="width: 35%;">Technology</th>
+      <th style="width: 40%;">Role & Guarantee</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Local Storefront Tier</strong></td>
+      <td>Windows PC + XAMPP (Apache + PHP 8.2+ + MySQL)</td>
+      <td>Immediate POS checkout (&lt; 5ms latency), barcode scan, receipt printing. Operates 100% offline.</td>
+    </tr>
+    <tr>
+      <td><strong>Cloud Storage Tier</strong></td>
+      <td>Supabase PostgreSQL (Transaction Pooler port 6543)</td>
+      <td>Cloud data lake, owner remote dashboards, branch backups, multi-store aggregation.</td>
+    </tr>
+    <tr>
+      <td><strong>Single-Tenant Lock</strong></td>
+      <td>Tenant Bind Middleware + Hardware `.env` Flag</td>
+      <td>Binds the PC strictly to one merchant. Staff cannot access other accounts or cloud root portals.</td>
+    </tr>
+    <tr>
+      <td><strong>Sync Dispatcher</strong></td>
+      <td>Transactional Outbox (`sync_outbox` table)</td>
+      <td>Guarantees <em>At-Least-Once Delivery</em>. Auto-retries with exponential backoff on internet drops.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout-success">
+  <strong>High-Availability Guarantee:</strong> In the event of a fiber or cellular network outage, store cashiers will not notice any lag or downtime. Transactions are written locally to MySQL and enqueued into the Outbox. As soon as internet connectivity returns, the background daemon synchronizes all pending records to Supabase automatically.
+</div>
+
+---
+
+<h2>1. XAMPP Local Installation on Windows</h2>
+
+<h3>1.1 Prerequisites</h3>
+<ul>
+  <li>Operating System: Windows 10, Windows 11, or Windows Server 2019/2022.</li>
+  <li>XAMPP for Windows with <strong>PHP 8.2.x or 8.3.x</strong> installed in <code class="inline">C:\xampp</code>.</li>
+  <li>Composer 2.x and Git for Windows installed.</li>
+</ul>
+
+<h3>1.2 Enable Required PHP Extensions</h3>
+<p>Open <code class="inline">C:\xampp\php\php.ini</code> in an editor and verify that the following extensions are uncommented (remove the leading semicolon <code class="inline">;</code>):</p>
+
+<pre>extension=curl
+extension=fileinfo
+extension=intl
+extension=mbstring
+extension=openssl
+extension=pdo_mysql
+extension=pdo_pgsql
+extension=pgsql
+extension=zip</pre>
+
+<p>Save <code class="inline">php.ini</code> and restart Apache using the XAMPP Control Panel.</p>
+
+<h3>1.3 Codebase Placement</h3>
+<p>Place the application in the web root:</p>
+<pre>C:\xampp\htdocs\mde-pos</pre>
+
+<h3>1.4 Apache VirtualHost & Local Domain Setup</h3>
+<p>To avoid complex port numbers and provide a clean cashier interface, open <code class="inline">C:\xampp\apache\conf\extra\httpd-vhosts.conf</code> and append:</p>
+
+<pre>&lt;VirtualHost *:80&gt;
+    ServerName pos.local
+    DocumentRoot "C:/xampp/htdocs/mde-pos/public"
+    &lt;Directory "C:/xampp/htdocs/mde-pos/public"&gt;
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+    &lt;/Directory&gt;
+&lt;/VirtualHost&gt;</pre>
+
+<p>Open Notepad as <strong>Administrator</strong> and edit <code class="inline">C:\Windows\System32\drivers\etc\hosts</code>. Add the following entry:</p>
+
+<pre>127.0.0.1  pos.local</pre>
+
+---
+
+<h2>2. Supabase Cloud Configuration</h2>
+
+<h3>2.1 Project Credentials</h3>
+<p>Navigate to your project in the <a href="https://supabase.com/dashboard">Supabase Dashboard</a> and extract:</p>
+<ul>
+  <li><strong>Project Settings &rarr; API:</strong>
+    <ul>
+      <li>URL: <code class="inline">https://[your-project-ref].supabase.co</code></li>
+      <li>Key: <code class="inline">service_role</code> secret key (used securely by the sync worker)</li>
+    </ul>
+  </li>
+  <li><strong>Project Settings &rarr; Database (Connection Pooling):</strong>
+    <ul>
+      <li>Host: <code class="inline">aws-0-[region].pooler.supabase.com</code></li>
+      <li>Port: <code class="inline">6543</code> (Transaction Pooler - PgBouncer)</li>
+      <li>Database: <code class="inline">postgres</code></li>
+      <li>Username: <code class="inline">postgres.[your-project-ref]</code></li>
+      <li>Password: <code class="inline">[YourDatabasePassword]</code></li>
+    </ul>
+  </li>
+</ul>
+
+<div class="callout-info">
+  <strong>Why Port 6543?</strong> Laravel and web applications create transient connections. Supabase PgBouncer (Transaction Pooler on port 6543) prevents connection exhaustion on cloud PostgreSQL instances.
+</div>
+
+<h3>2.2 Supabase PostgreSQL Schema Setup</h3>
+<p>Execute the following script in the Supabase SQL Query Editor to provision cloud storage tables and indexes:</p>
+
+<pre>-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Sales Master Table
+CREATE TABLE IF NOT EXISTS public.sales (
+    id BIGINT PRIMARY KEY,
+    tenant_id BIGINT NOT NULL,
+    branch_id BIGINT NULL,
+    user_id BIGINT NOT NULL,
+    receipt_number VARCHAR(100) NOT NULL UNIQUE,
+    subtotal DECIMAL(12,2) NOT NULL DEFAULT 0,
+    tax_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    discount_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    total DECIMAL(12,2) NOT NULL DEFAULT 0,
+    profit DECIMAL(12,2) NOT NULL DEFAULT 0,
+    payment_method VARCHAR(50) NOT NULL,
+    payment_status VARCHAR(50) NOT NULL DEFAULT 'Completed',
+    mpesa_code VARCHAR(50) NULL,
+    customer_name VARCHAR(255) NULL,
+    items JSONB NOT NULL DEFAULT '[]',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    synced_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Products Catalog Table
+CREATE TABLE IF NOT EXISTS public.products (
+    id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    tenant_id BIGINT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    sku VARCHAR(100) NULL,
+    barcode VARCHAR(100) NULL,
+    category VARCHAR(100) DEFAULT 'General',
+    cost_price DECIMAL(12,2) DEFAULT 0,
+    selling_price DECIMAL(12,2) DEFAULT 0,
+    stock_quantity INT DEFAULT 0,
+    reorder_level INT DEFAULT 5,
+    unit VARCHAR(50) DEFAULT 'Piece',
+    status VARCHAR(50) DEFAULT 'Active',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- High Performance Indexes
+CREATE INDEX IF NOT EXISTS idx_sales_tenant_created ON public.sales (tenant_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_products_tenant_barcode ON public.products (tenant_id, barcode);</pre>
+
+---
+
+<h2>3. Single-Tenant Machine Lockdown</h2>
+
+<h3>3.1 Concept & Threat Model</h3>
+<p>
+On a shared SaaS cloud server, multiple tenants access the app via distinct subdomains (e.g., <code class="inline">store1.pos.com</code>). However, on a physical cashier machine in a store:
+</p>
+<ol>
+  <li>The cashier PC must <strong>never</strong> display tenant registration screens or other tenant domains.</li>
+  <li>The PC must be hard-locked to one merchant account only.</li>
+  <li>All incoming local requests (<code class="inline">http://localhost</code>, <code class="inline">http://pos.local</code>, <code class="inline">http://127.0.0.1</code>) must automatically resolve to the merchant's store.</li>
+  <li>Users from any other store trying to log in are strictly denied.</li>
+</ol>
+
+<h3>3.2 Local Merchant `.env` Configuration</h3>
+<p>Create or update <code class="inline">.env</code> on the merchant machine:</p>
+
+<pre>APP_NAME="MDE-POS"
+APP_ENV=production
+APP_KEY=base64:YOUR_APP_KEY_HERE
+APP_DEBUG=false
+APP_URL=http://pos.local
+
+# ===================================================================
+# SINGLE-TENANT HARDWARE LOCKDOWN
+# ===================================================================
+TENANT_MODE=single
+LOCKED_TENANT_ID="1"
+LOCKED_TENANT_SLUG="nairobi-supermart"
+TENANT_LICENSE_KEY="LIC-NAIROBI-2026-X992"
+
+# ===================================================================
+# LOCAL STORE DATABASE (XAMPP MySQL)
+# ===================================================================
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=pos_local
+DB_USERNAME=root
+DB_PASSWORD=
+
+# ===================================================================
+# SUPABASE CLOUD SYNC CONFIGURATION
+# ===================================================================
+CLOUD_SYNC_ENABLED=true
+SUPABASE_URL="https://your-project.supabase.co"
+SUPABASE_KEY="eyJhbGciOi..."
+SUPABASE_DB_HOST="aws-0-eu-central-1.pooler.supabase.com"
+SUPABASE_DB_PORT=6543
+SUPABASE_DB_DATABASE=postgres
+SUPABASE_DB_USERNAME="postgres.your-project"
+SUPABASE_DB_PASSWORD="your-secure-password"
+SUPABASE_DB_SSLMODE=require</pre>
+
+<h3>3.3 Automated Machine Binding CLI</h3>
+<p>To automatically lock a new PC to a tenant account and pull the cloud product catalog in one step:</p>
+
+<pre>php artisan tenant:bind nairobi-supermart --pull</pre>
+
+<table>
+  <thead>
+    <tr>
+      <th>Execution Step</th>
+      <th>System Action Taken</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Validation</strong></td>
+      <td>Queries local MySQL or cloud database to verify store exists and is active.</td>
+    </tr>
+    <tr>
+      <td><strong>Lock Configuration</strong></td>
+      <td>Rewrites <code class="inline">TENANT_MODE=single</code> and <code class="inline">LOCKED_TENANT_ID</code> in <code class="inline">.env</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>Cache Flush</strong></td>
+      <td>Executes <code class="inline">php artisan config:clear</code> and <code class="inline">route:clear</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>Catalog Pull</strong></td>
+      <td>Syncs cloud products, pricing, categories, and barcodes into local MySQL.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+<h2>4. Cloud Synchronization Engine</h2>
+
+<h3>4.1 Local Outbox Architecture</h3>
+<p>
+Transactions are never written across the network synchronously. When a cashier completes a sale:
+</p>
+<ol>
+  <li>Local MySQL records the sale in <code class="inline">sales</code> and <code class="inline">sale_items</code> in < 5ms.</li>
+  <li>In the <strong>exact same local SQL transaction</strong>, a payload is inserted into <code class="inline">sync_outbox</code>:
+    <pre>INSERT INTO sync_outbox (tenant_id, entity_type, entity_id, action, payload, status)
+VALUES (1, 'sale', 1042, 'insert', '{...json...}', 'pending');</pre>
+  </li>
+  <li>The receipt prints immediately. The customer walks away with zero delay.</li>
+  <li>The background sync engine reads batches of pending records and dispatches them to Supabase via REST or Direct Connection.</li>
+  <li>On HTTP 200/201 response, the outbox record is marked <code class="inline">status = 'synced'</code>.</li>
+</ol>
+
+<h3>4.2 Manual Sync Execution</h3>
+<pre># Push all pending sales to Supabase Cloud
+php artisan sync:cloud
+
+# Push pending sales AND pull catalog updates
+php artisan sync:cloud --pull</pre>
+
+---
+
+<h2>5. Windows Automated Sync via Task Scheduler</h2>
+
+<h3>5.1 Batch Runner Script</h3>
+<p>Create a runner script at <code class="inline">C:\xampp\htdocs\mde-pos\sync_runner.bat</code>:</p>
+
+<pre>@echo off
+cd /d "C:\xampp\htdocs\mde-pos"
+"C:\xampp\php\php.exe" artisan sync:cloud &gt;&gt; "storage\logs\sync.log" 2&gt;&amp;1</pre>
+
+<h3>5.2 Windows Task Scheduler Configuration</h3>
+<ol>
+  <li>Press <strong>Win + R</strong>, type <code class="inline">taskschd.msc</code>, and hit Enter.</li>
+  <li>Click <strong>Create Task...</strong> (not Basic Task) in the right sidebar.</li>
+  <li><strong>General Tab:</strong>
+    <ul>
+      <li>Name: <code class="inline">MDE-POS Supabase Sync</code></li>
+      <li>Security options: Check <em>Run whether user is logged on or not</em> and <em>Run with highest privileges</em>.</li>
+    </ul>
+  </li>
+  <li><strong>Triggers Tab:</strong>
+    <ul>
+      <li>Click <strong>New...</strong></li>
+      <li>Begin the task: <em>At startup</em> or <em>At log on</em>.</li>
+      <li>Advanced settings: Check <strong>Repeat task every 1 minute</strong> for a duration of <em>Indefinitely</em>.</li>
+    </ul>
+  </li>
+  <li><strong>Actions Tab:</strong>
+    <ul>
+      <li>Click <strong>New...</strong> &rarr; Action: <em>Start a program</em>.</li>
+      <li>Program/script: <code class="inline">C:\xampp\htdocs\mde-pos\sync_runner.bat</code></li>
+      <li>Start in (optional): <code class="inline">C:\xampp\htdocs\mde-pos</code></li>
+    </ul>
+  </li>
+  <li><strong>Conditions Tab:</strong>
+    <ul>
+      <li>Uncheck <em>Start the task only if the computer is on AC power</em> (ensures sync runs on POS laptop batteries).</li>
+    </ul>
+  </li>
+</ol>
+
+---
+
+<h2>6. Disaster Recovery & Hardware Replacement</h2>
+
+<div class="callout-warning">
+  <strong>Disaster Scenario:</strong> What if the merchant's PC motherboard or hard drive fails completely?
+</div>
+
+<p>Because all historical sales and catalog records are mirrored in <strong>Supabase Cloud</strong>, a replacement PC can be operational within 15 minutes:</p>
+
+<ol>
+  <li>Install XAMPP and Git/Composer on the replacement PC.</li>
+  <li>Clone or paste the MDE-POS repository into <code class="inline">C:\xampp\htdocs\mde-pos</code>.</li>
+  <li>Set up <code class="inline">.env</code> pointing to Supabase Cloud.</li>
+  <li>Run the automated restoration command:
+    <pre>php artisan migrate --force
+php artisan tenant:bind nairobi-supermart --pull</pre>
+  </li>
+  <li>All products, pricing, barcode catalogs, categories, and store configurations are immediately populated into local MySQL from Supabase.</li>
+  <li>The cashier logs in and resumes selling.</li>
+</ol>
+
+---
+
+<h2>7. Verification Checklist</h2>
+<table>
+  <thead>
+    <tr>
+      <th style="width: 10%;">Status</th>
+      <th style="width: 45%;">Verification Test</th>
+      <th style="width: 45%;">Expected Result</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>[&nbsp;&nbsp;&nbsp;]</td>
+      <td>Open <code class="inline">http://pos.local</code> in Google Chrome</td>
+      <td>Directly loads locked merchant login page. No registration or subdomain prompts.</td>
+    </tr>
+    <tr>
+      <td>[&nbsp;&nbsp;&nbsp;]</td>
+      <td>Sign in as cashier and ring up a $10.00 cash sale</td>
+      <td>Receipt generates immediately (&lt; 10ms). Sale appears in local database.</td>
+    </tr>
+    <tr>
+      <td>[&nbsp;&nbsp;&nbsp;]</td>
+      <td>Query local table: <code class="inline">SELECT * FROM sync_outbox;</code></td>
+      <td>New row with <code class="inline">entity_type = 'sale'</code> and <code class="inline">status = 'pending'</code>.</td>
+    </tr>
+    <tr>
+      <td>[&nbsp;&nbsp;&nbsp;]</td>
+      <td>Run <code class="inline">php artisan sync:cloud</code> in PowerShell</td>
+      <td>Output shows: <em>"Dispatched 1 outbox records to Supabase Cloud"</em>. Status updates to <code class="inline">'synced'</code>.</td>
+    </tr>
+    <tr>
+      <td>[&nbsp;&nbsp;&nbsp;]</td>
+      <td>Check Supabase Dashboard table <code class="inline">sales</code></td>
+      <td>Transaction appears in cloud table with matched receipt number and timestamp.</td>
+    </tr>
+    <tr>
+      <td>[&nbsp;&nbsp;&nbsp;]</td>
+      <td>Disconnect Wi-Fi / Ethernet and perform 3 test sales</td>
+      <td>All sales succeed locally. Records accumulate in <code class="inline">sync_outbox</code>.</td>
+    </tr>
+    <tr>
+      <td>[&nbsp;&nbsp;&nbsp;]</td>
+      <td>Reconnect Internet and wait 60 seconds (or run sync command)</td>
+      <td>All 3 sales push to Supabase Cloud automatically without data loss.</td>
+    </tr>
+  </tbody>
+</table>
+
+<br>
+<p style="text-align: center; color: #64748b; font-size: 9pt;">
+  &mdash; End of Official Specification &mdash;
+</p>
+
+</body>
+</html>

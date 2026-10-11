@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,12 +13,14 @@ import { Head, router } from '@inertiajs/vue3';
 import {
     Activity,
     AlertCircle,
+    Banknote,
     Building2,
     Check,
     CheckCircle2,
     Clock,
     Copy,
     Cpu,
+    CreditCard,
     Database,
     ExternalLink,
     Eye,
@@ -39,6 +42,7 @@ import {
     Smartphone,
     Trash2,
     Users,
+    Wallet,
     Wifi,
     Zap,
 } from 'lucide-vue-next';
@@ -71,12 +75,13 @@ const statusFilter = ref('All');
 
 // Registration Modal
 const registerModal = ref(false);
-const registerTab = ref<'profile' | 'devices' | 'network'>('profile');
+const registerTab = ref<'profile' | 'payments' | 'devices' | 'network'>('profile');
 const isRegistering = ref(false);
 
 // Post-creation Credentials Modal
 const createdCredentialsModal = ref(false);
 const createdCredentialsData = ref<{
+    tenant_id?: number | string;
     tenant_name: string;
     subdomain: string;
     subdomain_url: string;
@@ -103,6 +108,23 @@ const newTenantForm = reactive({
     userCount: 5,
     ownerEmail: '',
     ownerPassword: generateRandomPassword(),
+    // Store Payment Channels Setup
+    enableCash: true,
+    cashDrawerLabel: 'Main Till Drawer',
+    enableMpesaTill: true,
+    mpesaTillNumber: '',
+    mpesaStoreName: '',
+    enableMpesaPaybill: false,
+    mpesaPaybillNumber: '',
+    mpesaPaybillAccount: '',
+    enableCard: false,
+    cardTerminalId: '',
+    cardBankName: 'Equity Bank',
+    enableBank: false,
+    bankName: 'KCB Bank',
+    bankAccountNumber: '',
+    enableCredit: false,
+    // Device & Hardware binding
     selectedDeviceTypes: ['POS Terminal', 'Desktop PC'],
     requireDeviceBinding: true,
     posHardwareCount: 2,
@@ -146,6 +168,21 @@ const copyCredentials = () => {
     success('Copied!', 'Tenant subdomain and owner credentials copied to clipboard.');
 };
 
+const copyTenantUrl = (url?: string) => {
+    if (!url) return;
+    navigator.clipboard.writeText(url);
+    success('Copied!', 'Tenant login URL copied to clipboard.');
+};
+
+const handleLaunchWorkspace = () => {
+    const id = createdCredentialsData.value?.tenant_id;
+    if (!id) return;
+    createdCredentialsModal.value = false;
+    router.post(`/super-admin/tenants/${id}/impersonate`, {}, {
+        onError: () => error('Launch Failed', 'Could not open the tenant workspace. Please try again.'),
+    });
+};
+
 const toggleDeviceType = (type: string) => {
     const idx = newTenantForm.selectedDeviceTypes.indexOf(type);
     if (idx === -1) {
@@ -176,10 +213,37 @@ const handleRegisterTenant = () => {
         user_count: newTenantForm.userCount,
         owner_email: newTenantForm.ownerEmail || newTenantForm.email,
         owner_password: newTenantForm.ownerPassword || undefined,
+        // Store Payment Channels Setup
+        enable_cash: newTenantForm.enableCash,
+        cash_drawer_label: newTenantForm.cashDrawerLabel,
+        enable_mpesa_till: newTenantForm.enableMpesaTill,
+        mpesa_till_number: newTenantForm.mpesaTillNumber || undefined,
+        mpesa_store_name: newTenantForm.mpesaStoreName || undefined,
+        enable_mpesa_paybill: newTenantForm.enableMpesaPaybill,
+        mpesa_paybill_number: newTenantForm.mpesaPaybillNumber || undefined,
+        mpesa_paybill_account: newTenantForm.mpesaPaybillAccount || undefined,
+        enable_card: newTenantForm.enableCard,
+        card_terminal_id: newTenantForm.cardTerminalId || undefined,
+        card_bank_name: newTenantForm.cardBankName || undefined,
+        enable_bank: newTenantForm.enableBank,
+        bank_name: newTenantForm.bankName || undefined,
+        bank_account_number: newTenantForm.bankAccountNumber || undefined,
+        enable_credit: newTenantForm.enableCredit,
+        // Authorized Devices & Hardware binding
+        selected_device_types: newTenantForm.selectedDeviceTypes,
+        require_device_binding: newTenantForm.requireDeviceBinding,
+        pos_hardware_count: newTenantForm.posHardwareCount,
+        single_session_per_cashier: newTenantForm.singleSessionPerCashier,
+        // Network & Connection security
+        block_vpn: newTenantForm.blockVpn,
+        require_store_wifi: newTenantForm.requireStoreWifi,
+        primary_store_wifi_ssid: newTenantForm.primaryStoreWifiSSID,
+        block_hotspot: newTenantForm.blockHotspot,
+        cellular_policy: newTenantForm.cellularPolicy,
     }, {
-        onSuccess: (page) => {
+        onSuccess: (page: any) => {
             registerModal.value = false;
-            const creds = page.props?.flash?.createdCredentials;
+            const creds = page?.props?.flash?.createdCredentials || (props.flash as any)?.createdCredentials;
             if (creds) {
                 createdCredentialsData.value = creds;
                 createdCredentialsModal.value = true;
@@ -193,6 +257,20 @@ const handleRegisterTenant = () => {
             newTenantForm.ownerEmail = '';
             newTenantForm.ownerPassword = generateRandomPassword();
             newTenantForm.primaryStoreWifiSSID = '';
+            newTenantForm.enableCash = true;
+            newTenantForm.cashDrawerLabel = 'Main Till Drawer';
+            newTenantForm.enableMpesaTill = true;
+            newTenantForm.mpesaTillNumber = '';
+            newTenantForm.mpesaStoreName = '';
+            newTenantForm.enableMpesaPaybill = false;
+            newTenantForm.mpesaPaybillNumber = '';
+            newTenantForm.mpesaPaybillAccount = '';
+            newTenantForm.enableCard = false;
+            newTenantForm.cardTerminalId = '';
+            newTenantForm.enableBank = false;
+            newTenantForm.bankName = 'KCB Bank';
+            newTenantForm.bankAccountNumber = '';
+            newTenantForm.enableCredit = false;
             registerTab.value = 'profile';
         },
         onError: (errs) => error('Registration Failed', Object.values(errs)[0] as string),
@@ -280,11 +358,25 @@ const handleActivate = (t: PlatformTenant) => {
     });
 };
 
-const handleDelete = (t: PlatformTenant) => {
-    if (!confirm(`Permanently delete "${t.name}" and ALL their data? This cannot be undone.`)) return;
-    router.delete(`/super-admin/tenants/${t.id}`, {
-        onSuccess: () => error('Tenant Deleted', `${t.name} and all associated data removed.`),
+const deleteConfirmOpen = ref(false);
+const tenantToDelete = ref<PlatformTenant | null>(null);
+const isDeletingTenant = ref(false);
+
+const openDelete = (t: PlatformTenant) => {
+    tenantToDelete.value = t;
+    deleteConfirmOpen.value = true;
+};
+
+const confirmDeleteTenant = () => {
+    if (!tenantToDelete.value) return;
+    isDeletingTenant.value = true;
+    router.delete(`/super-admin/tenants/${tenantToDelete.value.id}`, {
+        onSuccess: () => {
+            success('Tenant Deleted', `${tenantToDelete.value?.name} and all associated data removed.`);
+            deleteConfirmOpen.value = false;
+        },
         onError: () => error('Failed', 'Could not delete tenant.'),
+        onFinish: () => (isDeletingTenant.value = false),
     });
 };
 
@@ -499,16 +591,56 @@ const handleEdit = () => {
                         <p>Last active: <span class="text-zinc-300">{{ tenant.lastActive }}</span></p>
                     </div>
 
+                    <!-- Dedicated Tenant Portal / Login URL -->
+                    <div class="p-2 rounded-lg bg-zinc-950/80 border border-zinc-800 space-y-1">
+                        <div class="flex items-center justify-between text-[10px]">
+                            <span class="text-zinc-400 font-semibold flex items-center gap-1">
+                                <Globe class="size-3 text-violet-400" />
+                                Portal / Login URL
+                            </span>
+                            <div class="flex items-center gap-1">
+                                <button
+                                    type="button"
+                                    class="text-[10px] text-zinc-400 hover:text-zinc-100 px-1.5 py-0.5 rounded hover:bg-zinc-800 transition-colors inline-flex items-center gap-1"
+                                    title="Copy login URL"
+                                    @click="copyTenantUrl(tenant.subdomain_url)"
+                                >
+                                    <Copy class="size-2.5" />
+                                    Copy
+                                </button>
+                                <a
+                                    :href="tenant.subdomain_url"
+                                    target="_blank"
+                                    class="text-[10px] text-violet-400 hover:text-violet-300 px-1.5 py-0.5 rounded hover:bg-violet-900/30 transition-colors inline-flex items-center gap-0.5 font-semibold"
+                                    title="Open tenant login"
+                                >
+                                    <ExternalLink class="size-2.5" />
+                                    Open
+                                </a>
+                            </div>
+                        </div>
+                        <p class="font-mono text-[10px] text-violet-300 truncate select-all" :title="tenant.subdomain_url">
+                            {{ tenant.subdomain_url }}
+                        </p>
+                    </div>
+
                     <!-- Actions -->
                     <div class="space-y-1.5 pt-1 border-t border-zinc-800">
                         <!-- Primary Actions Row -->
                         <div class="flex items-center gap-1.5">
                             <a
+                                :href="`/super-admin/tenants/${tenant.id}/detail`"
+                                class="flex-1 py-1.5 rounded text-[10px] font-bold bg-violet-600 text-white hover:bg-violet-700 border border-violet-600 transition-colors flex items-center justify-center gap-1"
+                            >
+                                <Eye class="size-3" />
+                                Full Detail
+                            </a>
+                            <a
                                 :href="`/super-admin/tenants/${tenant.id}/users`"
                                 class="flex-1 py-1.5 rounded text-[10px] font-bold bg-violet-600/20 text-violet-300 hover:bg-violet-600/40 border border-violet-600/30 transition-colors flex items-center justify-center gap-1"
                             >
                                 <Users class="size-3" />
-                                Manage Users
+                                Users
                             </a>
                             <button
                                 type="button"
@@ -527,15 +659,24 @@ const handleEdit = () => {
                                 <Settings class="size-3" />
                             </button>
                         </div>
+
                         <!-- Secondary Actions Row -->
                         <div class="flex items-center gap-1.5">
+                            <a
+                                :href="`/super-admin/tenants/${tenant.id}/detail?tab=modules`"
+                                class="flex-1 py-1.5 rounded text-[10px] font-semibold bg-violet-600/15 text-violet-300 hover:bg-violet-600/30 border border-violet-500/30 hover:border-violet-500/50 transition-colors flex items-center justify-center gap-1"
+                                title="Configure Enabled Pages & Modules"
+                            >
+                                <Layers class="size-3" />
+                                Pages ({{ tenant.enabledModules?.length ?? tenant.enabled_modules?.length ?? 0 }})
+                            </a>
                             <button
                                 type="button"
                                 class="flex-1 py-1.5 rounded text-[10px] font-semibold bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-700 hover:border-violet-500 transition-colors"
                                 @click="openUpgradeModal(tenant)"
                             >
-                                <Layers class="size-3 inline mr-1" />
-                                Change Plan
+                                <Zap class="size-3 inline mr-1 text-amber-400" />
+                                Plan
                             </button>
                             <button
                                 v-if="tenant.status !== 'Suspended'"
@@ -558,7 +699,7 @@ const handleEdit = () => {
                             <button
                                 type="button"
                                 class="py-1.5 px-2.5 rounded text-[10px] font-semibold bg-zinc-800 text-zinc-500 hover:text-rose-400 hover:bg-rose-600/10 transition-colors"
-                                @click="handleDelete(tenant)"
+                                @click="openDelete(tenant)"
                                 title="Delete Tenant"
                             >
                                 <Trash2 class="size-3" />
@@ -835,7 +976,21 @@ const handleEdit = () => {
                         <button
                             type="button"
                             :class="[
-                                'px-3 py-1 font-semibold rounded-lg border transition-all text-xs flex items-center gap-1.5',
+                                'px-3 py-1 font-semibold rounded-lg border transition-all text-xs flex items-center gap-1.5 shrink-0',
+                                registerTab === 'payments'
+                                    ? 'bg-violet-600 text-white border-violet-600'
+                                    : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-zinc-200',
+                            ]"
+                            @click="registerTab = 'payments'"
+                        >
+                            <Banknote class="size-3.5" />
+                            2. Payment Channels
+                        </button>
+
+                        <button
+                            type="button"
+                            :class="[
+                                'px-3 py-1 font-semibold rounded-lg border transition-all text-xs flex items-center gap-1.5 shrink-0',
                                 registerTab === 'devices'
                                     ? 'bg-violet-600 text-white border-violet-600'
                                     : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-zinc-200',
@@ -843,13 +998,13 @@ const handleEdit = () => {
                             @click="registerTab = 'devices'"
                         >
                             <Smartphone class="size-3.5" />
-                            2. Authorized Devices ({{ newTenantForm.selectedDeviceTypes.length }})
+                            3. Devices ({{ newTenantForm.selectedDeviceTypes.length }})
                         </button>
 
                         <button
                             type="button"
                             :class="[
-                                'px-3 py-1 font-semibold rounded-lg border transition-all text-xs flex items-center gap-1.5',
+                                'px-3 py-1 font-semibold rounded-lg border transition-all text-xs flex items-center gap-1.5 shrink-0',
                                 registerTab === 'network'
                                     ? 'bg-violet-600 text-white border-violet-600'
                                     : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-zinc-200',
@@ -857,7 +1012,7 @@ const handleEdit = () => {
                             @click="registerTab = 'network'"
                         >
                             <Wifi class="size-3.5" />
-                            3. Network Restrictions
+                            4. Network
                         </button>
                     </div>
                 </DialogHeader>
@@ -1017,7 +1172,217 @@ const handleEdit = () => {
                     </div>
                 </div>
 
-                <!-- Step 2: Authorized Devices Setup -->
+                <!-- Step 2: Storefront Payment Channels Setup -->
+                <div v-if="registerTab === 'payments'" class="space-y-3.5 py-3 text-xs">
+                    <div>
+                        <p class="font-bold text-zinc-200 text-xs">Configure Storefront Payment Methods</p>
+                        <p class="text-[11px] text-zinc-400 mt-0.5">
+                            Set up how customers pay at checkout. These settings immediately configure the cashier's POS screen.
+                        </p>
+                    </div>
+
+                    <div class="space-y-2.5">
+                        <!-- Cash Tender -->
+                        <div class="p-3 rounded-xl bg-zinc-950/70 border border-zinc-800 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="size-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                                        <Banknote class="size-3.5" />
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-zinc-100 text-xs">Cash Payment & Cash Drawer</p>
+                                        <p class="text-[10px] text-zinc-400">Accept physical currency notes and coins</p>
+                                    </div>
+                                </div>
+                                <input
+                                    v-model="newTenantForm.enableCash"
+                                    type="checkbox"
+                                    class="size-4 rounded border-zinc-700 bg-zinc-900 text-emerald-500 focus:ring-emerald-500"
+                                />
+                            </div>
+                            <div v-if="newTenantForm.enableCash" class="pt-2 border-t border-zinc-800">
+                                <Label class="text-zinc-400 text-[10px]">Till Drawer Reference</Label>
+                                <Input
+                                    v-model="newTenantForm.cashDrawerLabel"
+                                    placeholder="e.g. Main Cash Drawer"
+                                    class="mt-1 text-xs bg-zinc-800 border-zinc-700 text-zinc-100"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- M-Pesa Buy Goods Till -->
+                        <div class="p-3 rounded-xl bg-zinc-950/70 border border-zinc-800 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="size-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                                        <Smartphone class="size-3.5" />
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-zinc-100 text-xs">Lipa na M-Pesa Buy Goods (Till Number)</p>
+                                        <p class="text-[10px] text-zinc-400">Standard Safaricom Buy Goods retail till</p>
+                                    </div>
+                                </div>
+                                <input
+                                    v-model="newTenantForm.enableMpesaTill"
+                                    type="checkbox"
+                                    class="size-4 rounded border-zinc-700 bg-zinc-900 text-emerald-500 focus:ring-emerald-500"
+                                />
+                            </div>
+                            <div v-if="newTenantForm.enableMpesaTill" class="pt-2 border-t border-zinc-800 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <div>
+                                    <Label class="text-zinc-400 text-[10px]">Safaricom Till Number</Label>
+                                    <Input
+                                        v-model="newTenantForm.mpesaTillNumber"
+                                        placeholder="e.g. 523910"
+                                        class="mt-1 text-xs bg-zinc-800 border-zinc-700 text-zinc-100 font-mono font-bold"
+                                    />
+                                </div>
+                                <div>
+                                    <Label class="text-zinc-400 text-[10px]">Store Name (on customer phone)</Label>
+                                    <Input
+                                        v-model="newTenantForm.mpesaStoreName"
+                                        placeholder="e.g. Nairobi Fresh Mart"
+                                        class="mt-1 text-xs bg-zinc-800 border-zinc-700 text-zinc-100"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- M-Pesa Paybill -->
+                        <div class="p-3 rounded-xl bg-zinc-950/70 border border-zinc-800 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="size-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                                        <Smartphone class="size-3.5" />
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-zinc-100 text-xs">Lipa na M-Pesa Paybill</p>
+                                        <p class="text-[10px] text-zinc-400">Business Paybill Number + Account Reference</p>
+                                    </div>
+                                </div>
+                                <input
+                                    v-model="newTenantForm.enableMpesaPaybill"
+                                    type="checkbox"
+                                    class="size-4 rounded border-zinc-700 bg-zinc-900 text-emerald-500 focus:ring-emerald-500"
+                                />
+                            </div>
+                            <div v-if="newTenantForm.enableMpesaPaybill" class="pt-2 border-t border-zinc-800 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <div>
+                                    <Label class="text-zinc-400 text-[10px]">Business Shortcode (Paybill)</Label>
+                                    <Input
+                                        v-model="newTenantForm.mpesaPaybillNumber"
+                                        placeholder="e.g. 247247"
+                                        class="mt-1 text-xs bg-zinc-800 border-zinc-700 text-zinc-100 font-mono font-bold"
+                                    />
+                                </div>
+                                <div>
+                                    <Label class="text-zinc-400 text-[10px]">Account Number / Reference</Label>
+                                    <Input
+                                        v-model="newTenantForm.mpesaPaybillAccount"
+                                        placeholder="e.g. 0110293847"
+                                        class="mt-1 text-xs bg-zinc-800 border-zinc-700 text-zinc-100 font-mono"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card PDQ Terminal -->
+                        <div class="p-3 rounded-xl bg-zinc-950/70 border border-zinc-800 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="size-7 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0">
+                                        <CreditCard class="size-3.5" />
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-zinc-100 text-xs">Visa / Mastercard / PDQ Card Terminal</p>
+                                        <p class="text-[10px] text-zinc-400">Card terminal swipe/tap payment</p>
+                                    </div>
+                                </div>
+                                <input
+                                    v-model="newTenantForm.enableCard"
+                                    type="checkbox"
+                                    class="size-4 rounded border-zinc-700 bg-zinc-900 text-sky-500 focus:ring-sky-500"
+                                />
+                            </div>
+                            <div v-if="newTenantForm.enableCard" class="pt-2 border-t border-zinc-800 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <div>
+                                    <Label class="text-zinc-400 text-[10px]">PDQ Terminal ID</Label>
+                                    <Input
+                                        v-model="newTenantForm.cardTerminalId"
+                                        placeholder="e.g. EQ-PDQ-8901"
+                                        class="mt-1 text-xs bg-zinc-800 border-zinc-700 text-zinc-100 font-mono"
+                                    />
+                                </div>
+                                <div>
+                                    <Label class="text-zinc-400 text-[10px]">Card Machine Bank</Label>
+                                    <Input
+                                        v-model="newTenantForm.cardBankName"
+                                        placeholder="e.g. Equity Bank / KCB / Absa / Pesapal"
+                                        class="mt-1 text-xs bg-zinc-800 border-zinc-700 text-zinc-100"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bank Transfer -->
+                        <div class="p-3 rounded-xl bg-zinc-950/70 border border-zinc-800 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="size-7 rounded-lg bg-violet-500/20 text-violet-400 flex items-center justify-center shrink-0">
+                                        <Building2 class="size-3.5" />
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-zinc-100 text-xs">Direct Bank Wire / Pesalink Deposit</p>
+                                        <p class="text-[10px] text-zinc-400">Electronic funds transfer directly to merchant account</p>
+                                    </div>
+                                </div>
+                                <input
+                                    v-model="newTenantForm.enableBank"
+                                    type="checkbox"
+                                    class="size-4 rounded border-zinc-700 bg-zinc-900 text-violet-500 focus:ring-violet-500"
+                                />
+                            </div>
+                            <div v-if="newTenantForm.enableBank" class="pt-2 border-t border-zinc-800 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <div>
+                                    <Label class="text-zinc-400 text-[10px]">Bank Name</Label>
+                                    <Input
+                                        v-model="newTenantForm.bankName"
+                                        placeholder="e.g. KCB Bank / Co-op Bank"
+                                        class="mt-1 text-xs bg-zinc-800 border-zinc-700 text-zinc-100"
+                                    />
+                                </div>
+                                <div>
+                                    <Label class="text-zinc-400 text-[10px]">Account Number</Label>
+                                    <Input
+                                        v-model="newTenantForm.bankAccountNumber"
+                                        placeholder="e.g. 1122334455"
+                                        class="mt-1 text-xs bg-zinc-800 border-zinc-700 text-zinc-100 font-mono"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Customer Credit Account -->
+                        <label class="flex items-center justify-between p-3 rounded-xl bg-zinc-950/70 border border-zinc-800 cursor-pointer">
+                            <div class="flex items-start gap-2.5">
+                                <div class="size-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                                    <Wallet class="size-3.5" />
+                                </div>
+                                <div>
+                                    <p class="font-bold text-zinc-100 text-xs">Allow Customer Credit Accounts</p>
+                                    <p class="text-[10px] text-zinc-400">Permit credit sales against registered debtor accounts</p>
+                                </div>
+                            </div>
+                            <input
+                                v-model="newTenantForm.enableCredit"
+                                type="checkbox"
+                                class="size-4 rounded border-zinc-700 bg-zinc-900 text-amber-500 focus:ring-amber-500"
+                            />
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Step 3: Authorized Devices Setup -->
                 <div v-if="registerTab === 'devices'" class="space-y-4 py-3 text-xs">
                     <div>
                         <p class="font-bold text-zinc-200 text-xs">Select Kind of Devices Tenant Will Use</p>
@@ -1306,7 +1671,7 @@ const handleEdit = () => {
                         v-if="registerTab !== 'network'"
                         size="sm"
                         class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200"
-                        @click="registerTab = registerTab === 'profile' ? 'devices' : 'network'"
+                        @click="registerTab = registerTab === 'profile' ? 'payments' : registerTab === 'payments' ? 'devices' : 'network'"
                     >
                         Next Step →
                     </Button>
@@ -1480,17 +1845,37 @@ const handleEdit = () => {
                     </div>
                 </div>
 
-                <DialogFooter class="border-t border-zinc-800 pt-3 gap-2">
+                <DialogFooter class="border-t border-zinc-800 pt-3 gap-2 flex-wrap">
                     <Button variant="ghost" class="text-xs text-zinc-400" @click="createdCredentialsModal = false">
                         Done
                     </Button>
-                    <Button class="bg-violet-600 hover:bg-violet-500 text-white text-xs gap-1.5" @click="copyCredentials">
+                    <Button class="bg-zinc-700 hover:bg-zinc-600 text-white text-xs gap-1.5" @click="copyCredentials">
                         <Copy class="size-3.5" />
                         Copy Credentials
+                    </Button>
+                    <Button
+                        v-if="createdCredentialsData?.tenant_id"
+                        class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1.5"
+                        @click="handleLaunchWorkspace"
+                    >
+                        <ExternalLink class="size-3.5" />
+                        Launch Workspace
                     </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+
+        <!-- Delete Tenant Warning Alert Dialog -->
+        <ConfirmDialog
+            v-model:open="deleteConfirmOpen"
+            title="Permanently Delete Tenant Workspace"
+            description="Are you sure you want to permanently delete this tenant? All associated users, branches, inventory, sales, and financial ledgers will be irreversibly erased."
+            :item-name="tenantToDelete ? `${tenantToDelete.name} (${tenantToDelete.slug || tenantToDelete.subdomain || 'tenant'})` : undefined"
+            warning-note="DANGER: This action cannot be reversed. All database records and transaction histories for this business will be permanently purged."
+            confirm-text="Permanently Delete"
+            :loading="isDeletingTenant"
+            @confirm="confirmDeleteTenant"
+        />
     </SuperAdminLayout>
 </template>
 

@@ -2,6 +2,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import DataTable from '@/components/ui/DataTable.vue';
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -96,12 +97,26 @@ const handleRecordCustomerPayment = () => {
     });
 };
 
-const handleDeleteCustomer = (c: any) => {
-    if (!confirm(`Are you sure you want to remove ${c.name}?`)) return;
+const deleteConfirmOpen = ref(false);
+const customerToDelete = ref<any>(null);
+const isDeletingCustomer = ref(false);
 
-    router.delete(`/customers/${c.id}`, {
-        onSuccess: () => success('Customer Removed', 'Customer account deleted.'),
-        onError: (errs) => error('Error', Object.values(errs)[0] as string),
+const openDeleteCustomer = (c: any) => {
+    customerToDelete.value = c;
+    deleteConfirmOpen.value = true;
+};
+
+const confirmDeleteCustomer = () => {
+    if (!customerToDelete.value) return;
+    isDeletingCustomer.value = true;
+
+    router.delete(`/customers/${customerToDelete.value.id}`, {
+        onSuccess: () => {
+            success('Customer Removed', `${customerToDelete.value?.name} account deleted.`);
+            deleteConfirmOpen.value = false;
+        },
+        onError: (errs) => error('Delete Failed', (Object.values(errs)[0] as string) || 'Could not remove customer.'),
+        onFinish: () => (isDeletingCustomer.value = false),
     });
 };
 </script>
@@ -110,7 +125,7 @@ const handleDeleteCustomer = (c: any) => {
     <Head title="Customer Directory" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="p-4 md:p-8 space-y-6 max-w-[1600px] mx-auto">
+        <div class="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
             <!-- Header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -183,7 +198,7 @@ const handleDeleteCustomer = (c: any) => {
                             variant="ghost"
                             size="icon"
                             class="h-7 w-7 text-muted-foreground hover:text-destructive"
-                            @click="handleDeleteCustomer(row)"
+                            @click="openDeleteCustomer(row)"
                         >
                             <Trash2 class="size-3.5" />
                         </Button>
@@ -263,5 +278,17 @@ const handleDeleteCustomer = (c: any) => {
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+
+        <!-- Delete Customer Warning Alert Dialog -->
+        <ConfirmDialog
+            v-model:open="deleteConfirmOpen"
+            title="Delete Customer Account"
+            description="Are you sure you want to permanently delete this customer record? All linked contact information and historical ledger tags will be removed."
+            :item-name="customerToDelete ? `${customerToDelete.name} (${customerToDelete.phone || 'No phone'})` : undefined"
+            :warning-note="customerToDelete && customerToDelete.currentBalance > 0 ? `Caution: This customer has an active outstanding balance of ${formatCurrency(customerToDelete.currentBalance)}. Deleting the account will complicate ledger credit tracking.` : undefined"
+            confirm-text="Yes, Delete Customer"
+            :loading="isDeletingCustomer"
+            @confirm="confirmDeleteCustomer"
+        />
     </AppLayout>
 </template>

@@ -9,6 +9,7 @@ use App\Services\BarcodeLookupService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -95,7 +96,8 @@ class ProductController extends Controller
             return response()->json(['found' => false, 'message' => 'Invalid barcode']);
         }
 
-        $result = $lookupService->lookup(trim($barcode));
+        $tenant = $this->currentTenant($request);
+        $result = $lookupService->lookup(trim($barcode), $tenant?->id);
         return response()->json($result);
     }
 
@@ -127,7 +129,7 @@ class ProductController extends Controller
                 'name' => $validated['name'],
                 'category' => $validated['category'] ?? 'General',
                 'source' => 'pos_catalog',
-            ]);
+            ], $tenant->id);
         }
 
         return back()->with('success', "Product \"{$validated['name']}\" created.");
@@ -161,7 +163,7 @@ class ProductController extends Controller
                 'name' => $nameToRemember,
                 'category' => $validated['category'] ?? $product->category ?? 'General',
                 'source' => 'pos_catalog',
-            ]);
+            ], $tenant->id);
         }
 
         return back()->with('success', "Product \"{$product->name}\" updated.");
@@ -215,7 +217,50 @@ class ProductController extends Controller
             return back()->with('error', "Insufficient stock for transfer. Available: {$product->stock_quantity} units.");
         }
 
-        $product->decrement('stock_quantity', $validated['quantity']);
+        DB::transaction(function () use ($tenant, $product, $validated) {
+            $product->decrement('stock_quantity', $validated['quantity']);
+
+            // Resolve destination branch under current tenant
+            $destBranch = Branch::where('tenant_id', $tenant->id)
+                ->where(function ($q) use ($validated) {
+                    $q->where('id', $validated['to_branch'])
+                      ->orWhere('name', $validated['to_branch']);
+                })->first();
+
+            if ($destBranch) {
+                // Find or create matching product in destination branch
+                $destProduct = Product::where('tenant_id', $tenant->id)
+                    ->where('branch_id', $destBranch->id)
+                    ->where(function ($q) use ($product) {
+                        if (!empty($product->barcode)) {
+                            $q->where('barcode', $product->barcode);
+                        } elseif (!empty($product->sku)) {
+                            $q->where('sku', $product->sku);
+                        } else {
+                            $q->where('name', $product->name);
+                        }
+                    })->first();
+
+                if ($destProduct) {
+                    $destProduct->increment('stock_quantity', $validated['quantity']);
+                } else {
+                    Product::create([
+                        'tenant_id' => $tenant->id,
+                        'branch_id' => $destBranch->id,
+                        'name' => $product->name,
+                        'sku' => $product->sku,
+                        'barcode' => $product->barcode,
+                        'category' => $product->category,
+                        'cost_price' => $product->cost_price,
+                        'selling_price' => $product->selling_price,
+                        'stock_quantity' => $validated['quantity'],
+                        'reorder_level' => $product->reorder_level,
+                        'unit' => $product->unit,
+                        'status' => 'Active',
+                    ]);
+                }
+            }
+        });
 
         return back()->with('success', "Dispatched {$validated['quantity']} units of \"{$product->name}\" to {$validated['to_branch']}.");
     }

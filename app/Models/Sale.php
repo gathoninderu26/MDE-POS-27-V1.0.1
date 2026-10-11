@@ -23,6 +23,8 @@ class Sale extends Model
         'profit',
         'payment_method',
         'payment_status',
+        'mpesa_code',
+        'mpesa_payer_name',
         'customer_name',
         'customer_phone',
         'notes',

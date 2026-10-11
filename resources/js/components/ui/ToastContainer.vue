@@ -45,37 +45,39 @@ const getIconColor = (type?: string) => {
 </script>
 
 <template>
-    <div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex w-full max-w-sm flex-col gap-2 pointer-events-none px-4">
-        <TransitionGroup
-            enter-active-class="transition duration-300 ease-out"
-            enter-from-class="transform -translate-y-3 opacity-0 scale-95"
-            enter-to-class="transform translate-y-0 opacity-100 scale-100"
-            leave-active-class="transition duration-200 ease-in"
-            leave-from-class="transform opacity-100 scale-100"
-            leave-to-class="transform -translate-y-2 opacity-0 scale-95"
-        >
-            <div
-                v-for="t in toasts"
-                :key="t.id"
-                :class="[
-                    'pointer-events-auto flex w-full items-start gap-3 rounded-xl border p-4 shadow-lg backdrop-blur-md transition-all',
-                    getBorderColor(t.type),
-                    'bg-card/95 text-card-foreground',
-                ]"
+    <Teleport to="body">
+        <div class="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] flex w-full max-w-sm flex-col gap-2 pointer-events-none px-4 print:hidden">
+            <TransitionGroup
+                enter-active-class="transition duration-300 ease-out"
+                enter-from-class="transform -translate-y-3 opacity-0 scale-95"
+                enter-to-class="transform translate-y-0 opacity-100 scale-100"
+                leave-active-class="transition duration-200 ease-in"
+                leave-from-class="transform opacity-100 scale-100"
+                leave-to-class="transform -translate-y-2 opacity-0 scale-95"
             >
-                <component :is="getIcon(t.type)" :class="['mt-0.5 size-5 shrink-0', getIconColor(t.type)]" />
-                <div class="flex-1">
-                    <h5 class="text-sm font-semibold">{{ t.title }}</h5>
-                    <p v-if="t.description" class="mt-0.5 text-xs text-muted-foreground">{{ t.description }}</p>
-                </div>
-                <button
-                    type="button"
-                    class="text-muted-foreground hover:text-foreground"
-                    @click="removeToast(t.id)"
+                <div
+                    v-for="t in toasts"
+                    :key="t.id"
+                    :class="[
+                        'pointer-events-auto flex w-full items-start gap-3 rounded-xl border p-4 shadow-lg backdrop-blur-md transition-all',
+                        getBorderColor(t.type),
+                        'bg-card/95 text-card-foreground',
+                    ]"
                 >
-                    <X class="size-4" />
-                </button>
-            </div>
-        </TransitionGroup>
-    </div>
+                    <component :is="getIcon(t.type)" :class="['mt-0.5 size-5 shrink-0', getIconColor(t.type)]" />
+                    <div class="flex-1">
+                        <h5 class="text-sm font-semibold">{{ t.title }}</h5>
+                        <p v-if="t.description" class="mt-0.5 text-xs text-muted-foreground">{{ t.description }}</p>
+                    </div>
+                    <button
+                        type="button"
+                        class="text-muted-foreground hover:text-foreground"
+                        @click="removeToast(t.id)"
+                    >
+                        <X class="size-4" />
+                    </button>
+                </div>
+            </TransitionGroup>
+        </div>
+    </Teleport>
 </template>

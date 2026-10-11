@@ -11,13 +11,20 @@ import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
+import CategoriesGuideOverlay from '@/components/products/CategoriesGuideOverlay.vue';
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import {
     AlertTriangle,
     ArrowUpDown,
     Box,
     CheckCircle2,
     ChevronDown,
+    ChevronLeft,
+    ChevronRight,
+    ChevronsLeft,
+    ChevronsRight,
     ChevronUp,
+    Compass,
     Edit2,
     ExternalLink,
     Layers,
@@ -33,7 +40,7 @@ import {
     TrendingUp,
     X,
 } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 const props = defineProps<{
@@ -105,6 +112,7 @@ const resetFilters = () => {
     selectedStatusFilter.value = 'all';
     sortKey.value = 'sort_order';
     sortDirection.value = 'asc';
+    currentPage.value = 1;
 };
 
 const filteredCategories = computed(() => {
@@ -149,6 +157,48 @@ const filteredCategories = computed(() => {
     });
 
     return list;
+});
+
+// ─── Pagination ──────────────────────────────────────────────────────────────
+const currentPage = ref(1);
+const pageSize = ref(10);
+const pageSizeOptions = [5, 10, 20, 50, 100];
+
+const totalPages = computed(() => {
+    return Math.ceil(filteredCategories.value.length / pageSize.value) || 1;
+});
+
+const paginatedCategories = computed(() => {
+    const start = (currentPage.value - 1) * pageSize.value;
+    return filteredCategories.value.slice(start, start + pageSize.value);
+});
+
+const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages.value) {
+        currentPage.value = page;
+    }
+};
+
+const visiblePages = computed(() => {
+    const total = totalPages.value;
+    const curr = currentPage.value;
+    if (total <= 5) {
+        return Array.from({ length: total }, (_, i) => i + 1);
+    }
+    const pages: (number | string)[] = [];
+    if (curr <= 3) {
+        pages.push(1, 2, 3, 4, '...', total);
+    } else if (curr >= total - 2) {
+        pages.push(1, '...', total - 3, total - 2, total - 1, total);
+    } else {
+        pages.push(1, '...', curr - 1, curr, curr + 1, '...', total);
+    }
+    return pages;
+});
+
+// Reset page whenever search, filter, or page size changes
+watch([searchQuery, selectedUnitFilter, selectedStatusFilter, pageSize], () => {
+    currentPage.value = 1;
 });
 
 const tableTotals = computed(() => {
@@ -295,13 +345,60 @@ const importOrphan = (name: string) => {
         onError:   (e) => error('Error', Object.values(e)[0] as string),
     });
 };
+
+// ─── Categories Page Guide State ─────────────────────────────────────────────
+const guideOverlayOpen = ref(false);
+const guideCurrentStep = ref(0);
+
+const openCategoriesGuide = (step = 0) => {
+    guideCurrentStep.value = step;
+    guideOverlayOpen.value = true;
+};
+
+const handleGuideAction = (actionType: string) => {
+    if (actionType === 'start-walkthrough') {
+        guideCurrentStep.value = 1;
+    } else if (actionType === 'open-create-modal') {
+        openCreate();
+    } else if (actionType === 'filter-active') {
+        selectedStatusFilter.value = 'active';
+    }
+};
+
+const handleNewItem = () => {
+    openCreate();
+};
+
+const handleSubmitForm = () => {
+    if (modalOpen.value) {
+        handleSave();
+    }
+};
+
+onMounted(() => {
+    window.addEventListener('app:new-item', handleNewItem);
+    window.addEventListener('app:submit-form', handleSubmitForm);
+
+    const hasPrompted = sessionStorage.getItem('mde_categories_guide_prompted');
+    if (!hasPrompted) {
+        setTimeout(() => {
+            guideOverlayOpen.value = true;
+            sessionStorage.setItem('mde_categories_guide_prompted', 'true');
+        }, 600);
+    }
+});
+
+onUnmounted(() => {
+    window.removeEventListener('app:new-item', handleNewItem);
+    window.removeEventListener('app:submit-form', handleSubmitForm);
+});
 </script>
 
 <template>
     <Head :title="`${terms.categoryLabel}s — ${terms.itemsPlural}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto">
+        <div class="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
 
             <!-- ─── Header ─────────────────────────────────────────────── -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -321,12 +418,24 @@ const importOrphan = (name: string) => {
                 </div>
 
                 <div class="flex items-center gap-2 flex-wrap">
+                    <!-- Page Guide Button -->
+                    <Button
+                        id="categories-tour-guide-btn"
+                        size="sm"
+                        variant="outline"
+                        class="h-9 gap-1.5 text-xs border-primary/30 text-primary hover:bg-primary/10 font-semibold"
+                        @click="openCategoriesGuide(0)"
+                    >
+                        <Compass class="size-4" />
+                        Page Guide
+                    </Button>
+
                     <!-- Link to Catalog -->
-                    <Button as="a" href="/products" size="sm" variant="outline" class="h-9 gap-1.5 text-xs">
+                    <Button id="categories-tour-products-btn" as="a" href="/products" size="sm" variant="outline" class="h-9 gap-1.5 text-xs">
                         <Package class="size-3.5" />
                         All {{ terms.itemsPlural }}
                     </Button>
-                    <Button size="sm" class="h-9 gap-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold" @click="openCreate">
+                    <Button id="categories-tour-create-btn" size="sm" class="h-9 gap-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold" @click="openCreate">
                         <Plus class="size-4" />
                         New {{ terms.categoryLabel }}
                     </Button>
@@ -334,7 +443,7 @@ const importOrphan = (name: string) => {
             </div>
 
             <!-- ─── Stat Cards Row ─────────────────────────────────────── -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div id="categories-tour-kpi" class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <Card class="border border-border/80 bg-card p-4 space-y-1">
                     <div class="flex items-center justify-between text-xs text-muted-foreground">
                         <span>Total {{ terms.categoryLabel }}s</span>
@@ -375,7 +484,7 @@ const importOrphan = (name: string) => {
             </div>
 
             <!-- ─── Unit Distribution Pills ────────────────────────────── -->
-            <div v-if="unitDistribution.length > 0" class="flex items-center gap-2 flex-wrap">
+            <div id="categories-tour-units" v-if="unitDistribution.length > 0" class="flex items-center gap-2 flex-wrap">
                 <span class="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Packaging Units:</span>
                 <span
                     v-for="[unit, count] in unitDistribution"
@@ -388,7 +497,7 @@ const importOrphan = (name: string) => {
             </div>
 
             <!-- ─── Orphaned Category Alert ────────────────────────────── -->
-            <div v-if="(orphanedNames ?? []).length > 0" class="p-4 rounded-xl border border-amber-500/40 bg-amber-500/5 space-y-3">
+            <div id="categories-tour-orphaned" v-if="(orphanedNames ?? []).length > 0" class="p-4 rounded-xl border border-amber-500/40 bg-amber-500/5 space-y-3">
                 <div class="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-bold text-sm">
                     <AlertTriangle class="size-4 shrink-0" />
                     {{ orphanedNames!.length }} informal {{ orphanedNames!.length === 1 ? 'category' : 'categories' }} found in your catalog
@@ -410,7 +519,7 @@ const importOrphan = (name: string) => {
             </div>
 
             <!-- ─── Search, Filters & Controls Bar ────────────────────────── -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-wrap">
+            <div id="categories-tour-filters" class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-wrap">
                 <div class="flex items-center gap-2 flex-wrap flex-1 min-w-[280px]">
                     <!-- Search Input -->
                     <div class="relative w-full sm:w-64">
@@ -499,7 +608,7 @@ const importOrphan = (name: string) => {
             </div>
 
             <!-- ─── Tabulated Category View ────────────────────────────── -->
-            <div v-else class="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-sm">
+            <div id="categories-tour-table" v-else class="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-sm">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs">
                         <thead class="bg-muted/50 border-b border-border/70 text-muted-foreground select-none">
@@ -558,13 +667,13 @@ const importOrphan = (name: string) => {
                         </thead>
                         <tbody class="divide-y divide-border/60">
                             <tr
-                                v-for="(cat, idx) in filteredCategories"
+                                v-for="(cat, idx) in paginatedCategories"
                                 :key="cat.id"
                                 class="hover:bg-muted/30 transition-colors group"
                             >
                                 <!-- Sort Order / Index -->
                                 <td class="py-3.5 px-3 text-center font-mono text-[11px] text-muted-foreground">
-                                    {{ cat.sort_order || idx + 1 }}
+                                    {{ cat.sort_order || ((currentPage - 1) * pageSize + idx + 1) }}
                                 </td>
 
                                 <!-- Name & Description -->
@@ -695,7 +804,7 @@ const importOrphan = (name: string) => {
                         <tfoot class="bg-muted/40 border-t-2 border-border/80 font-semibold text-xs">
                             <tr>
                                 <td colspan="4" class="py-3 px-4 text-muted-foreground">
-                                    Total Across {{ tableTotals.count }} Listed {{ terms.categoryLabel }}s
+                                    Total Across {{ tableTotals.count }} Filtered {{ terms.categoryLabel }}s
                                 </td>
                                 <td class="py-3 px-4 text-right font-mono text-sm font-bold text-foreground">
                                     {{ tableTotals.products.toLocaleString() }} items
@@ -713,6 +822,110 @@ const importOrphan = (name: string) => {
                             </tr>
                         </tfoot>
                     </table>
+                </div>
+
+                <!-- ─── Table Pagination Bar ────────────────────────────── -->
+                <div
+                    class="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-border/70 bg-muted/20 px-4 py-3 text-xs text-muted-foreground"
+                >
+                    <!-- Left: Showing summary & Page size selector -->
+                    <div class="flex items-center gap-3 flex-wrap justify-between w-full sm:w-auto">
+                        <div class="text-xs text-muted-foreground">
+                            Showing
+                            <span class="font-bold text-foreground">{{ filteredCategories.length === 0 ? 0 : (currentPage - 1) * pageSize + 1 }}</span>
+                            to
+                            <span class="font-bold text-foreground">{{ Math.min(currentPage * pageSize, filteredCategories.length) }}</span>
+                            of
+                            <span class="font-bold text-foreground">{{ filteredCategories.length }}</span>
+                            {{ terms.categoryLabel.toLowerCase() }}s
+                        </div>
+
+                        <!-- Rows per page selector -->
+                        <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <span>Per page:</span>
+                            <select
+                                v-model.number="pageSize"
+                                class="h-7 rounded-md border border-input bg-background px-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            >
+                                <option v-for="size in pageSizeOptions" :key="size" :value="size">
+                                    {{ size }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Right: Page Navigation -->
+                    <div v-if="totalPages > 1" class="flex items-center gap-1">
+                        <!-- First Page -->
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            class="h-8 w-8 p-0"
+                            :disabled="currentPage === 1"
+                            title="First page"
+                            @click="goToPage(1)"
+                        >
+                            <ChevronsLeft class="size-3.5" />
+                        </Button>
+
+                        <!-- Prev Page -->
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            class="h-8 w-8 p-0"
+                            :disabled="currentPage === 1"
+                            title="Previous page"
+                            @click="goToPage(currentPage - 1)"
+                        >
+                            <ChevronLeft class="size-3.5" />
+                        </Button>
+
+                        <!-- Page Pills -->
+                        <template v-for="(p, i) in visiblePages" :key="i">
+                            <span
+                                v-if="p === '...'"
+                                class="px-2 py-1 text-xs text-muted-foreground select-none"
+                            >
+                                …
+                            </span>
+                            <Button
+                                v-else
+                                :variant="currentPage === p ? 'default' : 'outline'"
+                                size="sm"
+                                :class="[
+                                    'h-8 min-w-8 px-2 text-xs font-semibold',
+                                    currentPage === p ? 'bg-primary text-primary-foreground font-bold shadow-xs' : 'hover:bg-muted/60 text-muted-foreground hover:text-foreground'
+                                ]"
+                                @click="goToPage(p as number)"
+                            >
+                                {{ p }}
+                            </Button>
+                        </template>
+
+                        <!-- Next Page -->
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            class="h-8 w-8 p-0"
+                            :disabled="currentPage === totalPages"
+                            title="Next page"
+                            @click="goToPage(currentPage + 1)"
+                        >
+                            <ChevronRight class="size-3.5" />
+                        </Button>
+
+                        <!-- Last Page -->
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            class="h-8 w-8 p-0"
+                            :disabled="currentPage === totalPages"
+                            title="Last page"
+                            @click="goToPage(totalPages)"
+                        >
+                            <ChevronsRight class="size-3.5" />
+                        </Button>
+                    </div>
                 </div>
             </div>
 
@@ -827,35 +1040,24 @@ const importOrphan = (name: string) => {
 
         <!-- ═══════════════════════════════════════════════════════════
              DELETE CONFIRMATION MODAL
-        ═══════════════════════════════════════════════════════════ -->
-        <Dialog :open="deleteConfirmOpen" @update:open="(v) => (deleteConfirmOpen = v)">
-            <DialogContent class="w-[95vw] sm:max-w-sm">
-                <DialogHeader>
-                    <DialogTitle class="text-base font-bold text-rose-600">Delete {{ terms.categoryLabel }}</DialogTitle>
-                </DialogHeader>
-                <div class="py-2 text-sm text-muted-foreground space-y-2">
-                    <p>Are you sure you want to delete <strong class="text-foreground">"{{ deleteTarget?.name }}"</strong>?</p>
-                    <p v-if="deleteTarget?.product_count > 0" class="text-xs p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
-                        <AlertTriangle class="size-3.5 shrink-0" />
-                        This category has {{ deleteTarget.product_count }} product(s). Reassign them first.
-                    </p>
-                    <p v-else class="text-xs">This action cannot be undone.</p>
-                </div>
-                <DialogFooter class="gap-2">
-                    <Button variant="ghost" size="sm" @click="deleteConfirmOpen = false">Cancel</Button>
-                    <Button
-                        size="sm"
-                        class="bg-rose-600 hover:bg-rose-700 text-white font-bold"
-                        :disabled="isDeleting || (deleteTarget?.product_count > 0)"
-                        :loading="isDeleting"
-                        @click="confirmDelete"
-                    >
-                        <Trash2 v-if="!isDeleting" class="size-3.5 mr-1" />
-                        {{ isDeleting ? 'Deleting…' : 'Yes, Delete' }}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+        <!-- Delete Category Warning Alert Dialog -->
+        <ConfirmDialog
+            v-model:open="deleteConfirmOpen"
+            :title="`Delete ${terms.categoryLabel}`"
+            :description="`Are you sure you want to permanently delete this ${terms.categoryLabel.toLowerCase()}? This action cannot be undone.`"
+            :item-name="deleteTarget?.name"
+            :warning-note="deleteTarget && deleteTarget.product_count > 0 ? `Cannot delete: This category currently has ${deleteTarget.product_count} product(s) assigned. Reassign them to another category first.` : undefined"
+            confirm-text="Yes, Delete Category"
+            :disabled="deleteTarget?.product_count > 0"
+            :loading="isDeleting"
+            @confirm="confirmDelete"
+        />
 
+        <!-- Interactive Categories Guide Overlay -->
+        <CategoriesGuideOverlay
+            v-model:open="guideOverlayOpen"
+            v-model:current-step="guideCurrentStep"
+            @action="handleGuideAction"
+        />
     </AppLayout>
 </template>

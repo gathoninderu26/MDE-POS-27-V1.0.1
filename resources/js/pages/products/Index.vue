@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useBranch } from '@/composables/useBranch';
+import { useFeatures } from '@/composables/useFeatures';
 import { useBusinessTerms } from '@/composables/useBusinessTerms';
 import type { ProductItem } from '@/composables/useCart';
 import { formatCurrency } from '@/composables/useCurrency';
@@ -23,6 +24,7 @@ import {
     Box,
     Calendar,
     CheckCircle2,
+    Compass,
     Download,
     Edit,
     ExternalLink,
@@ -52,9 +54,11 @@ import {
     Wrench,
     X,
 } from 'lucide-vue-next';
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import BarcodeLabelModal, { type ProductLabelData } from '@/components/inventory/BarcodeLabelModal.vue';
 import ProductImportModal from '@/components/products/ProductImportModal.vue';
+import ProductGuideOverlay from '@/components/products/ProductGuideOverlay.vue';
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { useBarcodeScanner } from '@/composables/useBarcodeScanner';
 import { useBarcodeProductLookup } from '@/composables/useBarcodeProductLookup';
 
@@ -66,6 +70,7 @@ const props = defineProps<{
 }>();
 
 const { terms } = useBusinessTerms();
+const { isMultiBranch } = useFeatures();
 const { currentBranch } = useBranch();
 const { success, warning, error, info } = useToast();
 
@@ -468,11 +473,25 @@ useBarcodeScanner({
     soundEnabled: true,
 });
 
-const handleDeleteProduct = (product: ProductItem) => {
-    if (!confirm(`Delete "${product.name}"?`)) return;
-    router.delete(`/products/${product.id}`, {
-        onSuccess: () => success(`${terms.value.itemLabel} Removed`, `${product.name} deleted from catalog.`),
+const deleteConfirmOpen = ref(false);
+const deleteProductTarget = ref<ProductItem | null>(null);
+const isDeletingProduct = ref(false);
+
+const openDeleteProductModal = (product: ProductItem) => {
+    deleteProductTarget.value = product;
+    deleteConfirmOpen.value = true;
+};
+
+const confirmDeleteProduct = () => {
+    if (!deleteProductTarget.value) return;
+    isDeletingProduct.value = true;
+    router.delete(`/products/${deleteProductTarget.value.id}`, {
+        onSuccess: () => {
+            success(`${terms.value.itemLabel} Removed`, `${deleteProductTarget.value?.name} deleted from catalog.`);
+            deleteConfirmOpen.value = false;
+        },
         onError: () => error('Delete Failed', 'Could not delete product.'),
+        onFinish: () => (isDeletingProduct.value = false),
     });
 };
 
@@ -605,6 +624,87 @@ const exportProductsCsv = () => {
     URL.revokeObjectURL(url);
     success('Export Complete', `Exported ${products.value.length} products to CSV.`);
 };
+
+// ============================================================
+// INTERACTIVE PRODUCT CATALOG GUIDE & WALKTHROUGH
+// ============================================================
+const guideOverlayOpen = ref(false);
+const guideCurrentStep = ref(0);
+
+const openGuide = (step = 0) => {
+    guideCurrentStep.value = step;
+    guideOverlayOpen.value = true;
+};
+
+const handleGuideAction = (actionType: string) => {
+    if (actionType === 'open-add-drawer') {
+        guideOverlayOpen.value = false;
+        openAddProduct();
+    } else if (actionType === 'focus-search') {
+        guideOverlayOpen.value = false;
+        nextTick(() => {
+            const searchInput = document.querySelector('input[type="search"], input[placeholder*="Search"]') as HTMLInputElement;
+            if (searchInput) searchInput.focus();
+        });
+    } else if (actionType === 'open-stock-adjust') {
+        const first = filteredList.value[0];
+        if (first) {
+            guideOverlayOpen.value = false;
+            openStockAdjust(first);
+        }
+    } else if (actionType === 'open-barcode-label') {
+        const first = filteredList.value[0];
+        if (first) {
+            guideOverlayOpen.value = false;
+            openBarcodeLabel(first);
+        }
+    } else if (actionType === 'open-product-detail') {
+        const first = filteredList.value[0];
+        if (first) {
+            guideOverlayOpen.value = false;
+            openDetail(first);
+        }
+    } else if (actionType === 'open-edit-drawer') {
+        const first = filteredList.value[0];
+        if (first) {
+            guideOverlayOpen.value = false;
+            openEditProduct(first);
+        }
+    } else if (actionType === 'open-import-modal') {
+        guideOverlayOpen.value = false;
+        importModalOpen.value = true;
+    }
+};
+
+const handleNewItem = () => {
+    openAddProduct();
+};
+
+const handleSubmitForm = () => {
+    if (formModalOpen.value) {
+        handleSaveProduct();
+    } else if (adjustModalOpen.value) {
+        handleSaveAdjustment();
+    }
+};
+
+onMounted(() => {
+    window.addEventListener('app:new-item', handleNewItem);
+    window.addEventListener('app:submit-form', handleSubmitForm);
+
+    // Auto-prompt guide on first visit to Products Catalog in this session
+    if (!sessionStorage.getItem('mde_product_guide_prompted')) {
+        sessionStorage.setItem('mde_product_guide_prompted', 'true');
+        setTimeout(() => {
+            openGuide(0);
+        }, 750);
+    }
+});
+
+onUnmounted(() => {
+    window.removeEventListener('app:new-item', handleNewItem);
+    window.removeEventListener('app:submit-form', handleSubmitForm);
+});
 </script>
 
 <template>
@@ -626,22 +726,36 @@ const exportProductsCsv = () => {
                     </p>
                 </div>
 
-                <div class="flex items-center gap-2 flex-wrap">
+                <div id="product-step-actions" class="flex items-center gap-2 flex-wrap">
+                    <!-- Product Catalog Page Guide Button -->
+                    <Button
+                        id="product-tour-guide-btn"
+                        size="sm"
+                        variant="outline"
+                        class="h-9 gap-1.5 text-xs border-primary/40 text-primary bg-primary/5 hover:bg-primary/10 font-bold shadow-xs cursor-pointer"
+                        @click="openGuide(0)"
+                        title="Interactive Product Catalog Walkthrough"
+                    >
+                        <Compass class="size-3.5" />
+                        <span>Page Guide</span>
+                    </Button>
+
                     <Button as="a" href="/products/categories" size="sm" variant="outline" class="h-9 gap-1.5 text-xs hover:border-primary/50 hover:bg-primary/5 transition-colors">
                         <FolderTree class="size-3.5 text-primary" />
                         Categories
                     </Button>
-                    <Button size="sm" variant="outline" class="h-9 gap-1.5 text-xs" @click="exportProductsCsv">
+                    <Button id="product-step-export-btn" size="sm" variant="outline" class="h-9 gap-1.5 text-xs" @click="exportProductsCsv">
                         <FileSpreadsheet class="size-3.5" />
                         Export CSV
                     </Button>
-                    <Button size="sm" variant="outline" class="h-9 gap-1.5 text-xs hover:bg-primary/10 hover:text-primary hover:border-primary/40 transition-colors" @click="importModalOpen = true">
+                    <Button id="product-step-import-btn" size="sm" variant="outline" class="h-9 gap-1.5 text-xs hover:bg-primary/10 hover:text-primary hover:border-primary/40 transition-colors" @click="importModalOpen = true">
                         <Download class="size-3.5" />
                         Import
                     </Button>
                     <Button
+                        id="product-step-add-btn"
                         size="sm"
-                        class="h-9 gap-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-sm"
+                        class="h-9 gap-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-sm cursor-pointer"
                         @click="openAddProduct"
                     >
                         <Plus class="size-4" />
@@ -651,7 +765,7 @@ const exportProductsCsv = () => {
             </div>
 
             <!-- Catalog Stats Cards Row -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div id="product-step-stats" class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <Card class="border border-border/80 bg-card p-4 space-y-1">
                     <div class="flex items-center justify-between text-xs text-muted-foreground">
                         <span>Total {{ terms.itemsPlural }}</span>
@@ -707,7 +821,7 @@ const exportProductsCsv = () => {
             </div>
 
             <!-- Low Stock & Expiry Alerts Banner -->
-            <div v-if="lowStockItems.length > 0 || (terms.showBatchExpiry && expiringItems.length > 0)" class="space-y-2">
+            <div id="product-step-alerts" v-if="lowStockItems.length > 0 || (terms.showBatchExpiry && expiringItems.length > 0)" class="space-y-2">
                 <div v-if="lowStockItems.length > 0" class="flex items-center gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-xs">
                     <AlertTriangle class="size-4 text-amber-600 shrink-0" />
                     <span class="font-semibold text-amber-800 dark:text-amber-300">
@@ -735,7 +849,7 @@ const exportProductsCsv = () => {
             </div>
 
             <!-- Categories Filter Bar -->
-            <div class="flex items-center justify-between gap-2 overflow-x-auto pb-1 text-xs scrollbar-none">
+            <div id="product-step-categories" class="flex items-center justify-between gap-2 overflow-x-auto pb-1 text-xs scrollbar-none">
                 <div class="flex items-center gap-1.5 flex-wrap md:flex-nowrap">
                     <button
                         v-for="cat in categories"
@@ -768,16 +882,21 @@ const exportProductsCsv = () => {
             </div>
 
             <!-- Products DataTable -->
-            <DataTable
-                :columns="columns"
-                :data="filteredList"
-                :search-placeholder="`Search ${terms.itemsPlural.toLowerCase()} by name, SKU, barcode, brand...`"
-                :search-keys="['name', 'sku', 'barcode', 'brand', 'category', 'genericName', 'specifications']"
-                :page-size="12"
-            >
+            <div id="product-step-table">
+                <DataTable
+                    :columns="columns"
+                    :data="filteredList"
+                    :search-placeholder="`Search ${terms.itemsPlural.toLowerCase()} by name, SKU, barcode, brand...`"
+                    :search-keys="['name', 'sku', 'barcode', 'brand', 'category', 'genericName', 'specifications']"
+                    :page-size="12"
+                >
                 <!-- Product Name Column -->
                 <template #cell-product="{ row }">
-                    <div class="flex items-center gap-3 cursor-pointer" @click="openDetail(row)">
+                    <div
+                        :id="row.id === filteredList[0]?.id ? 'product-step-col-product' : undefined"
+                        class="flex items-center gap-3 cursor-pointer"
+                        @click="openDetail(row)"
+                    >
                         <div class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold text-xs shrink-0">
                             <Pill v-if="terms.showPrescriptions" class="size-4" />
                             <Wrench v-else-if="terms.showDimensionsAndSite" class="size-4" />
@@ -844,7 +963,10 @@ const exportProductsCsv = () => {
 
                 <!-- Retail Price -->
                 <template #cell-retailPrice="{ row }">
-                    <div class="text-right">
+                    <div
+                        :id="row.id === filteredList[0]?.id ? 'product-step-col-price' : undefined"
+                        class="text-right"
+                    >
                         <span class="font-mono font-bold text-foreground text-xs">{{ formatCurrency(row.retailPrice) }}</span>
                         <div v-if="row.wholesalePrice && row.wholesalePrice !== row.retailPrice" class="text-[10px] text-primary font-mono">
                             WS: {{ formatCurrency(row.wholesalePrice) }}
@@ -871,7 +993,10 @@ const exportProductsCsv = () => {
 
                 <!-- Stock Level Column -->
                 <template #cell-stock="{ row }">
-                    <div class="flex flex-col items-center gap-0.5">
+                    <div
+                        :id="row.id === filteredList[0]?.id ? 'product-step-stock-col' : undefined"
+                        class="flex flex-col items-center gap-0.5"
+                    >
                         <Badge
                             :variant="row.stock === 0 ? 'destructive' : row.stock <= (row.minStock || 10) ? 'warning' : 'outline'"
                             class="font-mono text-[11px]"
@@ -890,7 +1015,10 @@ const exportProductsCsv = () => {
 
                 <!-- Expiry Column (Pharmacy/FMCG) -->
                 <template #cell-expiry="{ row }">
-                    <div class="text-center">
+                    <div
+                        :id="row.id === filteredList[0]?.id ? 'product-step-col-expiry' : undefined"
+                        class="text-center"
+                    >
                         <template v-if="row.expiryDate">
                             <div
                                 :class="[
@@ -913,27 +1041,30 @@ const exportProductsCsv = () => {
                 <template #cell-actions="{ row }">
                     <div class="flex items-center justify-end gap-1">
                         <Button
+                            :id="row.id === filteredList[0]?.id ? 'product-step-adjust-btn' : undefined"
                             variant="outline"
                             size="sm"
-                            class="h-7 text-xs px-2 gap-1 text-muted-foreground hover:text-foreground"
+                            class="h-7 text-xs px-2 gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
                             @click="openStockAdjust(row)"
                         >
                             <RefreshCcw class="size-3" />
                             Stock
                         </Button>
                         <Button
+                            :id="row.id === filteredList[0]?.id ? 'product-step-barcode-col' : undefined"
                             variant="ghost"
                             size="sm"
-                            class="h-7 w-7 p-0 text-muted-foreground hover:text-primary"
+                            class="h-7 w-7 p-0 text-muted-foreground hover:text-primary cursor-pointer"
                             @click="openBarcodeLabel(row)"
                             title="Print Barcode Labels"
                         >
                             <Printer class="size-3.5" />
                         </Button>
                         <Button
+                            :id="row.id === filteredList[0]?.id ? 'product-step-edit-btn' : undefined"
                             variant="ghost"
                             size="sm"
-                            class="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                            class="h-7 w-7 p-0 text-muted-foreground hover:text-foreground cursor-pointer"
                             @click="openEditProduct(row)"
                         >
                             <Edit class="size-3.5" />
@@ -941,14 +1072,16 @@ const exportProductsCsv = () => {
                         <Button
                             variant="ghost"
                             size="sm"
-                            class="h-7 w-7 p-0 text-muted-foreground hover:text-rose-600"
-                            @click="handleDeleteProduct(row)"
+                            class="h-7 w-7 p-0 text-muted-foreground hover:text-rose-600 cursor-pointer"
+                            title="Delete product"
+                            @click="openDeleteProductModal(row)"
                         >
                             <Trash2 class="size-3.5" />
                         </Button>
                     </div>
                 </template>
             </DataTable>
+            </div>
         </div>
 
         <!-- ================================================
@@ -1513,7 +1646,7 @@ const exportProductsCsv = () => {
                                 <option>Damaged / Spoilage</option>
                                 <option>Expired — Written Off</option>
                                 <option>Return to Supplier</option>
-                                <option>Inter-Branch Transfer</option>
+                                <option v-if="isMultiBranch">Inter-Branch Transfer</option>
                                 <option>Promotions / Sampling</option>
                                 <option>Opening Stock Entry</option>
                             </select>
@@ -1552,6 +1685,25 @@ const exportProductsCsv = () => {
         <ProductImportModal
             v-model:open="importModalOpen"
             :existing-categories="categories"
+        />
+
+        <!-- Delete Product Warning Alert Dialog -->
+        <ConfirmDialog
+            v-model:open="deleteConfirmOpen"
+            :title="`Delete ${terms.itemLabel}`"
+            :description="`Are you sure you want to permanently delete this ${terms.itemLabel.toLowerCase()}? All associated pricing records and barcode history will be removed.`"
+            :item-name="deleteProductTarget ? `${deleteProductTarget.name} (SKU: ${deleteProductTarget.sku})` : undefined"
+            :warning-note="deleteProductTarget && deleteProductTarget.stock > 0 ? `Caution: This item has ${deleteProductTarget.stock} units currently in active stock. Reconcile or adjust stock first to avoid ledger discrepancies.` : undefined"
+            confirm-text="Yes, Delete Product"
+            :loading="isDeletingProduct"
+            @confirm="confirmDeleteProduct"
+        />
+
+        <!-- Interactive Product Catalog Guide Overlay -->
+        <ProductGuideOverlay
+            v-model:open="guideOverlayOpen"
+            v-model:current-step="guideCurrentStep"
+            @action="handleGuideAction"
         />
     </AppLayout>
 </template>

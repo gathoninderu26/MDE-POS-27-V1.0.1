@@ -19,6 +19,7 @@ import {
     CreditCard,
     DollarSign,
     Package,
+    Pencil,
     Pill,
     Plus,
     Printer,
@@ -89,12 +90,58 @@ const newMethod = ref({
     feePercent: 0,
 });
 
+const editingMethodModal = ref(false);
+const editingMethod = ref<any>(null);
+
+const getMethodDetailsSummary = (pm: any) => {
+    if (pm.details?.till_number) return `Till # ${pm.details.till_number} (${pm.details.store_name || currentTenant.value?.name || 'Store'})`;
+    if (pm.details?.business_number) return `Paybill # ${pm.details.business_number} Acc # ${pm.details.account_number || 'STORE'}`;
+    if (pm.details?.terminal_id) return `PDQ ${pm.details.terminal_id} (${pm.details.bank_name || 'Bank'})`;
+    if (pm.details?.bank_name) return `${pm.details.bank_name} Acc # ${pm.details.account_number || ''}`;
+    if (pm.accountRef) return pm.accountRef;
+    if (pm.type === 'Cash') return pm.details?.drawer_label || 'Store Cash Drawer';
+    return 'Active Channel';
+};
+
+const openEditMethod = (pm: any) => {
+    editingMethod.value = JSON.parse(JSON.stringify(pm));
+    if (!editingMethod.value.details) {
+        editingMethod.value.details = {};
+    }
+    editingMethodModal.value = true;
+};
+
+const handleSaveEditedMethod = () => {
+    if (!editingMethod.value) return;
+    const index = paymentMethods.value.findIndex(p => p.id === editingMethod.value.id);
+    if (index !== -1) {
+        paymentMethods.value[index] = { ...editingMethod.value };
+    }
+    editingMethodModal.value = false;
+    editingMethod.value = null;
+    success('Channel Updated', 'Payment method updated. Click "Save Changes" to save to store database.');
+};
+
+const handleDeleteMethod = (pmId: string) => {
+    if (paymentMethods.value.length <= 1) {
+        error('Cannot Remove', 'You must maintain at least one payment method.');
+        return;
+    }
+    paymentMethods.value = paymentMethods.value.filter(p => p.id !== pmId);
+    success('Removed', 'Payment method removed. Click "Save Changes" to persist.');
+};
+
 const handleAddMethod = () => {
+    if (!newMethod.value.name) return;
     paymentMethods.value.push({
         id: `pm-${Date.now()}`,
+        code: newMethod.value.name.toLowerCase().replace(/[^a-z0-9]/g, '_'),
         name: newMethod.value.name,
         type: newMethod.value.type,
         accountRef: newMethod.value.accountRef,
+        details: {
+            account_number: newMethod.value.accountRef,
+        },
         feePercent: newMethod.value.feePercent,
         enabled: true,
     });
@@ -139,7 +186,7 @@ const handleSaveSettings = () => {
     <Head title="System Settings" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="p-4 md:p-8 space-y-6 max-w-[1200px] mx-auto">
+        <div class="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
             <!-- Header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -329,14 +376,23 @@ const handleSaveSettings = () => {
                                     <span class="font-bold text-foreground">{{ pm.name }}</span>
                                     <Badge variant="outline" class="text-[10px]">{{ pm.type }}</Badge>
                                 </div>
-                                <p class="text-[11px] text-muted-foreground mt-0.5">Account / Details: {{ pm.accountRef }}</p>
+                                <p class="text-[11px] text-muted-foreground mt-0.5">{{ getMethodDetailsSummary(pm) }}</p>
                             </div>
                         </div>
 
-                        <div class="flex items-center gap-4">
-                            <div v-if="pm.feePercent > 0" class="text-right text-[11px] text-muted-foreground font-mono">
-                                Fee: {{ pm.feePercent }}%
+                        <div class="flex items-center gap-2.5">
+                            <div v-if="pm.feePercent > 0 || pm.fee_percent > 0" class="text-right text-[11px] text-muted-foreground font-mono mr-1">
+                                Fee: {{ pm.feePercent || pm.fee_percent }}%
                             </div>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                class="h-7 px-2.5 text-xs gap-1 border-border/80"
+                                @click="openEditMethod(pm)"
+                            >
+                                <Pencil class="size-3" />
+                                Edit
+                            </Button>
                             <button
                                 type="button"
                                 :class="[
@@ -347,6 +403,16 @@ const handleSaveSettings = () => {
                             >
                                 {{ pm.enabled ? 'Enabled' : 'Disabled' }}
                             </button>
+                            <Button
+                                v-if="pm.type !== 'Cash'"
+                                variant="ghost"
+                                size="sm"
+                                class="h-7 w-7 p-0 text-muted-foreground hover:text-rose-600"
+                                title="Delete Method"
+                                @click="handleDeleteMethod(pm.id)"
+                            >
+                                <Trash2 class="size-3.5" />
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -450,6 +516,106 @@ const handleSaveSettings = () => {
                 <DialogFooter class="gap-2">
                     <Button variant="ghost" size="sm" @click="newMethodModal = false">Cancel</Button>
                     <Button size="sm" class="bg-primary" @click="handleAddMethod">Add Channel</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Edit Payment Method Modal -->
+        <Dialog :open="editingMethodModal" @update:open="(v) => (editingMethodModal = v)">
+            <DialogContent class="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle class="text-base font-bold">Edit Payment Channel: {{ editingMethod?.name }}</DialogTitle>
+                </DialogHeader>
+                <div v-if="editingMethod" class="space-y-3 py-2 text-xs">
+                    <div>
+                        <Label class="text-xs">Channel Display Name</Label>
+                        <Input v-model="editingMethod.name" class="mt-1 text-xs font-semibold" />
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <Label class="text-xs">Channel Type</Label>
+                            <Input :value="editingMethod.type" disabled class="mt-1 text-xs bg-muted" />
+                        </div>
+                        <div>
+                            <Label class="text-xs">Surcharge Fee (%)</Label>
+                            <Input v-model.number="editingMethod.feePercent" type="number" step="0.1" class="mt-1 text-xs font-mono" />
+                        </div>
+                    </div>
+
+                    <!-- M-Pesa Buy Goods Till specific fields -->
+                    <template v-if="editingMethod.type === 'Mobile Money' && (editingMethod.code === 'mpesa_till' || editingMethod.name?.toLowerCase().includes('till'))">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <Label class="text-xs">Safaricom Till Number</Label>
+                                <Input v-model="editingMethod.details.till_number" placeholder="523910" class="mt-1 text-xs font-mono font-bold" />
+                            </div>
+                            <div>
+                                <Label class="text-xs">Store Name on Phone</Label>
+                                <Input v-model="editingMethod.details.store_name" placeholder="Store Name" class="mt-1 text-xs" />
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- M-Pesa Paybill specific fields -->
+                    <template v-else-if="editingMethod.type === 'Mobile Money' && (editingMethod.code === 'mpesa_paybill' || editingMethod.name?.toLowerCase().includes('paybill'))">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <Label class="text-xs">Business Number (Paybill)</Label>
+                                <Input v-model="editingMethod.details.business_number" placeholder="247247" class="mt-1 text-xs font-mono font-bold" />
+                            </div>
+                            <div>
+                                <Label class="text-xs">Account Number</Label>
+                                <Input v-model="editingMethod.details.account_number" placeholder="STORE" class="mt-1 text-xs font-mono" />
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Card specific fields -->
+                    <template v-else-if="editingMethod.type === 'Card'">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <Label class="text-xs">PDQ Terminal ID</Label>
+                                <Input v-model="editingMethod.details.terminal_id" placeholder="EQ-PDQ-8901" class="mt-1 text-xs font-mono" />
+                            </div>
+                            <div>
+                                <Label class="text-xs">Acquiring Bank</Label>
+                                <Input v-model="editingMethod.details.bank_name" placeholder="Equity Bank / KCB" class="mt-1 text-xs" />
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Bank Transfer specific fields -->
+                    <template v-else-if="editingMethod.type === 'Bank'">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <Label class="text-xs">Bank Name</Label>
+                                <Input v-model="editingMethod.details.bank_name" placeholder="KCB Bank" class="mt-1 text-xs" />
+                            </div>
+                            <div>
+                                <Label class="text-xs">Bank Account Number</Label>
+                                <Input v-model="editingMethod.details.account_number" placeholder="1122334455" class="mt-1 text-xs font-mono" />
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Cash drawer specific field -->
+                    <template v-else-if="editingMethod.type === 'Cash'">
+                        <div>
+                            <Label class="text-xs">Cash Drawer Reference</Label>
+                            <Input v-model="editingMethod.details.drawer_label" placeholder="Store Cash Drawer" class="mt-1 text-xs" />
+                        </div>
+                    </template>
+
+                    <!-- Generic Account Reference fallback -->
+                    <div>
+                        <Label class="text-xs">Summary Reference Code</Label>
+                        <Input v-model="editingMethod.accountRef" placeholder="e.g. Till # 523910" class="mt-1 text-xs font-mono" />
+                    </div>
+                </div>
+                <DialogFooter class="gap-2">
+                    <Button variant="ghost" size="sm" @click="editingMethodModal = false">Cancel</Button>
+                    <Button size="sm" class="bg-primary" @click="handleSaveEditedMethod">Save Channel</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

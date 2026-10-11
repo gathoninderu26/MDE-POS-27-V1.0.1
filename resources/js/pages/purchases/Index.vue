@@ -2,11 +2,13 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import DataTable from '@/components/ui/DataTable.vue';
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import StatCard from '@/components/ui/StatCard.vue';
 import { formatCurrency, formatDateTime } from '@/composables/useCurrency';
+import { useFeatures } from '@/composables/useFeatures';
 import { useTenant } from '@/composables/useTenant';
 import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -22,6 +24,7 @@ import {
     CheckCircle2,
     CheckSquare,
     Clock,
+    Compass,
     Download,
     Eye,
     FileSpreadsheet,
@@ -33,8 +36,11 @@ import {
     PackageCheck,
     Plus,
     Printer,
+    QrCode,
     Receipt,
     RefreshCw,
+    Scan,
+    ScanLine,
     Search,
     ShoppingBag,
     Sparkles,
@@ -45,7 +51,11 @@ import {
     Wrench,
     X,
 } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import InvoiceExactViewModal from '@/components/purchases/InvoiceExactViewModal.vue';
+import InvoiceReconciliationModal from '@/components/purchases/InvoiceReconciliationModal.vue';
+import InvoiceScannerModal from '@/components/purchases/InvoiceScannerModal.vue';
+import PurchasesGuideOverlay from '@/components/purchases/PurchasesGuideOverlay.vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 interface BulkPurchaseItem {
     product_id: number | null;
@@ -74,6 +84,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const { currentTenant } = useTenant();
+const { isMultiBranch } = useFeatures();
 const { success, warning, error, info } = useToast();
 
 const purchaseOrders = computed(() => {
@@ -81,10 +92,11 @@ const purchaseOrders = computed(() => {
 });
 
 // Document Filter Tabs & Search Filter
-const activeDocType = ref<'ALL' | 'PO' | 'LPO'>('ALL');
+const activeDocType = ref<'ALL' | 'INVOICES' | 'PO' | 'LPO'>('ALL');
 const tableSearchQuery = ref('');
 const tableStatusFilter = ref('ALL');
 
+const invoicedList = computed(() => purchaseOrders.value.filter((p) => !!p.invoice));
 const poList = computed(() => purchaseOrders.value.filter((p) => (p.documentType ?? 'PO') === 'PO'));
 const lpoList = computed(() => purchaseOrders.value.filter((p) => p.documentType === 'LPO'));
 
@@ -98,7 +110,9 @@ const receivedPOCount = computed(() => purchaseOrders.value.filter((p) => p.stat
 const displayedOrders = computed(() => {
     let list = purchaseOrders.value;
 
-    if (activeDocType.value === 'PO') {
+    if (activeDocType.value === 'INVOICES') {
+        list = invoicedList.value;
+    } else if (activeDocType.value === 'PO') {
         list = poList.value;
     } else if (activeDocType.value === 'LPO') {
         list = lpoList.value;
@@ -137,13 +151,25 @@ const displayedOrders = computed(() => {
 });
 
 const columns = computed(() => {
+    if (activeDocType.value === 'INVOICES') {
+        return [
+            { key: 'invoiceNumber', label: 'Invoice Ref' },
+            { key: 'supplier', label: isMultiBranch.value ? 'Supplier & Branch' : 'Supplier' },
+            { key: 'poNumber', label: 'Order Ref' },
+            { key: 'date', label: 'Invoice Date' },
+            { key: 'amount', label: 'Total Billed (KES)', align: 'right' as const },
+            { key: 'invoiceDoc', label: 'Document', align: 'center' as const },
+            { key: 'actions', label: 'Action', align: 'right' as const },
+        ];
+    }
     return [
         { key: 'poNumber', label: 'Document Ref' },
         { key: 'lpoPurpose', label: 'Type & Purpose' },
         { key: 'supplier', label: 'Supplier / Vendor' },
-        { key: 'branch', label: 'Receiving Branch' },
+        ...(isMultiBranch.value ? [{ key: 'branch', label: 'Receiving Branch' }] : []),
         { key: 'items', label: 'Procurement Summary' },
         { key: 'amount', label: 'Total Value (KES)', align: 'right' as const },
+        { key: 'invoice', label: 'Physical Invoice', align: 'center' as const },
         { key: 'status', label: 'Delivery Status & Sync', align: 'center' as const },
         { key: 'actions', label: 'Actions', align: 'right' as const },
     ];
@@ -526,15 +552,83 @@ const handleResyncStock = (po: any) => {
     );
 };
 
-const handleDeletePO = (po: any) => {
+const deleteConfirmOpen = ref(false);
+const poToDelete = ref<any>(null);
+const isDeletingPO = ref(false);
+
+const openDeletePO = (po: any) => {
+    poToDelete.value = po;
+    deleteConfirmOpen.value = true;
+};
+
+const confirmDeletePO = () => {
+    if (!poToDelete.value) return;
+    const po = poToDelete.value;
     const refNo = po.documentType === 'LPO' ? (po.lpoNumber || po.poNumber) : po.poNumber;
-    if (!confirm(`Are you sure you want to cancel order ${refNo}?`)) return;
+    isDeletingPO.value = true;
 
     router.delete(`/purchases/${po.id}`, {
         preserveScroll: true,
-        onSuccess: () => success('Order Cancelled', `Order ${refNo} has been removed.`),
-        onError: (errs) => error('Failed', Object.values(errs)[0] as string),
+        onSuccess: () => {
+            success('Order Cancelled', `Order ${refNo} has been removed.`);
+            deleteConfirmOpen.value = false;
+        },
+        onError: (errs) => error('Failed', (Object.values(errs)[0] as string) || 'Could not cancel order.'),
+        onFinish: () => (isDeletingPO.value = false),
     });
+};
+
+// ============================================================
+// INVOICE SCANNING, RECONCILIATION & DOCUMENT ARCHIVE
+// ============================================================
+const invoiceScannerOpen = ref(false);
+const invoiceReconciliationOpen = ref(false);
+const selectedPOForInvoice = ref<any>(null);
+const currentScanResult = ref<any>(null);
+
+const openInvoiceScanner = (po: any) => {
+    selectedPOForInvoice.value = po;
+    invoiceScannerOpen.value = true;
+};
+
+const handleInvoiceScanned = (result: any) => {
+    currentScanResult.value = result;
+    if (result.purchase) {
+        selectedPOForInvoice.value = result.purchase;
+    }
+    invoiceReconciliationOpen.value = true;
+};
+
+const handleInvoiceSaved = () => {
+    activeDocType.value = 'INVOICES';
+};
+
+const openExistingInvoice = (po: any) => {
+    selectedPOForInvoice.value = po;
+    currentScanResult.value = {
+        file_path: po.invoice?.filePath || (po.invoice?.hasDocument ? 'stored' : ''),
+        file_name: po.invoice?.fileName,
+        qr: {
+            raw: '',
+            invoice_number: po.invoice?.invoiceNumber,
+            tax_pin: po.invoice?.taxPin,
+            control_unit_code: po.invoice?.controlUnitCode,
+            invoice_date: po.invoice?.invoiceDate,
+            total_amount: po.invoice?.totalAmount,
+        },
+        comparison: {
+            rows: po.invoice?.matrix || [],
+        },
+    };
+    invoiceReconciliationOpen.value = true;
+};
+
+const invoiceExactViewOpen = ref(false);
+const selectedPOForExactView = ref<any>(null);
+
+const openExactInvoiceView = (po: any) => {
+    selectedPOForExactView.value = po;
+    invoiceExactViewOpen.value = true;
 };
 
 // ============================================================
@@ -772,13 +866,62 @@ const getPOStructuredItems = (po: any) => {
         return null;
     }
 };
+
+// ============================================================
+// INTERACTIVE PURCHASES & ORDERS PAGE GUIDE
+// ============================================================
+const guideOverlayOpen = ref(false);
+const guideCurrentStep = ref(0);
+
+const openGuide = (step = 0) => {
+    guideCurrentStep.value = step;
+    guideOverlayOpen.value = true;
+};
+
+const handleGuideAction = (actionType: string) => {
+    switch (actionType) {
+        case 'open-create-po':
+            openCreatePOModal('bulk');
+            break;
+        case 'open-create-lpo':
+            openCreateLPOModal();
+            break;
+        case 'filter-pending':
+            tableStatusFilter.value = 'Pending';
+            break;
+        case 'switch-tab-invoices':
+            activeDocType.value = 'INVOICES';
+            break;
+        case 'open-scanner':
+            invoiceScannerOpen.value = true;
+            break;
+        case 'download-orders':
+            openDownloadModal();
+            break;
+    }
+};
+
+onMounted(() => {
+    // Auto-prompt guide on first visit or when initiated by login
+    const shouldAutoOpen =
+        sessionStorage.getItem('mde_auto_open_guide') === 'true' ||
+        !sessionStorage.getItem('mde_purchases_guide_prompted');
+
+    if (shouldAutoOpen) {
+        sessionStorage.setItem('mde_purchases_guide_prompted', 'true');
+        sessionStorage.removeItem('mde_auto_open_guide');
+        setTimeout(() => {
+            openGuide(0);
+        }, 700);
+    }
+});
 </script>
 
 <template>
     <Head title="Purchase Orders & Procurement" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="p-4 md:p-8 space-y-6 max-w-[1600px] mx-auto">
+        <div class="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
             <!-- Header Section with Buttons on the Exact Same Alignment -->
             <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div class="min-w-0">
@@ -791,7 +934,19 @@ const getPOStructuredItems = (po: any) => {
                     </p>
                 </div>
 
-                <div class="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
+                <div id="purchases-tour-actions-header" class="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
+                    <Button
+                        id="purchases-tour-guide-btn"
+                        size="sm"
+                        variant="outline"
+                        class="h-9 text-xs gap-1.5 border-primary/40 text-primary bg-primary/10 hover:bg-primary/20 hover:border-primary/60 font-bold shadow-xs whitespace-nowrap cursor-pointer"
+                        @click="openGuide(0)"
+                        title="Start Interactive Purchases & Orders Walkthrough"
+                    >
+                        <Compass class="size-3.5 animate-spin" style="animation-duration: 12s" />
+                        <span>Page Guide</span>
+                    </Button>
+
                     <Button
                         size="sm"
                         variant="outline"
@@ -824,7 +979,7 @@ const getPOStructuredItems = (po: any) => {
             </div>
 
             <!-- KPI Metric Cards -->
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div id="purchases-tour-kpis" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard
                     title="Total Procurement Value"
                     :value="formatCurrency(totalProcurementValue)"
@@ -856,53 +1011,83 @@ const getPOStructuredItems = (po: any) => {
             </div>
 
             <!-- Tabs & Search Toolbar on the Exact Same Horizontal Alignment -->
-            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 rounded-xl border border-border bg-card p-2.5 sm:p-3 shadow-xs">
-                <!-- Left: Segmented Tab Switcher (PO / LPO / ALL) -->
-                <div class="inline-flex items-center rounded-lg border border-border bg-muted/40 p-1 text-xs font-semibold gap-1 shrink-0 overflow-x-auto scrollbar-none">
-                    <button
-                        type="button"
-                        :class="[
-                            'px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap',
-                            activeDocType === 'ALL'
-                                ? 'bg-background text-foreground shadow-xs font-bold'
-                                : 'text-muted-foreground hover:text-foreground'
-                        ]"
-                        @click="activeDocType = 'ALL'"
-                    >
-                        <Layers class="size-3.5" />
-                        <span>All Documents</span>
-                        <span class="rounded-full bg-muted px-1.5 py-0.5 text-[10px] text-foreground font-mono">{{ purchaseOrders.length }}</span>
-                    </button>
+            <div id="purchases-tour-tabs" class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 rounded-xl border border-border bg-card p-2.5 sm:p-3 shadow-xs">
+                <!-- Left: Segmented Tab Switcher (ALL / INVOICES / PO / LPO) + Capture/Scan/Upload Button -->
+                <div class="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0">
+                    <div class="inline-flex items-center rounded-lg border border-border bg-muted/40 p-1 text-xs font-semibold gap-1 shrink-0 overflow-x-auto scrollbar-none">
+                        <!-- 1. All Documents -->
+                        <button
+                            type="button"
+                            :class="[
+                                'px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap',
+                                activeDocType === 'ALL'
+                                    ? 'bg-background text-foreground shadow-xs font-bold'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            ]"
+                            @click="activeDocType = 'ALL'"
+                        >
+                            <Layers class="size-3.5" />
+                            <span>All Documents</span>
+                            <span class="rounded-full bg-muted px-1.5 py-0.5 text-[10px] text-foreground font-mono">{{ purchaseOrders.length }}</span>
+                        </button>
 
-                    <button
-                        type="button"
-                        :class="[
-                            'px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap',
-                            activeDocType === 'PO'
-                                ? 'bg-background text-sky-600 dark:text-sky-400 shadow-xs font-bold'
-                                : 'text-muted-foreground hover:text-foreground'
-                        ]"
-                        @click="activeDocType = 'PO'"
-                    >
-                        <FileText class="size-3.5 text-sky-500" />
-                        <span>Purchase Orders (PO)</span>
-                        <span class="rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 px-1.5 py-0.5 text-[10px] font-mono">{{ poList.length }}</span>
-                    </button>
+                        <!-- 2. Physical Invoices (Pure Physical Documents & Softcopies, not comparing) -->
+                        <button
+                            type="button"
+                            :class="[
+                                'px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap',
+                                activeDocType === 'INVOICES'
+                                    ? 'bg-background text-indigo-600 dark:text-indigo-400 shadow-xs font-bold ring-1 ring-indigo-500/20'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            ]"
+                            @click="activeDocType = 'INVOICES'"
+                        >
+                            <Receipt class="size-3.5 text-indigo-500" />
+                            <span>Physical Invoices</span>
+                            <span class="rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 text-[10px] font-mono font-bold">{{ invoicedList.length }}</span>
+                        </button>
 
-                    <button
-                        type="button"
-                        :class="[
-                            'px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap',
-                            activeDocType === 'LPO'
-                                ? 'bg-background text-amber-600 dark:text-amber-400 shadow-xs font-bold'
-                                : 'text-muted-foreground hover:text-foreground'
-                        ]"
-                        @click="activeDocType = 'LPO'"
+                        <button
+                            type="button"
+                            :class="[
+                                'px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap',
+                                activeDocType === 'PO'
+                                    ? 'bg-background text-sky-600 dark:text-sky-400 shadow-xs font-bold'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            ]"
+                            @click="activeDocType = 'PO'"
+                        >
+                            <FileText class="size-3.5 text-sky-500" />
+                            <span>Purchase Orders (PO)</span>
+                            <span class="rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 px-1.5 py-0.5 text-[10px] font-mono">{{ poList.length }}</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            :class="[
+                                'px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap',
+                                activeDocType === 'LPO'
+                                    ? 'bg-background text-amber-600 dark:text-amber-400 shadow-xs font-bold'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            ]"
+                            @click="activeDocType = 'LPO'"
+                        >
+                            <Receipt class="size-3.5 text-amber-500" />
+                            <span>Local PO (LPO)</span>
+                            <span class="rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 text-[10px] font-mono">{{ lpoList.length }}</span>
+                        </button>
+                    </div>
+
+                    <!-- Capture / Scan / Upload Invoice Button on Tab Section -->
+                    <Button
+                        size="sm"
+                        class="h-9 text-xs gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-xs shrink-0 cursor-pointer whitespace-nowrap"
+                        @click="openInvoiceScanner(null)"
+                        title="Scan, capture or upload a physical supplier invoice"
                     >
-                        <Receipt class="size-3.5 text-amber-500" />
-                        <span>Local PO (LPO)</span>
-                        <span class="rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 text-[10px] font-mono">{{ lpoList.length }}</span>
-                    </button>
+                        <ScanLine class="size-3.5" />
+                        <span>Scan / Upload Invoice</span>
+                    </Button>
                 </div>
 
                 <!-- Right: Prominent Search Bar + Status Filter on the Exact Same Alignment -->
@@ -943,7 +1128,7 @@ const getPOStructuredItems = (po: any) => {
             </div>
 
             <!-- Purchase Orders & LPO Scrollable DataTable -->
-            <div class="space-y-4">
+            <div id="purchases-tour-table" class="space-y-4">
                 <DataTable
                     :columns="columns"
                     :data="displayedOrders"
@@ -954,7 +1139,28 @@ const getPOStructuredItems = (po: any) => {
                 >
                     <!-- Reference Column (PO or LPO) -->
                     <template #cell-poNumber="{ row }">
-                        <div>
+                        <div v-if="activeDocType === 'INVOICES'">
+                            <button
+                                type="button"
+                                class="inline-flex items-center gap-1.5 font-mono text-xs font-bold text-primary hover:underline cursor-pointer"
+                                @click="openPODetail(row)"
+                                title="Click to view purchase order details"
+                            >
+                                <Badge
+                                    :variant="row.documentType === 'LPO' ? 'outline' : 'secondary'"
+                                    :class="[
+                                        'text-[9px] px-1.5 py-0 font-bold uppercase tracking-wider',
+                                        row.documentType === 'LPO'
+                                            ? 'border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10'
+                                            : 'border-sky-500/40 text-sky-600 dark:text-sky-400 bg-sky-500/10'
+                                    ]"
+                                >
+                                    {{ row.documentType === 'LPO' ? 'LPO' : 'PO' }}
+                                </Badge>
+                                <span>{{ row.documentType === 'LPO' ? (row.lpoNumber || row.poNumber) : row.poNumber }}</span>
+                            </button>
+                        </div>
+                        <div v-else>
                             <div class="flex items-center gap-1.5 font-mono font-bold">
                                 <Badge
                                     :variant="row.documentType === 'LPO' ? 'outline' : 'secondary'"
@@ -998,7 +1204,14 @@ const getPOStructuredItems = (po: any) => {
 
                     <!-- Supplier / Vendor -->
                     <template #cell-supplier="{ row }">
-                        <div>
+                        <div v-if="activeDocType === 'INVOICES'">
+                            <span class="font-bold text-foreground text-xs">{{ row.supplier }}</span>
+                            <div v-if="row.branch" class="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                                <Building2 class="size-3 text-muted-foreground" />
+                                <span>{{ row.branch }}</span>
+                            </div>
+                        </div>
+                        <div v-else>
                             <span class="font-bold text-foreground text-xs">{{ row.supplier }}</span>
                             <div class="text-[10px] text-muted-foreground">Due: {{ row.expectedDate }}</div>
                         </div>
@@ -1021,7 +1234,76 @@ const getPOStructuredItems = (po: any) => {
 
                     <!-- Total Amount -->
                     <template #cell-amount="{ row }">
-                        <span class="font-mono font-bold text-foreground text-xs">{{ formatCurrency(row.amount) }}</span>
+                        <span class="font-mono font-bold text-foreground text-xs">
+                            {{ formatCurrency(activeDocType === 'INVOICES' ? (row.invoice?.totalAmount || row.amount) : row.amount) }}
+                        </span>
+                    </template>
+
+                    <!-- Invoice Number Column (Physical Invoices Tab) -->
+                    <template #cell-invoiceNumber="{ row }">
+                        <div class="flex items-center gap-2 font-mono">
+                            <button
+                                type="button"
+                                class="inline-flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 font-bold hover:underline cursor-pointer"
+                                @click="openExactInvoiceView(row)"
+                                title="Click to view authentic invoice"
+                            >
+                                <Receipt class="size-3.5 text-indigo-500" />
+                                <span>{{ row.invoice?.invoiceNumber || 'NO-REF' }}</span>
+                            </button>
+                            <span
+                                v-if="row.invoice?.hasDocument"
+                                class="size-1.5 rounded-full bg-emerald-500 shrink-0"
+                                title="Physical document attached"
+                            ></span>
+                        </div>
+                    </template>
+
+                    <!-- Invoice Date Column (Physical Invoices Tab) -->
+                    <template #cell-date="{ row }">
+                        <div class="text-xs font-mono text-muted-foreground">
+                            {{ row.invoice?.invoiceDate || row.date }}
+                        </div>
+                    </template>
+
+                    <!-- Physical Softcopy Attachment Column (Physical Invoices Tab) -->
+                    <template #cell-invoiceDoc="{ row }">
+                        <div class="flex items-center justify-center">
+                            <button
+                                v-if="row.invoice?.hasDocument"
+                                type="button"
+                                class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 px-2 py-0.5 rounded-md border border-emerald-500/20 transition-colors cursor-pointer"
+                                @click="openExactInvoiceView(row)"
+                                title="View attached document"
+                            >
+                                <FileText class="size-3 text-emerald-500" />
+                                <span>Softcopy</span>
+                            </button>
+                            <span v-else class="text-xs text-muted-foreground font-mono">—</span>
+                        </div>
+                    </template>
+
+                    <!-- Physical Invoice & Verification Badge (All Documents / PO / LPO Tabs) -->
+                    <template #cell-invoice="{ row }">
+                        <div class="flex items-center justify-center">
+                            <button
+                                v-if="row.invoice"
+                                type="button"
+                                :class="[
+                                    'inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-md border font-semibold transition-colors cursor-pointer',
+                                    row.invoice.reconciliationStatus === 'MATCHED'
+                                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
+                                        : 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 hover:bg-indigo-500/20'
+                                ]"
+                                :title="`Click to view exact physical invoice (${row.invoice.invoiceNumber})`"
+                                @click="openExactInvoiceView(row)"
+                            >
+                                <Receipt class="size-3 text-indigo-500" />
+                                <span>{{ row.invoice.invoiceNumber }}</span>
+                                <span v-if="row.invoice.hasDocument" class="size-1.5 rounded-full bg-emerald-500" title="Document file attached"></span>
+                            </button>
+                            <span v-else class="text-xs text-muted-foreground font-mono">—</span>
+                        </div>
                     </template>
 
                     <!-- Delivery Status & Sync Badge -->
@@ -1048,61 +1330,87 @@ const getPOStructuredItems = (po: any) => {
                     <!-- Action Column (View, Download, Sync/Receive, Delete) -->
                     <template #cell-actions="{ row }">
                         <div class="flex items-center justify-end gap-1.5 whitespace-nowrap">
-                            <!-- 1. View Details Icon Button -->
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                class="h-7 w-7 p-0 text-muted-foreground hover:text-foreground shrink-0"
-                                @click="openPODetail(row)"
-                                title="View Purchase Order Details (When, Who, Items)"
-                            >
-                                <Eye class="size-3.5 text-primary" />
-                            </Button>
+                            <!-- When on INVOICES tab: Single View Invoice action -->
+                            <template v-if="activeDocType === 'INVOICES'">
+                                <Button
+                                    size="sm"
+                                    class="h-7 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-xs gap-1.5 shrink-0 px-2.5 cursor-pointer"
+                                    @click="openExactInvoiceView(row)"
+                                    title="View physical invoice document and softcopy"
+                                >
+                                    <Receipt class="size-3" />
+                                    <span>View Invoice</span>
+                                </Button>
 
-                            <!-- 2. Download Icon Button (PDF / Word / CSV) -->
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                class="h-7 w-7 p-0 text-muted-foreground hover:text-primary shrink-0"
-                                @click="openDownloadModal(row)"
-                                title="Download as PDF, Word, or CSV"
-                            >
-                                <Download class="size-3.5" />
-                            </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    class="h-7 w-7 p-0 text-muted-foreground hover:text-foreground shrink-0"
+                                    @click="openPODetail(row)"
+                                    title="View Associated Purchase Order Details"
+                                >
+                                    <Eye class="size-3.5 text-primary" />
+                                </Button>
+                            </template>
 
-                            <!-- 3. Sync / Receive Stock Button -->
-                            <Button
-                                v-if="row.status !== 'Received'"
-                                size="sm"
-                                class="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 font-semibold shadow-xs gap-1 shrink-0 px-2"
-                                @click="openReceiveModal(row)"
-                                title="Verify Items & Synchronize into Inventory"
-                            >
-                                <RefreshCw class="size-3" />
-                                <span>Receive</span>
-                            </Button>
-                            <Button
-                                v-else
-                                variant="outline"
-                                size="sm"
-                                class="h-7 text-xs border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 font-semibold gap-1 shrink-0 px-2"
-                                @click="handleResyncStock(row)"
-                                title="Stock Synchronized. Click to view status"
-                            >
-                                <CheckCircle2 class="size-3" />
-                                <span>Synced ✓</span>
-                            </Button>
+                            <!-- Standard PO/LPO action set without duplicate scan button -->
+                            <template v-else>
+                                <!-- 1. View Details Icon Button -->
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    class="h-7 w-7 p-0 text-muted-foreground hover:text-foreground shrink-0"
+                                    @click="openPODetail(row)"
+                                    title="View Purchase Order Details (When, Who, Items)"
+                                >
+                                    <Eye class="size-3.5 text-primary" />
+                                </Button>
 
-                            <!-- 4. Delete PO -->
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                class="h-7 w-7 p-0 text-muted-foreground hover:text-destructive shrink-0"
-                                @click="handleDeletePO(row)"
-                                title="Cancel Order"
-                            >
-                                <Trash2 class="size-3.5" />
-                            </Button>
+                                <!-- 2. Download Icon Button (PDF / Word / CSV) -->
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    class="h-7 w-7 p-0 text-muted-foreground hover:text-primary shrink-0"
+                                    @click="openDownloadModal(row)"
+                                    title="Download as PDF, Word, or CSV"
+                                >
+                                    <Download class="size-3.5" />
+                                </Button>
+
+                                <!-- 3. Sync / Receive Stock Button -->
+                                <Button
+                                    v-if="row.status !== 'Received'"
+                                    size="sm"
+                                    class="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 font-semibold shadow-xs gap-1 shrink-0 px-2"
+                                    @click="openReceiveModal(row)"
+                                    title="Verify Items & Synchronize into Inventory"
+                                >
+                                    <RefreshCw class="size-3" />
+                                    <span>Receive</span>
+                                </Button>
+                                <Button
+                                    v-else
+                                    variant="outline"
+                                    size="sm"
+                                    class="h-7 text-xs border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 font-semibold gap-1 shrink-0 px-2"
+                                    @click="handleResyncStock(row)"
+                                    title="Stock Synchronized. Click to view status"
+                                >
+                                    <CheckCircle2 class="size-3" />
+                                    <span>Synced ✓</span>
+                                </Button>
+
+                                <!-- 4. Delete PO -->
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    class="h-7 w-7 p-0 text-muted-foreground hover:text-destructive shrink-0"
+                                    @click="openDeletePO(row)"
+                                    title="Cancel Order"
+                                >
+                                    <Trash2 class="size-3.5" />
+                                </Button>
+                            </template>
                         </div>
                     </template>
                 </DataTable>
@@ -1113,7 +1421,7 @@ const getPOStructuredItems = (po: any) => {
         <!-- MODAL: BULK & STANDARD PURCHASE ORDER BUILDER -->
         <!-- ============================================================ -->
         <Dialog :open="newPOModal" @update:open="(v) => (newPOModal = v)">
-            <DialogContent class="w-[98vw] max-w-6xl xl:max-w-7xl max-h-[94vh] overflow-y-auto">
+            <DialogContent class="w-[94vw] max-w-5xl max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle class="text-base font-bold flex items-center gap-2">
                         <Boxes class="size-5 text-primary" />
@@ -1174,7 +1482,7 @@ const getPOStructuredItems = (po: any) => {
                             </select>
                         </div>
 
-                        <div>
+                        <div v-if="isMultiBranch">
                             <Label class="text-xs font-semibold">Receiving Branch</Label>
                             <select
                                 v-model="newPO.branch_id"
@@ -1489,7 +1797,7 @@ const getPOStructuredItems = (po: any) => {
                             </select>
                         </div>
 
-                        <div>
+                        <div v-if="isMultiBranch">
                             <Label class="text-xs">Requesting Branch</Label>
                             <select
                                 v-model="newLPO.branch_id"
@@ -1594,6 +1902,30 @@ const getPOStructuredItems = (po: any) => {
                             <span class="text-muted-foreground text-[10px] block uppercase font-mono">Receiving Branch</span>
                             <span class="font-bold text-foreground">{{ receivingPO?.branch }}</span>
                         </div>
+                    </div>
+
+                    <!-- Quick Prompt to Scan Physical Invoice -->
+                    <div class="rounded-xl border border-primary/20 bg-primary/5 p-3 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                                <Scan class="size-4" />
+                            </div>
+                            <div>
+                                <span class="font-bold text-foreground text-xs block">Have a physical supplier invoice?</span>
+                                <span class="text-[11px] text-muted-foreground block">
+                                    Scan QR code or photo to verify line item prices, detect variances, and store document.
+                                </span>
+                            </div>
+                        </div>
+                        <Button
+                            type="button"
+                            size="sm"
+                            class="text-xs h-7.5 px-3 font-semibold gap-1.5 shrink-0 bg-primary shadow-xs"
+                            @click="receiveModalOpen = false; openInvoiceScanner(receivingPO);"
+                        >
+                            <ScanLine class="size-3.5" />
+                            <span>Scan Invoice</span>
+                        </Button>
                     </div>
 
                     <!-- Items Checklist with Checkboxes -->
@@ -2019,6 +2351,47 @@ const getPOStructuredItems = (po: any) => {
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+
+        <!-- Physical Invoice Scanner Modal (Camera / QR / File) -->
+        <InvoiceScannerModal
+            v-model:open="invoiceScannerOpen"
+            :purchase="selectedPOForInvoice"
+            :purchases="purchaseOrders"
+            @scanned="handleInvoiceScanned"
+            @saved="handleInvoiceSaved"
+        />
+
+        <!-- Physical Invoice Reconciliation & Split-Screen Comparison Modal -->
+        <InvoiceReconciliationModal
+            v-model:open="invoiceReconciliationOpen"
+            :purchase="selectedPOForInvoice"
+            :scan-result="currentScanResult"
+            @reconciled="invoiceReconciliationOpen = false"
+        />
+        <!-- Physical Invoice Exact View Modal (Authentic Voucher & Softcopy, not comparing) -->
+        <InvoiceExactViewModal
+            v-model:open="invoiceExactViewOpen"
+            :purchase="selectedPOForExactView"
+        />
+
+        <!-- Cancel / Delete Purchase Order Warning Alert Dialog -->
+        <ConfirmDialog
+            v-model:open="deleteConfirmOpen"
+            title="Cancel Purchase Order"
+            description="Are you sure you want to cancel and remove this purchase order? This action will void the requisition record."
+            :item-name="poToDelete ? `${poToDelete.documentType === 'LPO' ? (poToDelete.lpoNumber || poToDelete.poNumber) : poToDelete.poNumber} (${poToDelete.supplierName || 'Vendor'})` : undefined"
+            :warning-note="poToDelete && (poToDelete.status === 'received' || poToDelete.status === 'ordered') ? `Warning: This order status is currently '${poToDelete.status.toUpperCase()}'. Cancelling may cause inventory discrepancy if items have already arrived.` : undefined"
+            confirm-text="Yes, Cancel Order"
+            :loading="isDeletingPO"
+            @confirm="confirmDeletePO"
+        />
+
+        <!-- Interactive Purchases & Orders Page Guide Overlay -->
+        <PurchasesGuideOverlay
+            v-model:open="guideOverlayOpen"
+            v-model:current-step="guideCurrentStep"
+            @action="handleGuideAction"
+        />
     </AppLayout>
 </template>
 

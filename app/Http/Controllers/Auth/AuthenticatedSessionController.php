@@ -41,11 +41,51 @@ class AuthenticatedSessionController extends Controller
             $request->session()->regenerateToken();
 
             throw \Illuminate\Validation\ValidationException::withMessages([
-                'email' => __('auth.failed'),
+                'email' => 'Super Administrator accounts must sign in via the dedicated Platform Super Admin Gateway at /super-admin/login.',
             ]);
         }
 
+        // ── Demo / subscription expiry gate ──────────────────────────────────
+        // Load the tenant and check whether their account has lapsed.
+        $tenant = \App\Models\Tenant::find($user->tenant_id);
+        if ($tenant) {
+            $isStatusExpired = in_array($tenant->status, ['Expired', 'Suspended', 'Inactive']);
+            $isBillingLapsed = $tenant->next_billing_date && $tenant->next_billing_date->isPast();
+
+            if ($isStatusExpired || $isBillingLapsed) {
+                // Log the user back out — they must not be allowed in.
+                Auth::guard('web')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'account_expired' => 'Your demo account has expired.',
+                ]);
+            }
+        }
+        // ─────────────────────────────────────────────────────────────────────
+
         $request->session()->regenerate();
+
+        if ($tenant) {
+            $request->session()->put('active_tenant_id', $tenant->id);
+            $request->session()->put('active_tenant_slug', $tenant->slug);
+            app()->instance('currentTenant', $tenant);
+            $request->attributes->set('tenant', $tenant);
+
+            if ($tenant->is_demo) {
+                $days = 7;
+                $request->session()->put('demo_session', [
+                    'is_demo'     => true,
+                    'days'        => $days,
+                    'expires_at'  => now()->addDays($days)->toIso8601String(),
+                    'tenant_slug' => $tenant->slug,
+                    'tenant_name' => "[DEMO] {$tenant->name}",
+                    'role'        => $user->role,
+                    'persona'     => $user->role,
+                ]);
+            }
+        }
 
         // Cashiers open POS terminal by default
         if ($user->role === 'Cashier') {
@@ -102,6 +142,15 @@ class AuthenticatedSessionController extends Controller
             abort(403, 'Unauthorized access. Live production merchant accounts cannot be accessed via demo login.');
         }
 
+        // ── Switch to the demo SQLite BEFORE looking up users ────────────────
+        // This is critical: user IDs in the SQLite file differ from MySQL.
+        // Auth::login() stores the user ID in the session; on subsequent requests
+        // the middleware switches back to this same SQLite, so the ID must match.
+        \App\Services\DemoDatabaseService::switchTo($tenant);
+        app()->instance('currentTenant', $tenant);
+        $request->attributes->set('tenant', $tenant);
+        // ─────────────────────────────────────────────────────────────────────
+
         // Normalize role name
         $roleMap = [
             'owner' => 'Owner',
@@ -119,6 +168,7 @@ class AuthenticatedSessionController extends Controller
         $targetRole = $roleMap[strtolower(trim($role))] ?? ucfirst($role);
 
         // Find staff user by target role or default to first tenant user
+        // (runs against the demo SQLite connection now active)
         $user = \App\Models\User::where('tenant_id', $tenant->id)
             ->where(function ($q) use ($targetRole) {
                 $q->where('role', $targetRole)
@@ -169,6 +219,8 @@ class AuthenticatedSessionController extends Controller
             'tenant_slug' => $tenant->slug,
             'tenant_name' => "[DEMO] {$tenant->name}",
             'data_mode'   => $sessionDataMode,
+            'role'        => $targetRole,
+            'persona'     => $targetRole,
         ]);
 
         // Redirect directly to POS register for Cashier role, or dashboard for others
@@ -189,6 +241,6 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route('login');
     }
 }

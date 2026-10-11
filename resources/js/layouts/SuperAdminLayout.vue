@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ToastContainer from '@/components/ui/ToastContainer.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
     BarChart3,
@@ -218,5 +219,7 @@ const handleLogout = () => {
                 <slot />
             </main>
         </div>
+
+        <ToastContainer />
     </div>
 </template>

@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'sqlite'),
+    'default' => env('DB_CONNECTION', 'mysql'),
 
     /*
     |--------------------------------------------------------------------------
@@ -37,6 +37,20 @@ return [
             'database' => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
+            'busy_timeout' => null,
+            'journal_mode' => null,
+            'synchronous' => null,
+        ],
+
+        // Per-demo-tenant SQLite connection.
+        // The database path is overridden at request time by IdentifyTenantFromSubdomain
+        // middleware when a demo tenant is resolved. Sessions, cache, and queue always
+        // use their own explicitly-configured connections and are NOT affected by this.
+        'demo' => [
+            'driver'   => 'sqlite',
+            'database' => env('DEMO_DB_PATH', database_path('demo/_template.sqlite')),
+            'prefix'   => '',
+            'foreign_key_constraints' => true,
             'busy_timeout' => null,
             'journal_mode' => null,
             'synchronous' => null,
@@ -95,6 +109,21 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => 'prefer',
+        ],
+
+        'supabase' => [
+            'driver' => 'pgsql',
+            'url' => env('SUPABASE_DB_URL'),
+            'host' => env('SUPABASE_DB_HOST', 'aws-0-eu-central-1.pooler.supabase.com'),
+            'port' => env('SUPABASE_DB_PORT', '6543'),
+            'database' => env('SUPABASE_DB_DATABASE', 'postgres'),
+            'username' => env('SUPABASE_DB_USERNAME', 'postgres.your-project'),
+            'password' => env('SUPABASE_DB_PASSWORD', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => env('SUPABASE_DB_SSLMODE', 'require'),
         ],
 
         'sqlsrv' => [

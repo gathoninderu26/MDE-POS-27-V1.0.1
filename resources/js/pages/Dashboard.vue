@@ -4,12 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import StatCard from '@/components/ui/StatCard.vue';
 import { useBranch } from '@/composables/useBranch';
+import { useFeatures } from '@/composables/useFeatures';
 import { formatCurrency } from '@/composables/useCurrency';
 import { usePermissions } from '@/composables/usePermissions';
 import { useTenant } from '@/composables/useTenant';
+import DashboardGuideOverlay from '@/components/dashboard/DashboardGuideOverlay.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
     AlertTriangle,
     Banknote,
@@ -22,6 +24,7 @@ import {
     CircleDollarSign,
     Clock,
     Coffee,
+    Compass,
     CreditCard,
     DollarSign,
     Filter,
@@ -42,7 +45,7 @@ import {
     Wallet,
     Zap,
 } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 const props = defineProps<{
     kpis?: {
@@ -59,8 +62,9 @@ const props = defineProps<{
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Dashboard', href: '/dashboard' }];
 
 const page = usePage();
-const { currentTenant } = useTenant();
+const { currentTenant, isDemo } = useTenant();
 const { currentBranch } = useBranch();
+const { isMultiBranch, hasModule } = useFeatures();
 const { currentRole, can } = usePermissions();
 
 const authUser = computed(() => page?.props?.auth?.user as any);
@@ -141,32 +145,71 @@ const branchPerformance = computed(() => {
 // CASHIER-SPECIFIC DATA
 // ─────────────────────────────────────────────────────────────
 
-// Cashier's personal shift stats (scoped to their terminal/shift)
-const cashierShiftStats = computed(() => ({
-    shiftSales: 38450,
-    shiftOrders: 47,
-    avgBasket: 818,
-    cashInDrawer: 8460,
-    mpesaCollected: 22300,
-    cardCollected: 5840,
-    creditSales: 1850,
-    refundsCount: 1,
-    refundsAmount: 890,
-    shiftStartTime: '08:00 AM',
-    currentTime: '10:45 AM',
-    shiftDuration: '2h 45m',
-    targetSales: 80000,
-    targetCompletion: 48.1,
-}));
+// Cashier's personal shift stats (scoped to their terminal/shift): clean for real accounts
+const cashierShiftStats = computed(() => {
+    if (isDemo.value) {
+        return {
+            shiftSales: 38450,
+            shiftOrders: 47,
+            avgBasket: 818,
+            cashInDrawer: 8460,
+            mpesaCollected: 22300,
+            cardCollected: 5840,
+            creditSales: 1850,
+            refundsCount: 1,
+            refundsAmount: 890,
+            shiftStartTime: '08:00 AM',
+            currentTime: '10:45 AM',
+            shiftDuration: '2h 45m',
+            targetSales: 80000,
+            targetCompletion: 48.1,
+        };
+    }
+    const todaySales = props.kpis?.today?.sales ?? 0;
+    const todayOrders = props.kpis?.today?.transactions ?? 0;
+    const avgBasket = todayOrders > 0 ? Math.round(todaySales / todayOrders) : 0;
+    return {
+        shiftSales: todaySales,
+        shiftOrders: todayOrders,
+        avgBasket,
+        cashInDrawer: 0,
+        mpesaCollected: 0,
+        cardCollected: 0,
+        creditSales: 0,
+        refundsCount: 0,
+        refundsAmount: 0,
+        shiftStartTime: '08:00 AM',
+        currentTime: 'Now',
+        shiftDuration: 'Active Shift',
+        targetSales: 0,
+        targetCompletion: 0,
+    };
+});
 
 // Cashier's personal recent receipts (their own terminal only)
-const myRecentReceipts = [
-    { receipt: 'REC-2026-904128', time: '10:32 AM', customer: 'Walk-in Customer', items: 5, amount: 4850, method: 'M-Pesa', status: 'Completed' },
-    { receipt: 'REC-2026-904126', time: '10:05 AM', customer: 'Grace Muthoni', items: 3, amount: 1250, method: 'Cash', status: 'Completed' },
-    { receipt: 'REC-2026-904125', time: '09:44 AM', customer: 'Sarit Cafe Supplies', items: 12, amount: 18900, method: 'Credit', status: 'Completed' },
-    { receipt: 'REC-2026-904121', time: '09:12 AM', customer: 'Walk-in Customer', items: 2, amount: 680, method: 'M-Pesa', status: 'Completed' },
-    { receipt: 'REC-2026-904119', time: '08:48 AM', customer: 'Peter Kimani', items: 8, amount: 12770, method: 'Card', status: 'Completed' },
-];
+const myRecentReceipts = computed(() => {
+    if (props.recentSales && props.recentSales.length > 0) {
+        return props.recentSales.map((s) => ({
+            receipt: s.receipt_number,
+            time: s.time,
+            customer: s.customer_name || 'Walk-in Customer',
+            items: s.items_count || 1,
+            amount: s.total,
+            method: s.payment_method,
+            status: s.payment_status,
+        }));
+    }
+    if (isDemo.value) {
+        return [
+            { receipt: 'REC-2026-904128', time: '10:32 AM', customer: 'Walk-in Customer', items: 5, amount: 4850, method: 'M-Pesa', status: 'Completed' },
+            { receipt: 'REC-2026-904126', time: '10:05 AM', customer: 'Grace Muthoni', items: 3, amount: 1250, method: 'Cash', status: 'Completed' },
+            { receipt: 'REC-2026-904125', time: '09:44 AM', customer: 'Sarit Cafe Supplies', items: 12, amount: 18900, method: 'Credit', status: 'Completed' },
+            { receipt: 'REC-2026-904121', time: '09:12 AM', customer: 'Walk-in Customer', items: 2, amount: 680, method: 'M-Pesa', status: 'Completed' },
+            { receipt: 'REC-2026-904119', time: '08:48 AM', customer: 'Peter Kimani', items: 8, amount: 12770, method: 'Card', status: 'Completed' },
+        ];
+    }
+    return [];
+});
 
 // Cashier's hourly performance on their terminal
 const cashierHourlyBars = [
@@ -185,13 +228,18 @@ const cashierHourlyBars = [
 ];
 
 // Top items this cashier has sold today
-const myCashierTopItems = [
-    { name: 'Brookside Whole Milk 500ml', qty: 48, amount: 3840 },
-    { name: 'Pembe Maize Flour 2kg', qty: 32, amount: 5440 },
-    { name: 'Mumias Sugar 1kg', qty: 27, amount: 4050 },
-    { name: 'Ariel Washing Powder 1kg', qty: 19, amount: 6840 },
-    { name: 'Broadways White Bread', qty: 41, amount: 2870 },
-];
+const myCashierTopItems = computed(() => {
+    if (isDemo.value) {
+        return [
+            { name: 'Brookside Whole Milk 500ml', qty: 48, amount: 3840 },
+            { name: 'Pembe Maize Flour 2kg', qty: 32, amount: 5440 },
+            { name: 'Mumias Sugar 1kg', qty: 27, amount: 4050 },
+            { name: 'Ariel Washing Powder 1kg', qty: 19, amount: 6840 },
+            { name: 'Broadways White Bread', qty: 41, amount: 2870 },
+        ];
+    }
+    return [];
+});
 
 // Owner bar chart data
 const ownerHourlyBars = [
@@ -234,8 +282,8 @@ function nextMonth() {
     else calendarMonth.value++;
 }
 
-// Shift data for the month (demo — will be replaced by real API data)
-const shiftData: Record<string, ShiftDay> = {
+// Shift data for the month (demo only — real accounts compute dynamically)
+const demoShiftData: Record<string, ShiftDay> = {
     '2026-08-01': { date: 1, status: 'completed', shiftLabel: 'Morning', clockIn: '08:01 AM', clockOut: '04:03 PM', shiftSales: 42300, orders: 88 },
     '2026-08-02': { date: 2, status: 'off', shiftLabel: 'Day Off' },
     '2026-08-03': { date: 3, status: 'off', shiftLabel: 'Day Off' },
@@ -269,6 +317,8 @@ const shiftData: Record<string, ShiftDay> = {
     '2026-08-31': { date: 31, status: 'scheduled', shiftLabel: 'Afternoon' },
 };
 
+const shiftData = computed<Record<string, ShiftDay>>(() => isDemo.value ? demoShiftData : {});
+
 const calendarDays = computed(() => {
     const year = calendarYear.value;
     const month = calendarMonth.value;
@@ -281,7 +331,7 @@ const calendarDays = computed(() => {
         const mm = String(month + 1).padStart(2, '0');
         const dd = String(d).padStart(2, '0');
         const key = `${year}-${mm}-${dd}`;
-        days.push({ day: d, key, shift: shiftData[key] ?? null });
+        days.push({ day: d, key, shift: shiftData.value[key] ?? null });
     }
     return days;
 });
@@ -306,7 +356,7 @@ const calendarMonthSummary = computed(() => {
     const month = String(calendarMonth.value + 1).padStart(2, '0');
     const year = calendarYear.value;
     const prefix = `${year}-${month}-`;
-    const relevant = Object.entries(shiftData)
+    const relevant = Object.entries(shiftData.value)
         .filter(([k]) => k.startsWith(prefix))
         .map(([, v]) => v);
     return {
@@ -348,7 +398,25 @@ const showOwnerSchedule = ref(false);
 const ownerBranchFilter = ref<string>('all');
 const ownerStaffSearch = ref<string>('');
 
-const ownerStaffMembers: StaffAttendanceSession[] = [
+const ownerBranchTabs = computed(() => {
+    if (props.branches && props.branches.length > 0) {
+        return [
+            { id: 'all', name: 'All Branches' },
+            ...props.branches.map((b) => ({ id: String(b.id), name: b.name })),
+        ];
+    }
+    if (isDemo.value) {
+        return [
+            { id: 'all', name: 'All Branches' },
+            { id: 'nairobi-central', name: 'Nairobi Central (HQ)' },
+            { id: 'westlands-outlet', name: 'Westlands Outlet' },
+            { id: 'mombasa-rd', name: 'Mombasa Road' },
+        ];
+    }
+    return [{ id: 'all', name: 'All Branches' }];
+});
+
+const demoOwnerStaffMembers: StaffAttendanceSession[] = [
     {
         id: 'st-01',
         name: 'Wamtesh K.',
@@ -457,27 +525,37 @@ const ownerStaffMembers: StaffAttendanceSession[] = [
         receiptsCount: 18,
         avgOrderValue: 888,
     },
-    {
-        id: 'st-07',
-        name: 'Faith Chebet',
-        role: 'Cashier',
-        avatar: 'FC',
-        branchId: 'nairobi-central',
-        branchName: 'Nairobi Central (HQ)',
-        terminal: 'Terminal #03',
-        shiftName: 'Morning Shift',
-        shiftTime: '08:00 AM - 04:00 PM',
-        status: 'absent',
-        punctuality: 'N/A',
-        salesToday: 0,
-        salesTarget: 60000,
-        receiptsCount: 0,
-        avgOrderValue: 0,
-    },
 ];
 
+const ownerStaffMembers = computed<StaffAttendanceSession[]>(() => {
+    if (props.activeSessions && props.activeSessions.length > 0) {
+        return props.activeSessions.map((s, idx) => ({
+            id: `st-${s.id || idx}`,
+            name: s.name,
+            role: s.role,
+            avatar: s.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase(),
+            branchId: String(s.branch_id || 'main'),
+            branchName: s.branch || 'Main HQ',
+            terminal: 'Terminal #01',
+            shiftName: 'Active Shift',
+            shiftTime: '08:00 AM - 05:00 PM',
+            status: 'clocked_in',
+            clockInTime: s.clocked_in_at || '08:00 AM',
+            punctuality: 'On Time',
+            salesToday: 0,
+            salesTarget: 50000,
+            receiptsCount: 0,
+            avgOrderValue: 0,
+        }));
+    }
+    if (isDemo.value) {
+        return demoOwnerStaffMembers;
+    }
+    return [];
+});
+
 const filteredOwnerStaff = computed(() => {
-    return ownerStaffMembers.filter((staff) => {
+    return ownerStaffMembers.value.filter((staff) => {
         const matchesBranch = ownerBranchFilter.value === 'all' || staff.branchId === ownerBranchFilter.value;
         const matchesSearch =
             !ownerStaffSearch.value.trim() ||
@@ -491,8 +569,8 @@ const filteredOwnerStaff = computed(() => {
 
 const ownerScheduleSummary = computed(() => {
     const list = ownerBranchFilter.value === 'all'
-        ? ownerStaffMembers
-        : ownerStaffMembers.filter(s => s.branchId === ownerBranchFilter.value);
+        ? ownerStaffMembers.value
+        : ownerStaffMembers.value.filter(s => s.branchId === ownerBranchFilter.value);
     
     const active = list.filter(s => s.status === 'clocked_in').length;
     const onBreak = list.filter(s => s.status === 'on_break').length;
@@ -515,13 +593,44 @@ const ownerScheduleSummary = computed(() => {
         totalOrders,
     };
 });
+
+// Interactive Dashboard Guide & Walkthrough State
+const guideOverlayOpen = ref(false);
+const guideCurrentStep = ref(0);
+
+const openGuide = (step = 0) => {
+    guideCurrentStep.value = step;
+    guideOverlayOpen.value = true;
+};
+
+const handleGuideAction = (actionType: string) => {
+    if (actionType === 'open-pos') {
+        guideOverlayOpen.value = false;
+        router.visit('/pos');
+    }
+};
+
+onMounted(() => {
+    // Auto-prompt guide on first visit or when initiated after login
+    const shouldAutoOpen =
+        sessionStorage.getItem('mde_auto_open_guide') === 'true' ||
+        !sessionStorage.getItem('mde_dashboard_guide_prompted');
+
+    if (shouldAutoOpen) {
+        sessionStorage.setItem('mde_dashboard_guide_prompted', 'true');
+        sessionStorage.removeItem('mde_auto_open_guide');
+        setTimeout(() => {
+            openGuide(0);
+        }, 700);
+    }
+});
 </script>
 
 <template>
     <Head title="Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="p-4 md:p-8 max-w-[1600px] mx-auto">
+        <div class="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
 
             <!-- ═══════════════════════════════════════════════════════ -->
             <!-- CASHIER DASHBOARD                                       -->
@@ -529,7 +638,7 @@ const ownerScheduleSummary = computed(() => {
             <div v-if="isCashier" class="space-y-6">
 
                 <!-- Header: Cashier Identity & Shift Status -->
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div id="cashier-step-header" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div class="flex items-center gap-4">
                         <div class="size-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shrink-0">
                             <ShoppingCart class="size-7 text-white" />
@@ -549,7 +658,19 @@ const ownerScheduleSummary = computed(() => {
                         </div>
                     </div>
                     <!-- Quick Actions -->
-                    <div class="flex gap-2 shrink-0">
+                    <div class="flex items-center gap-2 shrink-0 flex-wrap">
+                        <Button
+                            id="cashier-tour-guide-btn"
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            class="h-9 px-3 gap-1.5 text-xs font-bold text-primary border-primary/40 bg-primary/10 hover:bg-primary/20 hover:border-primary/60 cursor-pointer shadow-2xs transition-all relative"
+                            @click="openGuide(0)"
+                            title="Start Interactive Register Walkthrough"
+                        >
+                            <Compass class="size-3.5 animate-spin" style="animation-duration: 12s" />
+                            <span>Dashboard Guide</span>
+                        </Button>
                         <Link href="/sales">
                             <Button variant="outline" size="sm" class="gap-1.5 text-xs h-9">
                                 <Receipt class="size-3.5" />
@@ -557,7 +678,7 @@ const ownerScheduleSummary = computed(() => {
                             </Button>
                         </Link>
                         <Link href="/pos">
-                            <Button size="sm" class="gap-1.5 text-xs h-9 bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow">
+                            <Button id="cashier-step-pos-action" size="sm" class="gap-1.5 text-xs h-9 bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow">
                                 <Zap class="size-3.5" />
                                 Open POS Register
                             </Button>
@@ -566,7 +687,7 @@ const ownerScheduleSummary = computed(() => {
                 </div>
 
                 <!-- ── COMPACT SHIFT CALENDAR TOGGLE STRIP ────────────────── -->
-                <div class="rounded-xl border border-border/80 bg-card shadow-sm overflow-hidden">
+                <div id="cashier-step-calendar" class="rounded-xl border border-border/80 bg-card shadow-sm overflow-hidden">
                     <!-- Toggle trigger row -->
                     <button
                         type="button"
@@ -702,7 +823,7 @@ const ownerScheduleSummary = computed(() => {
                 </div>
 
                 <!-- Shift Progress Bar -->
-                <div class="rounded-2xl border border-border/80 bg-card p-4 shadow-sm">
+                <div id="cashier-step-target" class="rounded-2xl border border-border/80 bg-card p-4 shadow-sm">
                     <div class="flex items-center justify-between mb-2 text-xs">
                         <span class="font-semibold text-foreground flex items-center gap-1.5">
                             <BarChart3 class="size-3.5 text-emerald-600" />
@@ -723,7 +844,7 @@ const ownerScheduleSummary = computed(() => {
                 </div>
 
                 <!-- 4 Personal KPI Cards -->
-                <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div id="cashier-step-kpis" class="grid grid-cols-2 gap-3 sm:grid-cols-4">
                     <StatCard
                         title="My Shift Sales"
                         :value="formatCurrency(cashierShiftStats.shiftSales)"
@@ -762,7 +883,7 @@ const ownerScheduleSummary = computed(() => {
                 </div>
 
                 <!-- Payment Breakdown: Cash / M-Pesa / Card / Credit -->
-                <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 text-xs">
+                <div id="cashier-step-payments" class="grid grid-cols-2 gap-3 sm:grid-cols-4 text-xs">
                     <div class="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4 shadow-sm">
                         <div class="flex items-center gap-2 mb-2">
                             <div class="size-7 rounded-lg bg-emerald-500/15 flex items-center justify-center">
@@ -808,7 +929,7 @@ const ownerScheduleSummary = computed(() => {
                 <!-- Middle: Hourly Chart + Top Items Sold -->
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <!-- Hourly terminal chart -->
-                    <Card class="lg:col-span-2 border-border/80">
+                    <Card id="cashier-step-chart" class="lg:col-span-2 border-border/80">
                         <CardHeader class="flex flex-row items-center justify-between pb-2">
                             <div>
                                 <CardTitle class="text-base font-bold">My Hourly Terminal Activity</CardTitle>
@@ -848,7 +969,7 @@ const ownerScheduleSummary = computed(() => {
                     </Card>
 
                     <!-- Top items I sold today -->
-                    <Card class="border-border/80">
+                    <Card id="cashier-step-top-items" class="border-border/80">
                         <CardHeader class="pb-3">
                             <CardTitle class="text-base font-bold flex items-center gap-2">
                                 <Star class="size-4 text-amber-500" />
@@ -876,7 +997,7 @@ const ownerScheduleSummary = computed(() => {
                 <!-- Bottom: My Recent Receipts + Shift Summary -->
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <!-- My recent receipts (2 cols) -->
-                    <Card class="lg:col-span-2 border-border/80">
+                    <Card id="cashier-step-recent-receipts" class="lg:col-span-2 border-border/80">
                         <CardHeader class="pb-3 flex flex-row items-center justify-between">
                             <div>
                                 <CardTitle class="text-base font-bold">My Recent Receipts</CardTitle>
@@ -885,8 +1006,8 @@ const ownerScheduleSummary = computed(() => {
                             <Link href="/sales" class="text-xs text-primary hover:underline font-semibold">Full Sales Log</Link>
                         </CardHeader>
                         <CardContent class="p-0">
-                            <div class="divide-y divide-border/60 text-xs">
-                                <div v-for="(sale, idx) in myRecentReceipts" :key="idx" class="flex items-center justify-between p-3.5 hover:bg-muted/20">
+                            <div class="max-h-[308px] overflow-y-auto divide-y divide-border/60 text-xs scrollbar-thin overscroll-contain">
+                                <div v-for="(sale, idx) in myRecentReceipts" :key="idx" class="flex items-center justify-between p-3.5 hover:bg-muted/20 transition-colors">
                                     <div class="flex items-center gap-3">
                                         <div class="size-8 rounded-lg bg-muted/60 flex items-center justify-center shrink-0">
                                             <Receipt class="size-4 text-muted-foreground" />
@@ -906,12 +1027,15 @@ const ownerScheduleSummary = computed(() => {
                                         </Badge>
                                     </div>
                                 </div>
+                                <div v-if="myRecentReceipts.length === 0" class="p-6 text-center text-muted-foreground text-xs">
+                                    No receipts issued yet this shift
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
 
                     <!-- Shift Summary Card -->
-                    <Card class="border-border/80">
+                    <Card id="cashier-step-shift-summary" class="border-border/80">
                         <CardHeader class="pb-3">
                             <CardTitle class="text-base font-bold flex items-center gap-2">
                                 <ShieldCheck class="size-4 text-sky-500" />
@@ -960,7 +1084,7 @@ const ownerScheduleSummary = computed(() => {
             <div v-else class="space-y-6">
 
                 <!-- Header & Time Filter -->
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div id="dashboard-step-header" class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
                             <span class="truncate max-w-[220px] sm:max-w-none">{{ currentTenant.name }} Dashboard</span>
@@ -970,26 +1094,51 @@ const ownerScheduleSummary = computed(() => {
                             Real-time sales, inventory valuation, and multi-branch analytics for {{ currentBranch.name }}.
                         </p>
                     </div>
-                    <div class="flex items-center gap-1 sm:gap-1.5 rounded-xl border border-border/80 bg-card p-1 shadow-sm text-xs overflow-x-auto scrollbar-none">
-                        <button
-                            v-for="t in ['Today', '7 Days', '30 Days', 'This Month', 'This Year']"
-                            :key="t"
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <!-- Quick POS Launcher Button -->
+                        <Link href="/pos">
+                            <Button id="dashboard-step-pos-action" size="sm" class="gap-1.5 text-xs h-9 bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-sm">
+                                <Zap class="size-3.5" />
+                                <span>Open POS Register</span>
+                            </Button>
+                        </Link>
+
+                        <!-- Dashboard Guide Button -->
+                        <Button
+                            id="dashboard-tour-guide-btn"
                             type="button"
-                            :class="[
-                                'px-2.5 sm:px-3 py-1 sm:py-1.5 font-semibold rounded-lg transition-all whitespace-nowrap text-xs',
-                                ownerTimeFilter === t
-                                    ? 'bg-primary text-primary-foreground shadow-sm'
-                                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/40',
-                            ]"
-                            @click="ownerTimeFilter = t as any"
+                            variant="outline"
+                            size="sm"
+                            class="h-9 px-3 gap-1.5 text-xs font-bold text-primary border-primary/40 bg-primary/10 hover:bg-primary/20 hover:border-primary/60 cursor-pointer shadow-2xs transition-all relative"
+                            @click="openGuide(0)"
+                            title="Start Interactive Dashboard Walkthrough"
                         >
-                            {{ t }}
-                        </button>
+                            <Compass class="size-3.5 animate-spin" style="animation-duration: 12s" />
+                            <span>Dashboard Guide</span>
+                        </Button>
+
+                        <!-- Time Filter -->
+                        <div class="flex items-center gap-1 sm:gap-1.5 rounded-xl border border-border/80 bg-card p-1 shadow-sm text-xs overflow-x-auto scrollbar-none">
+                            <button
+                                v-for="t in ['Today', '7 Days', '30 Days', 'This Month', 'This Year']"
+                                :key="t"
+                                type="button"
+                                :class="[
+                                    'px-2.5 sm:px-3 py-1 sm:py-1.5 font-semibold rounded-lg transition-all whitespace-nowrap text-xs',
+                                    ownerTimeFilter === t
+                                        ? 'bg-primary text-primary-foreground shadow-sm'
+                                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/40',
+                                ]"
+                                @click="ownerTimeFilter = t as any"
+                            >
+                                {{ t }}
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 <!-- ── OWNER COMPACT STAFF SHIFTS, CLOCK-IN & TARGETS STRIP ── -->
-                <div class="rounded-xl border border-border/80 bg-card shadow-sm overflow-hidden">
+                <div id="dashboard-step-shifts" class="rounded-xl border border-border/80 bg-card shadow-sm overflow-hidden">
                     <!-- Toggle trigger row -->
                     <button
                         type="button"
@@ -1043,18 +1192,13 @@ const ownerScheduleSummary = computed(() => {
                         <div v-if="showOwnerSchedule" class="border-t border-border/60 px-4 pb-4 pt-3 space-y-4">
                             <!-- Filter & Search Controls Bar -->
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-muted/30 p-3 rounded-lg border border-border/60">
-                                <!-- Branch filter buttons -->
-                                <div class="flex items-center gap-1.5 overflow-x-auto scrollbar-none text-xs">
+                                <!-- Branch filter buttons (only shown in multi-branch mode) -->
+                                <div v-if="isMultiBranch && ownerBranchTabs.length > 2" class="flex items-center gap-1.5 overflow-x-auto scrollbar-none text-xs">
                                     <span class="text-muted-foreground font-semibold flex items-center gap-1 shrink-0 mr-1">
                                         <Building2 class="size-3.5 text-primary" /> Branch:
                                     </span>
                                     <button
-                                        v-for="b in [
-                                            { id: 'all', name: 'All Branches' },
-                                            { id: 'nairobi-central', name: 'Nairobi Central (HQ)' },
-                                            { id: 'westlands-outlet', name: 'Westlands Outlet' },
-                                            { id: 'mombasa-rd', name: 'Mombasa Road' },
-                                        ]"
+                                        v-for="b in ownerBranchTabs"
                                         :key="b.id"
                                         type="button"
                                         @click="ownerBranchFilter = b.id"
@@ -1081,8 +1225,23 @@ const ownerScheduleSummary = computed(() => {
                                 </div>
                             </div>
 
-                            <!-- Branch Attendance & Sales Summary Cards -->
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                            <!-- Branch Attendance & Sales Summary Cards (only in multi-branch mode) -->
+                            <div v-if="isMultiBranch && props.branches && props.branches.length > 1" class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                                <div v-for="b in props.branches" :key="b.id" class="rounded-xl border border-border/80 bg-card p-3.5 shadow-sm">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-muted-foreground font-medium flex items-center gap-1.5">
+                                            <Building2 class="size-3.5 text-primary" /> {{ b.name }}
+                                        </span>
+                                        <Badge variant="outline" class="text-[10px] py-0">{{ b.status || 'Active' }}</Badge>
+                                    </div>
+                                    <div class="mt-2 flex items-baseline justify-between">
+                                        <div class="text-base font-bold font-mono text-foreground">{{ formatCurrency(b.today_sales ?? 0) }}</div>
+                                        <span class="text-[11px] text-muted-foreground">Today's Sales</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-else-if="isDemo && (!props.branches || props.branches.length === 0)" class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                                 <div class="rounded-xl border border-border/80 bg-card p-3.5 shadow-sm">
                                     <div class="flex items-center justify-between">
                                         <span class="text-muted-foreground font-medium flex items-center gap-1.5">
@@ -1264,7 +1423,7 @@ const ownerScheduleSummary = computed(() => {
                 </div>
 
                 <!-- Primary KPIs: Revenue / Profit / Transactions / Stock -->
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div id="dashboard-step-kpis" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <StatCard
                         title="Gross Revenue"
                         :value="formatCurrency(ownerKpis.sales)"
@@ -1294,6 +1453,7 @@ const ownerScheduleSummary = computed(() => {
                         icon-bg="bg-sky-500/10"
                     />
                     <StatCard
+                        v-if="hasModule('expenses')"
                         title="Operating Expenses"
                         :value="formatCurrency(ownerKpis.expenses)"
                         change-text="incl. payroll & utilities"
@@ -1304,23 +1464,23 @@ const ownerScheduleSummary = computed(() => {
                 </div>
 
                 <!-- Secondary KPIs: Balance Sheet -->
-                <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 text-xs">
-                    <div class="rounded-xl border border-border/80 bg-card p-4 shadow-sm">
+                <div id="dashboard-step-balances" class="grid grid-cols-2 gap-3 sm:grid-cols-4 text-xs">
+                    <div v-if="hasModule('customers')" class="rounded-xl border border-border/80 bg-card p-4 shadow-sm">
                         <span class="text-muted-foreground font-medium">Customer Receivables</span>
                         <div class="mt-1 text-lg font-bold font-mono text-amber-600">{{ formatCurrency(ownerKpis.custBalance) }}</div>
                         <p class="text-[11px] text-muted-foreground">outstanding credit accounts</p>
                     </div>
-                    <div class="rounded-xl border border-border/80 bg-card p-4 shadow-sm">
+                    <div v-if="hasModule('suppliers') || hasModule('purchases')" class="rounded-xl border border-border/80 bg-card p-4 shadow-sm">
                         <span class="text-muted-foreground font-medium">Supplier Payables</span>
                         <div class="mt-1 text-lg font-bold font-mono text-rose-600">{{ formatCurrency(ownerKpis.suppBalance) }}</div>
                         <p class="text-[11px] text-muted-foreground">due to suppliers</p>
                     </div>
                     <div class="rounded-xl border border-border/80 bg-card p-4 shadow-sm">
-                        <span class="text-muted-foreground font-medium">Branch Stock Value</span>
+                        <span class="text-muted-foreground font-medium">Stock Valuation</span>
                         <div class="mt-1 text-lg font-bold font-mono text-foreground">{{ formatCurrency(ownerKpis.stockValue) }}</div>
                         <p class="text-[11px] text-muted-foreground">at purchase cost</p>
                     </div>
-                    <div class="rounded-xl border border-border/80 bg-card p-4 shadow-sm">
+                    <div v-if="hasModule('customers')" class="rounded-xl border border-border/80 bg-card p-4 shadow-sm">
                         <span class="text-muted-foreground font-medium">Active Customers</span>
                         <div class="mt-1 text-lg font-bold font-mono text-primary">{{ ownerKpis.customers.toLocaleString() }}</div>
                         <p class="text-[11px] text-muted-foreground">registered accounts</p>
@@ -1330,7 +1490,7 @@ const ownerScheduleSummary = computed(() => {
                 <!-- Chart + Payment Mix -->
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <!-- Sales Velocity Chart (2 cols) -->
-                    <Card class="lg:col-span-2 border-border/80">
+                    <Card id="dashboard-step-chart" class="lg:col-span-2 border-border/80">
                         <CardHeader class="flex flex-row items-center justify-between pb-2">
                             <div>
                                 <CardTitle class="text-base font-bold">Branch Sales Trajectory ({{ ownerTimeFilter }})</CardTitle>
@@ -1370,7 +1530,7 @@ const ownerScheduleSummary = computed(() => {
                     </Card>
 
                     <!-- Payment Channels -->
-                    <Card class="border-border/80">
+                    <Card id="dashboard-step-payments" class="border-border/80">
                         <CardHeader class="pb-2">
                             <CardTitle class="text-base font-bold">Payment Channels</CardTitle>
                             <CardDescription class="text-xs">M-Pesa, Cash, Card & Credit split</CardDescription>
@@ -1396,7 +1556,7 @@ const ownerScheduleSummary = computed(() => {
                 </div>
 
                 <!-- Multi-Branch Performance (Owner only, below management level) -->
-                <Card v-if="can('branches', 'view')" class="border-border/80">
+                <Card v-if="can('branches', 'view')" id="dashboard-step-branches" class="border-border/80">
                     <CardHeader class="pb-3 flex flex-row items-center justify-between">
                         <div>
                             <CardTitle class="text-base font-bold flex items-center gap-2">
@@ -1435,7 +1595,7 @@ const ownerScheduleSummary = computed(() => {
                 <!-- Bottom Row: Products / Low Stock / Recent Transactions -->
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <!-- Top Products -->
-                    <Card class="border-border/80">
+                    <Card id="dashboard-step-top-products" class="border-border/80">
                         <CardHeader class="pb-3 flex flex-row items-center justify-between">
                             <div>
                                 <CardTitle class="text-base font-bold">Top Selling Products</CardTitle>
@@ -1460,7 +1620,7 @@ const ownerScheduleSummary = computed(() => {
                     </Card>
 
                     <!-- Low Stock -->
-                    <Card class="border-border/80">
+                    <Card id="dashboard-step-low-stock" class="border-border/80">
                         <CardHeader class="pb-3 flex flex-row items-center justify-between">
                             <div>
                                 <CardTitle class="text-base font-bold flex items-center gap-2">
@@ -1487,7 +1647,7 @@ const ownerScheduleSummary = computed(() => {
                     </Card>
 
                     <!-- Recent Transactions (All Cashiers) -->
-                    <Card class="border-border/80">
+                    <Card id="dashboard-step-recent-sales" class="border-border/80">
                         <CardHeader class="pb-3 flex flex-row items-center justify-between">
                             <div>
                                 <CardTitle class="text-base font-bold">Recent Transactions</CardTitle>
@@ -1496,8 +1656,8 @@ const ownerScheduleSummary = computed(() => {
                             <Link href="/sales" class="text-xs text-primary hover:underline font-semibold">Sales Log</Link>
                         </CardHeader>
                         <CardContent class="p-0">
-                            <div class="divide-y divide-border/60 text-xs">
-                                <div v-for="(sale, idx) in recentSales" :key="idx" class="flex items-center justify-between p-3.5 hover:bg-muted/20">
+                            <div class="max-h-[308px] overflow-y-auto divide-y divide-border/60 text-xs scrollbar-thin overscroll-contain">
+                                <div v-for="(sale, idx) in recentSales" :key="idx" class="flex items-center justify-between p-3.5 hover:bg-muted/20 transition-colors">
                                     <div>
                                         <div class="flex items-center gap-1.5">
                                             <span class="font-mono font-bold text-primary text-[11px]">{{ sale.receipt }}</span>
@@ -1512,6 +1672,9 @@ const ownerScheduleSummary = computed(() => {
                                         </Badge>
                                     </div>
                                 </div>
+                                <div v-if="recentSales.length === 0" class="p-6 text-center text-muted-foreground text-xs">
+                                    No recent transactions found
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
@@ -1523,6 +1686,14 @@ const ownerScheduleSummary = computed(() => {
             <!-- ═══════════════════════════════════════════════════════ -->
 
         </div>
+
+        <!-- Interactive Dashboard Guide Overlay with Text Bubbles -->
+        <DashboardGuideOverlay
+            v-model:open="guideOverlayOpen"
+            v-model:current-step="guideCurrentStep"
+            :is-cashier="isCashier"
+            @action="handleGuideAction"
+        />
     </AppLayout>
 </template>
 

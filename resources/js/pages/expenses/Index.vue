@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatCurrency, formatDateOnly } from '@/composables/useCurrency';
+import { useFeatures } from '@/composables/useFeatures';
 import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
@@ -23,6 +24,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Expenses', href: '/expenses' },
 ];
 
+const { isMultiBranch } = useFeatures();
 const { success, error } = useToast();
 
 const expensesList = computed(() => {
@@ -42,16 +44,16 @@ const expensesList = computed(() => {
     return [];
 });
 
-const columns = [
+const columns = computed(() => [
     { key: 'id', label: 'Expense #' },
     { key: 'date', label: 'Date' },
     { key: 'category', label: 'Category' },
     { key: 'description', label: 'Description' },
     { key: 'amount', label: 'Amount (KES)', align: 'right' as const },
     { key: 'paymentMethod', label: 'Payment Method' },
-    { key: 'branch', label: 'Branch' },
+    ...(isMultiBranch.value ? [{ key: 'branch', label: 'Branch' }] : []),
     { key: 'recordedBy', label: 'Recorded By' },
-];
+]);
 
 const newExpenseModal = ref(false);
 const newExp = ref({
@@ -94,7 +96,7 @@ const handleRecordExpense = () => {
     <Head title="Expense Tracking" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="p-4 md:p-8 space-y-6 max-w-[1600px] mx-auto">
+        <div class="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
             <!-- Header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>

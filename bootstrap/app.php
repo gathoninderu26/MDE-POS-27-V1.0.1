@@ -18,28 +18,38 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->web(prepend: [
-            \App\Http\Middleware\IdentifyTenantFromSubdomain::class,
-        ]);
-
         $middleware->web(append: [
+            \App\Http\Middleware\IdentifyTenantFromSubdomain::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+        ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'mpesa/*',
+            'demo-login',
         ]);
 
         // Register named middleware aliases
         $middleware->alias([
             'super_admin'  => SuperAdminMiddleware::class,
             'tenant_user'  => EnsureTenantUser::class,
+            'module'       => \App\Http\Middleware\EnsureModuleEnabled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->respond(function (Response $response, \Throwable $e, Request $request) {
             $status = $response->getStatusCode();
 
+            // When a CSRF session expires (419), redirect back with a fresh session/token
+            if ($status === 419 && ! $request->expectsJson()) {
+                return back()->with([
+                    'message' => 'Your session expired. Please try again.',
+                ]);
+            }
+
             // Render Inertia error page for common HTTP error codes (not for API requests)
             if (
-                in_array($status, [403, 404, 419, 500, 503])
+                in_array($status, [403, 404, 500, 503])
                 && ! $request->expectsJson()
                 && ! $request->is('_ignition/*')
             ) {

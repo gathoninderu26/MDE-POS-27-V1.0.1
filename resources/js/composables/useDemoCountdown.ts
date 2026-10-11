@@ -19,23 +19,42 @@ export function useDemoCountdown() {
         if (intervalId) clearInterval(intervalId);
     });
 
-    // Expiry date from Inertia session props or localStorage fallback
-    const expiresAtMs = computed(() => {
-        const serverExpires = (page.props as any)?.demo?.expires_at;
+    // ── Server-authoritative expiry ──────────────────────────────────────────
+    // Only trust an expiry date that the server explicitly provided.
+    // localStorage is used purely for the countdown display, never to determine
+    // whether the account is actually expired (stale values caused false positives).
+    const serverExpiresAtMs = computed(() => {
+        if (!isDemo.value) return null;
+
+        const serverExpires =
+            (page.props as any)?.demo?.expires_at ||
+            (page.props as any)?.tenant?.expires_at ||
+            (currentTenant.value as any)?.expiresAt;
+
         if (serverExpires) {
             const parsed = new Date(serverExpires).getTime();
             if (!isNaN(parsed)) return parsed;
         }
+        return null; // No authoritative expiry from the server
+    });
 
-        // Fallback to localStorage for this specific demo tenant
+    // Expiry date used for the countdown display (server first, then localStorage for UX)
+    const expiresAtMs = computed(() => {
+        if (!isDemo.value) return 0;
+        if (serverExpiresAtMs.value !== null) return serverExpiresAtMs.value;
+
+        // localStorage fallback — only for display, never drives isExpired
         if (typeof window !== 'undefined') {
-            const key = `mde_demo_expiry_${currentTenant.value.slug}`;
-            const stored = localStorage.getItem(key);
+            const tenantSlug = currentTenant.value?.slug || 'default';
+            const key = `mde_account_expiry_${tenantSlug}`;
+            const legacyKey = `mde_demo_expiry_${tenantSlug}`;
+            const stored = localStorage.getItem(key) || localStorage.getItem(legacyKey);
             if (stored) {
                 const parsed = Number(stored);
-                if (!isNaN(parsed) && parsed > 0) return parsed;
+                // Only use the localStorage value if it is in the future; ignore stale values
+                if (!isNaN(parsed) && parsed > Date.now()) return parsed;
             }
-            // default 7 days from now
+            // Write a fresh 7-day window if nothing valid is stored
             const defaultExpiry = Date.now() + 7 * 24 * 60 * 60 * 1000;
             localStorage.setItem(key, String(defaultExpiry));
             return defaultExpiry;
@@ -44,7 +63,10 @@ export function useDemoCountdown() {
         return Date.now() + 7 * 24 * 60 * 60 * 1000;
     });
 
-    const diffMs = computed(() => Math.max(0, expiresAtMs.value - now.value));
+    const diffMs = computed(() => {
+        if (!isDemo.value) return 0;
+        return Math.max(0, expiresAtMs.value - now.value);
+    });
 
     const totalSecondsLeft = computed(() => Math.floor(diffMs.value / 1000));
     const daysLeft = computed(() => Math.floor(totalSecondsLeft.value / 86400));
@@ -52,8 +74,9 @@ export function useDemoCountdown() {
     const minutesLeft = computed(() => Math.floor((totalSecondsLeft.value % 3600) / 60));
     const secondsLeft = computed(() => totalSecondsLeft.value % 60);
 
-    const isExpired = computed(() => diffMs.value <= 0);
-    const isUrgent = computed(() => diffMs.value < 24 * 60 * 60 * 1000 && !isExpired.value); // Less than 24 hours
+    // isExpired is ONLY true when this is a demo AND the server gave us an explicit expiry in the past.
+    const isExpired = computed(() => isDemo.value && serverExpiresAtMs.value !== null && serverExpiresAtMs.value <= now.value);
+    const isUrgent = computed(() => isDemo.value && diffMs.value < 24 * 60 * 60 * 1000 && !isExpired.value); // Less than 24 hours
 
     const countdownText = computed(() => {
         if (isExpired.value) return 'Demo Expired';
@@ -85,10 +108,20 @@ export function useDemoCountdown() {
         return `${minutesLeft.value} Mins ${secondsLeft.value} Secs Left`;
     });
 
+    const formattedExpiryDate = computed(() => {
+        return new Date(expiresAtMs.value).toLocaleDateString('en-KE', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        });
+    });
+
     return {
         isDemo,
         isExpired,
         isUrgent,
+        expiresAtMs,
+        formattedExpiryDate,
         daysLeft,
         hoursLeft,
         minutesLeft,

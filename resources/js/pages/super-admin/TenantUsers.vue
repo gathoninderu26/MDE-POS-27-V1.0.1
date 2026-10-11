@@ -12,7 +12,9 @@ import {
     ArrowLeft,
     Building2,
     ChevronDown,
+    Copy,
     Crown,
+    ExternalLink,
     Eye,
     EyeOff,
     KeyRound,
@@ -54,6 +56,7 @@ interface TenantInfo {
     business_type: string;
     plan: string;
     status: string;
+    subdomain_url?: string;
 }
 
 const props = defineProps<{
@@ -63,6 +66,12 @@ const props = defineProps<{
 
 const { success, warning, error, info } = useToast();
 const page = usePage();
+
+const copyTenantUrl = (url?: string) => {
+    if (!url) return;
+    navigator.clipboard.writeText(url);
+    success('Copied!', 'Tenant login URL copied to clipboard.');
+};
 
 const searchQuery = ref('');
 
@@ -265,11 +274,33 @@ const handleDelete = () => {
                                 {{ tenant.status }}
                             </span>
                         </div>
-                        <p class="text-xs text-zinc-400 mt-0.5 flex items-center gap-1.5">
-                            <Building2 class="size-3 opacity-60" />
-                            {{ tenant.business_type }} &nbsp;•&nbsp;
-                            <span class="font-mono text-zinc-500">{{ tenant.slug }}.mdepos.co.ke</span>
-                        </p>
+                        <div class="text-xs text-zinc-400 mt-1 flex items-center gap-2 flex-wrap">
+                            <span class="flex items-center gap-1">
+                                <Building2 class="size-3 opacity-60" />
+                                {{ tenant.business_type }}
+                            </span>
+                            <span class="text-zinc-600">•</span>
+                            <span v-if="tenant.subdomain_url" class="inline-flex items-center gap-1.5 font-mono text-[11px] bg-zinc-800/80 px-2 py-0.5 rounded border border-zinc-700/60 text-violet-300">
+                                <span>{{ tenant.subdomain_url }}</span>
+                                <button
+                                    type="button"
+                                    class="text-zinc-400 hover:text-white transition-colors"
+                                    title="Copy login URL"
+                                    @click="copyTenantUrl(tenant.subdomain_url)"
+                                >
+                                    <Copy class="size-3" />
+                                </button>
+                                <a
+                                    :href="tenant.subdomain_url"
+                                    target="_blank"
+                                    class="text-violet-400 hover:text-violet-200 transition-colors"
+                                    title="Open tenant login"
+                                >
+                                    <ExternalLink class="size-3" />
+                                </a>
+                            </span>
+                            <span v-else class="font-mono text-zinc-500">{{ tenant.slug }}</span>
+                        </div>
                     </div>
                 </div>
 

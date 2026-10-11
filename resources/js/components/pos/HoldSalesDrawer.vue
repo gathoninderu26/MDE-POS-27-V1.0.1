@@ -19,7 +19,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <Sheet :open="open" @update:open="(v) => emit('update:open', v)">
+    <Sheet :open="open" spinnerText="Opening Held Orders..." @update:open="(v) => emit('update:open', v)">
         <SheetContent side="right" class="w-full sm:max-w-md p-6 flex flex-col">
             <SheetHeader class="pb-4 border-b border-border/70">
                 <SheetTitle class="text-base font-bold flex items-center gap-2">

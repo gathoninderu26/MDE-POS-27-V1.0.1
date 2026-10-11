@@ -34,6 +34,8 @@ class SaleController extends Controller
                 'profit' => (float) $s->profit,
                 'payment_method' => $s->payment_method,
                 'payment_status' => $s->payment_status,
+                'mpesa_code' => $s->mpesa_code,
+                'mpesa_payer_name' => $s->mpesa_payer_name,
                 'customer_name' => $s->customer_name,
                 'customer_phone' => $s->customer_phone,
                 'cashier' => $s->user?->name ?? 'Staff',
@@ -103,6 +105,8 @@ class SaleController extends Controller
             'discount_amount' => 'nullable|numeric|min:0',
             'total' => 'required|numeric|min:0',
             'payment_method' => 'required|string',
+            'mpesa_code' => 'nullable|string|max:20',
+            'mpesa_payer_name' => 'nullable|string|max:100',
             'customer_name' => 'nullable|string',
             'customer_phone' => 'nullable|string',
             'notes' => 'nullable|string',
@@ -131,6 +135,8 @@ class SaleController extends Controller
                 'profit' => $profit,
                 'payment_method' => $validated['payment_method'],
                 'payment_status' => 'Completed',
+                'mpesa_code' => $validated['mpesa_code'] ?? null,
+                'mpesa_payer_name' => $validated['mpesa_payer_name'] ?? null,
                 'customer_name' => $validated['customer_name'] ?? null,
                 'customer_phone' => $validated['customer_phone'] ?? null,
                 'notes' => $validated['notes'] ?? null,
@@ -152,11 +158,39 @@ class SaleController extends Controller
                     'total' => $itemTotal,
                 ]);
 
-                // Decrement stock if product exists
+                // Decrement stock if product exists (scoped strictly to current tenant)
                 if (!empty($item['product_id'])) {
-                    Product::where('id', $item['product_id'])->decrement('stock_quantity', $qty);
+                    Product::where('tenant_id', $tenant->id)
+                        ->where('id', $item['product_id'])
+                        ->decrement('stock_quantity', $qty);
                 }
             }
+
+            // Enqueue store-and-forward cloud sync outbox record (MySQL -> Supabase)
+            app(\App\Services\CloudSyncService::class)->recordChange(
+                $tenant->id,
+                'sale',
+                (string) $sale->id,
+                'create',
+                [
+                    'id'              => $sale->id,
+                    'tenant_id'       => $tenant->id,
+                    'branch_id'       => $sale->branch_id,
+                    'user_id'         => $sale->user_id,
+                    'receipt_number'  => $sale->receipt_number,
+                    'subtotal'        => (float) $sale->subtotal,
+                    'tax_amount'      => (float) $sale->tax_amount,
+                    'discount_amount' => (float) $sale->discount_amount,
+                    'total'           => (float) $sale->total,
+                    'profit'          => (float) $sale->profit,
+                    'payment_method'  => $sale->payment_method,
+                    'payment_status'  => $sale->payment_status,
+                    'mpesa_code'      => $sale->mpesa_code,
+                    'customer_name'   => $sale->customer_name,
+                    'items'           => $validated['items'],
+                    'created_at'      => $sale->created_at?->toIso8601String(),
+                ]
+            );
         });
 
         return back()->with('success', 'Sale completed successfully.');

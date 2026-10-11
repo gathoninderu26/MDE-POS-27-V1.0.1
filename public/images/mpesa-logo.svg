@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 70" width="240" height="70" fill="none">
+    <defs>
+        <linearGradient id="mpesaGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00A651" />
+            <stop offset="100%" stop-color="#00853D" />
+        </linearGradient>
+        <linearGradient id="mpesaRed" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#E31837" />
+            <stop offset="100%" stop-color="#C0122B" />
+        </linearGradient>
+    </defs>
+    
+    <!-- Safaricom M-Pesa Symbol -->
+    <g transform="translate(6, 6)">
+        <rect x="0" y="0" width="58" height="58" rx="12" fill="url(#mpesaGreen)" />
+        <!-- Safaricom arc rays -->
+        <path d="M 12 44 C 12 22, 26 13, 44 13" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.9" />
+        <path d="M 18 44 C 18 28, 28 20, 42 20" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.65" />
+        <!-- Accent circle -->
+        <circle cx="40" cy="40" r="10" fill="url(#mpesaRed)" />
+        <path d="M 36 40 L 39 43 L 45 37" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+    
+    <!-- M-PESA Text -->
+    <text x="74" y="47" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Montserrat', Arial, sans-serif" font-size="34" font-weight="900" letter-spacing="0.5">
+        <tspan fill="#E31837">M</tspan><tspan fill="#00A651">-PESA</tspan>
+    </text>
+</svg>

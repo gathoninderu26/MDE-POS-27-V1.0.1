@@ -197,4 +197,89 @@ class UserController extends Controller
 
         return back()->with('success', 'User removed.');
     }
+
+    /**
+     * Universal bulk import for staff members (from Excel, Word, PDF, or delimited text).
+     */
+    public function import(Request $request): RedirectResponse
+    {
+        $tenant = $this->currentTenant($request);
+        abort_unless($tenant, 403);
+
+        $validated = $request->validate([
+            'staff' => 'required|array|min:1',
+            'staff.*.name' => 'required|string|max:255',
+            'staff.*.email' => 'required|email|max:255',
+            'staff.*.role' => 'nullable|string|max:100',
+            'staff.*.phone' => 'nullable|string|max:50',
+            'staff.*.branch' => 'nullable|string|max:255',
+            'staff.*.status' => 'nullable|string|max:50',
+            'update_existing' => 'nullable|boolean',
+        ]);
+
+        $importedCount = 0;
+        $updatedCount = 0;
+        $updateExisting = $validated['update_existing'] ?? true;
+
+        DB::transaction(function () use ($tenant, $validated, $updateExisting, &$importedCount, &$updatedCount) {
+            foreach ($validated['staff'] as $item) {
+                $email = strtolower(trim($item['email']));
+                $name = trim($item['name']);
+                if (empty($email) || empty($name)) {
+                    continue;
+                }
+
+                $roleRaw = !empty($item['role']) ? trim($item['role']) : 'Cashier';
+                $roleNormalized = strtolower($roleRaw);
+                if (str_contains($roleNormalized, 'owner') || str_contains($roleNormalized, 'admin') || str_contains($roleNormalized, 'proprietor')) {
+                    $role = 'Owner';
+                } elseif (str_contains($roleNormalized, 'inv') || str_contains($roleNormalized, 'stock') || str_contains($roleNormalized, 'warehouse')) {
+                    $role = 'Inventory Manager';
+                } elseif (str_contains($roleNormalized, 'account') || str_contains($roleNormalized, 'finance') || str_contains($roleNormalized, 'bookkeep')) {
+                    $role = 'Accountant';
+                } elseif (str_contains($roleNormalized, 'manag') || str_contains($roleNormalized, 'supervis') || str_contains($roleNormalized, 'lead')) {
+                    $role = 'Manager';
+                } else {
+                    $role = 'Cashier';
+                }
+
+                $phone = !empty($item['phone']) ? trim($item['phone']) : null;
+                $statusRaw = !empty($item['status']) ? strtolower(trim($item['status'])) : 'active';
+                $status = in_array($statusRaw, ['inactive', 'suspended', 'blocked', 'disabled']) ? 'Suspended' : 'Active';
+
+                $existing = User::where('tenant_id', $tenant->id)->where('email', $email)->first();
+
+                if ($existing) {
+                    if ($updateExisting) {
+                        $existing->name = $name;
+                        if ($existing->role !== 'Owner' || $role === 'Owner') {
+                            $existing->role = $role;
+                        }
+                        if ($phone) {
+                            $existing->phone = $phone;
+                        }
+                        $existing->status = $status;
+                        $existing->save();
+                        $updatedCount++;
+                    }
+                } else {
+                    User::create([
+                        'name'              => $name,
+                        'email'             => $email,
+                        'password'          => Hash::make('Password@2026!'),
+                        'role'              => $role,
+                        'phone'             => $phone,
+                        'tenant_id'         => $tenant->id,
+                        'status'            => $status,
+                        'is_super_admin'    => false,
+                        'email_verified_at' => now(),
+                    ]);
+                    $importedCount++;
+                }
+            }
+        });
+
+        $msg = "Successfully imported {$importedCount} new staff members" . ($updatedCount > 0 ? " and updated {$updatedCount} existing staff accounts." : ".");
+        return back()->with('success', $msg);
+    }
 }

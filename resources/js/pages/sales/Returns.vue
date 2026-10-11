@@ -6,6 +6,7 @@ import DataTable from '@/components/ui/DataTable.vue';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useFeatures } from '@/composables/useFeatures';
 import { formatCurrency, formatDateTime } from '@/composables/useCurrency';
 import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -14,15 +15,20 @@ import { Head } from '@inertiajs/vue3';
 import { CheckCircle2, RotateCcw, Search, ShoppingBag, Undo2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
+const props = defineProps<{
+    returns?: any[];
+}>();
+
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Sales', href: '/sales' },
     { title: 'Returns & Refunds', href: '/sales/returns' },
 ];
 
+const { isDemo } = useFeatures();
 const { success, error, info } = useToast();
 
-const returnRecords = ref([
+const demoReturnRecords = [
     {
         id: 'RET-004',
         receiptNumber: 'REC-2026-904120',
@@ -47,7 +53,14 @@ const returnRecords = ref([
         restock: true,
         status: 'Completed',
     },
-]);
+];
+
+const returnRecords = ref(
+    props.returns && props.returns.length > 0
+        ? props.returns
+        : (isDemo.value ? demoReturnRecords : [])
+);
+
 
 const columns = [
     { key: 'id', label: 'Return #' },
@@ -76,10 +89,10 @@ const handleProcessReturn = () => {
         id: `RET-00${returnRecords.value.length + 1}`,
         receiptNumber: receiptSearch.value.toUpperCase(),
         date: new Date().toISOString().replace('T', ' ').substring(0, 16),
-        customer: 'Walk-in Customer',
-        product: 'Brookside Whole Milk 500ml',
+        customer: 'Customer',
+        product: `Item from #${receiptSearch.value.toUpperCase()}`,
         qty: returnQty.value,
-        refundAmount: returnQty.value * 80,
+        refundAmount: returnQty.value * 100,
         reason: returnReason.value,
         restock: restockItem.value,
         status: 'Completed',
@@ -95,7 +108,7 @@ const handleProcessReturn = () => {
     <Head title="Sales Returns & Refunds" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="p-4 md:p-8 space-y-6 max-w-[1600px] mx-auto">
+        <div class="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
             <!-- Header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>

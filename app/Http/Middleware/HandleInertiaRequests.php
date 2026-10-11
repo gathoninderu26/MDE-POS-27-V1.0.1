@@ -60,12 +60,14 @@ class HandleInertiaRequests extends Middleware
             $demoExpiresAt = $demoSession['expires_at'] ?? now()->addDays($demoDays)->toIso8601String();
             $detectedMode = $demoSession['data_mode'] ?? (str_contains($tenant?->slug ?? '', 'clean') ? 'own' : 'mock');
             $demoData = [
-                'is_demo'    => true,
-                'days'       => $demoDays,
-                'expires_at' => $demoExpiresAt,
-                'data_mode'  => $detectedMode,
+                'is_demo'     => true,
+                'days'        => $demoDays,
+                'expires_at'  => $demoExpiresAt,
+                'data_mode'   => $detectedMode,
                 'tenant_slug' => $tenant?->slug,
-                'demo_name'  => $tenant ? "[DEMO] {$tenant->name}" : 'Demo Account',
+                'demo_name'   => $tenant ? "[DEMO] {$tenant->name}" : 'Demo Account',
+                'role'        => $demoSession['role'] ?? null,
+                'persona'     => $demoSession['persona'] ?? $demoSession['role'] ?? null,
             ];
         }
 
@@ -79,6 +81,13 @@ class HandleInertiaRequests extends Middleware
             'quote'       => ['message' => trim($message), 'author' => trim($author)],
             'isSubdomain' => app()->bound('currentTenant'),
             'demo'        => $demoData,
+            'flash'       => [
+                'success'            => fn () => $request->session()->get('success'),
+                'error'              => fn () => $request->session()->get('error'),
+                'warning'            => fn () => $request->session()->get('warning'),
+                'info'               => fn () => $request->session()->get('info'),
+                'createdCredentials' => fn () => $request->session()->get('createdCredentials'),
+            ],
             'tenant'      => $tenant ? [
                 'id'              => (string) $tenant->id,
                 'name'            => $tenantDisplayName,
@@ -86,12 +95,21 @@ class HandleInertiaRequests extends Middleware
                 'subdomain_url'   => $tenant->getSubdomainUrl(),
                 'email'           => $tenant->email,
                 'phone'           => $tenant->phone,
+                'address'         => $tenant->address,
                 'kra_pin'         => $tenant->kra_pin,
                 'business_type'   => $tenant->business_type,
+                'is_demo'         => $isDemoTenant,
                 'plan'            => $tenant->plan,
                 'currency'        => $tenant->currency ?? 'KES',
                 'status'          => $tenant->status,
+                'branch_count'    => $tenant->branch_count ?? 1,
+                'is_multi_branch' => $tenant->isMultiBranch(),
                 'enabled_modules' => $tenant->enabled_modules ?? [],
+                'device_policy'   => $tenant->device_policy ?? [],
+                'network_policy'  => $tenant->network_policy ?? [],
+                'settings'        => $tenant->settings ?? [],
+                'next_billing_date' => $tenant->next_billing_date?->toIso8601String(),
+                'expires_at'      => $isDemo ? ($demoExpiresAt ?? null) : $tenant->next_billing_date?->toIso8601String(),
             ] : null,
             'auth'        => [
                 'user' => $user ? [
@@ -104,6 +122,7 @@ class HandleInertiaRequests extends Middleware
                     'status'         => $user->status,
                     'tenant_id'      => $user->tenant_id,
                 ] : null,
+                'is_impersonating' => (bool) $request->session()->has('impersonated_by_admin_id'),
                 'tenant' => $tenant ? [
                     'id'              => (string) $tenant->id,
                     'name'            => $tenantDisplayName,
@@ -116,10 +135,63 @@ class HandleInertiaRequests extends Middleware
                     'plan'            => $tenant->plan,
                     'currency'        => $tenant->currency ?? 'KES',
                     'status'          => $tenant->status,
+                    'branch_count'    => $tenant->branch_count ?? 1,
+                    'is_multi_branch' => $tenant->isMultiBranch(),
                     'enabled_modules' => $tenant->enabled_modules ?? [],
+                    'device_policy'   => $tenant->device_policy ?? [],
+                    'network_policy'  => $tenant->network_policy ?? [],
+                    'settings'        => $tenant->settings ?? [],
                 ] : null,
                 'permissions' => $permissions,
+                'sync' => [
+                    'mode' => config('tenant.mode', 'multi'),
+                    'is_single_tenant' => config('tenant.mode') === 'single',
+                    'pending_outbox' => rescue(fn () => \App\Models\SyncOutbox::where('status', 'pending')->count(), 0),
+                ],
             ],
+            'badgeCounts' => rescue(function () use ($tenant) {
+                if (! $tenant) {
+                    return [
+                        'todaySales'       => 0,
+                        'totalProducts'    => 0,
+                        'totalCategories'  => 0,
+                        'lowStock'         => 0,
+                        'pendingPurchases' => 0,
+                        'totalSuppliers'   => 0,
+                        'totalCustomers'   => 0,
+                        'todayExpenses'    => 0,
+                        'activeClockIns'   => 0,
+                        'totalBranches'    => 0,
+                    ];
+                }
+
+                // Real queries — for demo tenants the default connection is already
+                // switched to their isolated SQLite file by IdentifyTenantFromSubdomain.
+                // For real tenants this runs against MySQL as always.
+                return [
+                    'todaySales'       => \App\Models\Sale::where('tenant_id', $tenant->id)->whereDate('created_at', today())->count(),
+                    'totalProducts'    => \App\Models\Product::where('tenant_id', $tenant->id)->count(),
+                    'totalCategories'  => \App\Models\ProductCategory::where('tenant_id', $tenant->id)->count(),
+                    'lowStock'         => \App\Models\Product::where('tenant_id', $tenant->id)->whereColumn('stock_quantity', '<=', 'reorder_level')->count(),
+                    'pendingPurchases' => \App\Models\Purchase::where('tenant_id', $tenant->id)->whereIn('status', ['Pending', 'Draft', 'Ordered'])->count(),
+                    'totalSuppliers'   => \App\Models\Supplier::where('tenant_id', $tenant->id)->count(),
+                    'totalCustomers'   => \App\Models\Customer::where('tenant_id', $tenant->id)->count(),
+                    'todayExpenses'    => \App\Models\Expense::where('tenant_id', $tenant->id)->whereDate('date', today())->count(),
+                    'activeClockIns'   => \App\Models\ClockSession::where('tenant_id', $tenant->id)->where('status', 'Active')->count(),
+                    'totalBranches'    => \App\Models\Branch::where('tenant_id', $tenant->id)->count(),
+                ];
+            }, [
+                'todaySales'       => 0,
+                'totalProducts'    => 0,
+                'totalCategories'  => 0,
+                'lowStock'         => 0,
+                'pendingPurchases' => 0,
+                'totalSuppliers'   => 0,
+                'totalCustomers'   => 0,
+                'todayExpenses'    => 0,
+                'activeClockIns'   => 0,
+                'totalBranches'    => 0,
+            ]),
         ]);
     }
 

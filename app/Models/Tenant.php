@@ -31,6 +31,8 @@ class Tenant extends Model
         'monthly_revenue',
         'enabled_modules',
         'custom_modules',
+        'device_policy',
+        'network_policy',
         'settings',
         'next_billing_date',
     ];
@@ -41,6 +43,8 @@ class Tenant extends Model
             'is_demo'          => 'boolean',
             'enabled_modules'  => 'array',
             'custom_modules'   => 'array',
+            'device_policy'    => 'array',
+            'network_policy'   => 'array',
             'settings'         => 'array',
             'next_billing_date' => 'datetime',
             'monthly_revenue'  => 'decimal:2',
@@ -129,7 +133,18 @@ class Tenant extends Model
 
     public function hasModule(string $module): bool
     {
-        return in_array($module, $this->enabled_modules ?? []);
+        if ($this->enabled_modules === null) {
+            return true;
+        }
+        return in_array($module, $this->enabled_modules);
+    }
+
+    /**
+     * Determine if tenant operates as a multi-branch business.
+     */
+    public function isMultiBranch(): bool
+    {
+        return $this->hasModule('branches') && ($this->branch_count > 1 || $this->branches()->count() > 1);
     }
 
     /**
@@ -160,6 +175,15 @@ class Tenant extends Model
         $baseDomain = config('app.domain', 'localhost');
         
         $cleanPath = ltrim($path, '/');
-        return "{$scheme}://{$this->slug}.{$baseDomain}{$portSuffix}" . ($cleanPath ? "/{$cleanPath}" : '');
+        $pathSegment = $cleanPath ? "/{$cleanPath}" : '';
+
+        // In local development (localhost / 127.0.0.1), use query parameter to ensure immediate browser accessibility
+        if ($baseDomain === 'localhost' || $baseDomain === '127.0.0.1' || str_contains($baseDomain, 'localhost')) {
+            $prefix = $pathSegment ?: '/login';
+            $separator = str_contains($prefix, '?') ? '&' : '?';
+            return "{$scheme}://{$baseDomain}{$portSuffix}{$prefix}{$separator}tenant={$this->slug}";
+        }
+
+        return "{$scheme}://{$this->slug}.{$baseDomain}{$portSuffix}{$pathSegment}";
     }
 }

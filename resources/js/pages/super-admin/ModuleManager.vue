@@ -5,7 +5,7 @@ import type { BusinessType, PlatformTenant } from '@/composables/useSuperAdmin';
 import { allModules, businessTypeProfiles, useSuperAdmin } from '@/composables/useSuperAdmin';
 import { useToast } from '@/composables/useToast';
 import SuperAdminLayout from '@/layouts/SuperAdminLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import {
     BarChart3,
     Boxes,
@@ -16,12 +16,14 @@ import {
     ChevronDown,
     ClipboardList,
     DollarSign,
+    ExternalLink,
     Fuel,
     Layers,
     MapPin,
     Package,
     Pill,
     Receipt,
+    RefreshCw,
     Settings,
     ShieldCheck,
     ShoppingCart,
@@ -34,8 +36,19 @@ import {
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
-const { tenants, applyBusinessTypePreset, toggleTenantModule, updateTenantModules } = useSuperAdmin();
-const { success, info } = useToast();
+const props = defineProps<{
+    tenants?: any[];
+}>();
+
+const { tenants: mockTenants, applyBusinessTypePreset, toggleTenantModule, updateTenantModules } = useSuperAdmin();
+const { success, error, info } = useToast();
+
+const displayedTenants = computed(() => {
+    if (props.tenants && props.tenants.length > 0) {
+        return props.tenants;
+    }
+    return mockTenants;
+});
 
 // Map icon string keys to actual icon components
 const iconMap: Record<string, any> = {
@@ -75,13 +88,14 @@ const colorMap: Record<string, string> = {
 };
 
 // Selected tenant for module management
-const selectedTenant = ref<PlatformTenant | null>(null);
+const selectedTenant = ref<any | null>(null);
 const moduleModal = ref(false);
 const pendingModules = ref<string[]>([]);
+const isSaving = ref(false);
 
-const openModuleManager = (tenant: PlatformTenant) => {
+const openModuleManager = (tenant: any) => {
     selectedTenant.value = tenant;
-    pendingModules.value = [...tenant.enabledModules];
+    pendingModules.value = [...(tenant.enabledModules || tenant.enabled_modules || [])];
     moduleModal.value = true;
 };
 
@@ -94,19 +108,55 @@ const togglePendingModule = (key: string) => {
 const handleApplyPreset = (businessType: BusinessType) => {
     if (!selectedTenant.value) return;
     pendingModules.value = [...businessTypeProfiles[businessType].modules];
-    info('Preset Applied', `${businessType} preset loaded. Review and save to confirm.`);
+    info('Preset Applied', `${businessType} preset loaded (${pendingModules.value.length} modules). Review and save to confirm.`);
 };
 
 const handleSaveModules = () => {
     if (!selectedTenant.value) return;
-    updateTenantModules(selectedTenant.value.id, pendingModules.value);
-    success('Modules Updated', `${selectedTenant.value.name} now has ${pendingModules.value.length} active modules.`);
-    moduleModal.value = false;
+    isSaving.value = true;
+
+    // Persist to backend DB if real tenant
+    router.patch(`/super-admin/tenants/${selectedTenant.value.id}/detail`, {
+        enabled_modules: pendingModules.value,
+    }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            updateTenantModules(selectedTenant.value.id, pendingModules.value);
+            if (selectedTenant.value) {
+                selectedTenant.value.enabledModules = [...pendingModules.value];
+                selectedTenant.value.enabled_modules = [...pendingModules.value];
+            }
+            success('Modules Updated', `${selectedTenant.value.name} now has ${pendingModules.value.length} active pages.`);
+            moduleModal.value = false;
+        },
+        onError: () => {
+            error('Save Failed', 'Could not save modules to database.');
+        },
+        onFinish: () => {
+            isSaving.value = false;
+        },
+    });
 };
 
-const handleApplyBusinessType = (tenant: PlatformTenant, type: BusinessType) => {
-    applyBusinessTypePreset(tenant.id, type);
-    success('Business Type Applied', `${tenant.name} switched to ${type} profile with ${businessTypeProfiles[type].modules.length} modules.`);
+const handleApplyBusinessType = (tenant: any, type: BusinessType) => {
+    const modules = [...businessTypeProfiles[type].modules];
+    router.patch(`/super-admin/tenants/${tenant.id}/detail`, {
+        business_type: type,
+        enabled_modules: modules,
+    }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            tenant.businessType = type;
+            tenant.business_type = type;
+            tenant.enabledModules = modules;
+            tenant.enabled_modules = modules;
+            applyBusinessTypePreset(tenant.id, type);
+            success('Business Type Applied', `${tenant.name} switched to ${type} preset with ${modules.length} active pages.`);
+        },
+        onError: () => {
+            error('Failed', 'Could not update business type on server.');
+        },
+    });
 };
 </script>
 
@@ -146,7 +196,7 @@ const handleApplyBusinessType = (tenant: PlatformTenant, type: BusinessType) => 
                 <h3 class="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Per-Tenant Module Configuration</h3>
                 <div class="space-y-3">
                     <div
-                        v-for="tenant in tenants"
+                        v-for="tenant in displayedTenants"
                         :key="tenant.id"
                         class="rounded-xl border border-zinc-800 bg-zinc-900 p-4"
                         :class="tenant.status === 'Suspended' && 'opacity-60'"
@@ -161,9 +211,9 @@ const handleApplyBusinessType = (tenant: PlatformTenant, type: BusinessType) => 
                                     <p class="text-sm font-bold text-zinc-100">{{ tenant.name }}</p>
                                     <div class="flex items-center gap-2 flex-wrap mt-0.5">
                                         <span
-                                            :class="['text-[10px] font-bold px-1.5 py-0.5 rounded border', colorMap[businessTypeProfiles[tenant.businessType]?.color || 'slate']]"
+                                            :class="['text-[10px] font-bold px-1.5 py-0.5 rounded border', colorMap[businessTypeProfiles[tenant.businessType || tenant.business_type]?.color || 'slate']]"
                                         >
-                                            {{ tenant.businessType }}
+                                            {{ tenant.businessType || tenant.business_type }}
                                         </span>
                                         <span
                                             :class="[
@@ -175,7 +225,7 @@ const handleApplyBusinessType = (tenant: PlatformTenant, type: BusinessType) => 
                                         >
                                             {{ tenant.plan }}
                                         </span>
-                                        <span class="text-[10px] text-zinc-500">{{ tenant.enabledModules.length }} modules active</span>
+                                        <span class="text-[10px] text-zinc-500">{{ (tenant.enabledModules || tenant.enabled_modules || []).length }} modules active</span>
                                     </div>
                                 </div>
                             </div>
@@ -184,7 +234,7 @@ const handleApplyBusinessType = (tenant: PlatformTenant, type: BusinessType) => 
                                 <!-- Quick business type switcher -->
                                 <select
                                     class="h-8 rounded-lg border border-zinc-700 bg-zinc-800 px-2 text-[11px] text-zinc-200 focus:outline-none focus:ring-1 focus:ring-violet-500"
-                                    :value="tenant.businessType"
+                                    :value="tenant.businessType || tenant.business_type"
                                     @change="handleApplyBusinessType(tenant, ($event.target as HTMLSelectElement).value as BusinessType)"
                                 >
                                     <option v-for="type in businessTypes" :key="type" :value="type">{{ type }}</option>
@@ -199,6 +249,15 @@ const handleApplyBusinessType = (tenant: PlatformTenant, type: BusinessType) => 
                                     <Settings class="size-3.5 mr-1" />
                                     Customize Modules
                                 </Button>
+
+                                <a
+                                    :href="`/super-admin/tenants/${tenant.id}/detail?tab=modules`"
+                                    class="h-8 px-2.5 rounded-lg text-[11px] font-semibold bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700 hover:border-zinc-500 inline-flex items-center gap-1 transition-colors"
+                                    title="Open Full Tenant Configuration"
+                                >
+                                    <ExternalLink class="size-3" />
+                                    Full Setup
+                                </a>
                             </div>
                         </div>
 
@@ -209,7 +268,7 @@ const handleApplyBusinessType = (tenant: PlatformTenant, type: BusinessType) => 
                                 :key="mod.key"
                                 :class="[
                                     'flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold border transition-all',
-                                    tenant.enabledModules.includes(mod.key)
+                                    (tenant.enabledModules || tenant.enabled_modules || []).includes(mod.key)
                                         ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
                                         : 'bg-zinc-800/40 text-zinc-600 border-zinc-700/40 opacity-40',
                                 ]"
@@ -217,7 +276,7 @@ const handleApplyBusinessType = (tenant: PlatformTenant, type: BusinessType) => 
                                 <component :is="iconMap[mod.icon] || Package" class="size-3 shrink-0" />
                                 <span>{{ mod.label }}</span>
                                 <CheckCircle2
-                                    v-if="tenant.enabledModules.includes(mod.key)"
+                                    v-if="(tenant.enabledModules || tenant.enabled_modules || []).includes(mod.key)"
                                     class="size-3 text-emerald-400 ml-0.5"
                                 />
                             </div>
@@ -298,8 +357,9 @@ const handleApplyBusinessType = (tenant: PlatformTenant, type: BusinessType) => 
 
                 <DialogFooter class="gap-2">
                     <Button variant="ghost" size="sm" class="text-zinc-400" @click="moduleModal = false">Cancel</Button>
-                    <Button size="sm" class="bg-violet-600 hover:bg-violet-700 text-white" @click="handleSaveModules">
-                        Save Module Configuration
+                    <Button size="sm" :disabled="isSaving" class="bg-violet-600 hover:bg-violet-700 text-white disabled:opacity-60" @click="handleSaveModules">
+                        <RefreshCw v-if="isSaving" class="size-3 mr-1 animate-spin" />
+                        {{ isSaving ? 'Saving…' : 'Save Module Configuration' }}
                     </Button>
                 </DialogFooter>
             </DialogContent>

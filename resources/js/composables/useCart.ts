@@ -61,10 +61,12 @@ export interface Customer {
 }
 
 export interface PaymentEntry {
-    method: 'Cash' | 'M-Pesa' | 'Card' | 'Bank' | 'Credit';
+    method: 'Cash' | 'M-Pesa' | 'Card' | 'Bank' | 'Credit' | string;
     amount: number;
     reference?: string;
     phone?: string;
+    payerName?: string;
+    confirmedAt?: string;
 }
 
 export interface HeldSale {
@@ -95,6 +97,7 @@ export interface CompletedSale {
     payments: PaymentEntry[];
     changeGiven: number;
     mpesaCode?: string;
+    mpesaPayerName?: string;
     status: 'Completed' | 'Refunded' | 'Held' | 'Void';
     
     // Vertical metadata for receipts
@@ -315,8 +318,8 @@ export function useCart() {
         },
     ): CompletedSale => {
         const receiptNo = `REC-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
-        const hasMpesa = payments.some((p) => p.method === 'M-Pesa');
-        const mpesaCode = hasMpesa ? generateMpesaCode() : undefined;
+        const mpesaPayment = payments.find((p) => p.method === 'M-Pesa');
+        const mpesaCode = mpesaPayment?.reference || (mpesaPayment ? generateMpesaCode() : undefined);
         const changeGiven = Math.max(0, tenderedAmount - total.value);
 
         const sale: CompletedSale = {
@@ -334,6 +337,7 @@ export function useCart() {
             payments,
             changeGiven,
             mpesaCode,
+            mpesaPayerName: mpesaPayment?.payerName,
             status: 'Completed',
             rxNumber: extraMeta?.rxNumber || state.activeRxNumber || undefined,
             doctorName: extraMeta?.doctorName || state.activeDoctorName || undefined,

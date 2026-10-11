@@ -1,8 +1,8 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronLeft, ChevronRight, Search } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 
 interface Column {
     key: string;
@@ -23,6 +23,7 @@ const props = withDefaults(
         description?: string;
         maxHeight?: string;
         stickyHeader?: boolean;
+        searchId?: string;
     }>(),
     {
         searchable: true,
@@ -34,9 +35,18 @@ const props = withDefaults(
 
 const searchQuery = ref('');
 const currentPage = ref(1);
+const localPageSize = ref(props.pageSize);
+const pageSizeOptions = [5, 10, 20, 50, 100];
+
+watch(
+    () => props.pageSize,
+    (val) => {
+        if (val) localPageSize.value = val;
+    },
+);
 
 const filteredData = computed(() => {
-    if (!props.searchQuery && !searchQuery.value.trim()) {
+    if (!searchQuery.value.trim()) {
         return props.data;
     }
     const q = searchQuery.value.toLowerCase().trim();
@@ -54,12 +64,12 @@ const filteredData = computed(() => {
 });
 
 const totalPages = computed(() => {
-    return Math.ceil(filteredData.value.length / props.pageSize) || 1;
+    return Math.ceil(filteredData.value.length / localPageSize.value) || 1;
 });
 
 const paginatedData = computed(() => {
-    const start = (currentPage.value - 1) * props.pageSize;
-    return filteredData.value.slice(start, start + props.pageSize);
+    const start = (currentPage.value - 1) * localPageSize.value;
+    return filteredData.value.slice(start, start + localPageSize.value);
 });
 
 const goToPage = (page: number) => {
@@ -67,6 +77,27 @@ const goToPage = (page: number) => {
         currentPage.value = page;
     }
 };
+
+const visiblePages = computed(() => {
+    const total = totalPages.value;
+    const curr = currentPage.value;
+    if (total <= 5) {
+        return Array.from({ length: total }, (_, i) => i + 1);
+    }
+    const pages: (number | string)[] = [];
+    if (curr <= 3) {
+        pages.push(1, 2, 3, 4, '...', total);
+    } else if (curr >= total - 2) {
+        pages.push(1, '...', total - 3, total - 2, total - 1, total);
+    } else {
+        pages.push(1, '...', curr - 1, curr, curr + 1, '...', total);
+    }
+    return pages;
+});
+
+watch([searchQuery, localPageSize], () => {
+    currentPage.value = 1;
+});
 </script>
 
 <template>
@@ -79,7 +110,7 @@ const goToPage = (page: number) => {
             </div>
 
             <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                <div v-if="searchable" class="relative w-full sm:w-auto sm:min-w-[220px]">
+                <div v-if="searchable" :id="searchId || 'data-table-search-box'" class="relative w-full sm:w-auto sm:min-w-[220px]">
                     <Search class="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
                     <Input
                         v-model="searchQuery"
@@ -147,36 +178,96 @@ const goToPage = (page: number) => {
                 </table>
             </div>
 
-            <!-- Pagination Bar -->
+            <!-- Unified Pagination Bar -->
             <div
-                v-if="filteredData.length > pageSize"
-                class="flex flex-col sm:flex-row items-center justify-between border-t border-border/70 bg-muted/20 px-3 sm:px-4 py-2.5 text-xs text-muted-foreground gap-2 sm:gap-0"
+                v-if="filteredData.length > 0"
+                class="flex flex-col sm:flex-row items-center justify-between border-t border-border/70 bg-muted/20 px-3 sm:px-4 py-2.5 text-xs text-muted-foreground gap-3 sm:gap-0"
             >
-                <div class="text-[11px] sm:text-xs">
-                    Showing <span class="font-medium text-foreground">{{ (currentPage - 1) * pageSize + 1 }}</span> to
-                    <span class="font-medium text-foreground">{{ Math.min(currentPage * pageSize, filteredData.length) }}</span> of
-                    <span class="font-medium text-foreground">{{ filteredData.length }}</span> entries
+                <!-- Left: Range Summary & Per-Page Selector -->
+                <div class="flex items-center gap-3 flex-wrap justify-between w-full sm:w-auto">
+                    <div class="text-[11px] sm:text-xs">
+                        Showing <span class="font-bold text-foreground">{{ filteredData.length === 0 ? 0 : (currentPage - 1) * localPageSize + 1 }}</span> to
+                        <span class="font-bold text-foreground">{{ Math.min(currentPage * localPageSize, filteredData.length) }}</span> of
+                        <span class="font-bold text-foreground">{{ filteredData.length }}</span> entries
+                    </div>
+
+                    <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <span>Per page:</span>
+                        <select
+                            v-model.number="localPageSize"
+                            class="h-7 rounded-md border border-input bg-background px-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        >
+                            <option v-for="size in pageSizeOptions" :key="size" :value="size">
+                                {{ size }}
+                            </option>
+                        </select>
+                    </div>
                 </div>
 
-                <div class="flex items-center gap-1.5">
+                <!-- Right: Navigation Controls -->
+                <div v-if="totalPages > 1" class="flex items-center gap-1">
                     <Button
                         variant="outline"
                         size="sm"
-                        class="h-7 w-7 p-0"
+                        class="h-8 w-8 p-0"
                         :disabled="currentPage === 1"
+                        title="First page"
+                        @click="goToPage(1)"
+                    >
+                        <ChevronsLeft class="size-3.5" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        class="h-8 w-8 p-0"
+                        :disabled="currentPage === 1"
+                        title="Previous page"
                         @click="goToPage(currentPage - 1)"
                     >
                         <ChevronLeft class="size-3.5" />
                     </Button>
-                    <span class="px-2 text-xs font-medium text-foreground">Page {{ currentPage }} of {{ totalPages }}</span>
+
+                    <!-- Page Pills -->
+                    <template v-for="(p, i) in visiblePages" :key="i">
+                        <span
+                            v-if="p === '...'"
+                            class="px-2 py-1 text-xs text-muted-foreground select-none"
+                        >
+                            …
+                        </span>
+                        <Button
+                            v-else
+                            :variant="currentPage === p ? 'default' : 'outline'"
+                            size="sm"
+                            :class="[
+                                'h-8 min-w-8 px-2 text-xs font-semibold',
+                                currentPage === p ? 'bg-primary text-primary-foreground font-bold shadow-xs' : 'hover:bg-muted/60 text-muted-foreground hover:text-foreground'
+                            ]"
+                            @click="goToPage(p as number)"
+                        >
+                            {{ p }}
+                        </Button>
+                    </template>
+
                     <Button
                         variant="outline"
                         size="sm"
-                        class="h-7 w-7 p-0"
+                        class="h-8 w-8 p-0"
                         :disabled="currentPage === totalPages"
+                        title="Next page"
                         @click="goToPage(currentPage + 1)"
                     >
                         <ChevronRight class="size-3.5" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        class="h-8 w-8 p-0"
+                        :disabled="currentPage === totalPages"
+                        title="Last page"
+                        @click="goToPage(totalPages)"
+                    >
+                        <ChevronsRight class="size-3.5" />
                     </Button>
                 </div>
             </div>
